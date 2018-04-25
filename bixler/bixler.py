@@ -502,8 +502,8 @@ class Bixler:
             C_m0_samples = CMY0_over14
             C_malpha_samples = CMYalpha_over14
         
-        C_m0 = np.interp(self.airspeed, airspeeds, C_m0_samples)
-        C_malpha = np.interp(self.airspeed, airspeeds, C_malpha_samples)
+        C_m0 = np.interp(self.airspeed, np.flip(airspeeds,0), np.flip(C_m0_samples,0))
+        C_malpha = np.interp(self.airspeed, np.flip(airspeeds,0), np.flip(C_malpha_samples,0))
         
         C_melev_samples = []
         
