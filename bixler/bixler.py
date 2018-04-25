@@ -54,6 +54,10 @@ class Bixler:
         self.beta     = 0.0 # (deg)
         self.airspeed = 0.0 # (m/s)
         
+        # Control surface limits
+        self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
+        self.elev_limits = np.rad2deg([-0.1745, 0.1745])
+        
         self.update_air_data()
     
     def get_state(self):
@@ -118,8 +122,8 @@ class Bixler:
 
     
     def update_control_surfaces(self,steptime):
-        self.sweep += self.sweep_rate * steptime
-        self.elev += self.elev_rate * steptime
+        self.sweep = np.clip(self.sweep + self.sweep_rate * steptime, self.sweep_limits[0], self.sweep_limits[1])
+        self.elev = np.clip(self.elev + self.elev_rate * steptime, self.elev_limits[0], self.elev_limits[1])
         self.rudder = 0.0
         self.tip_port = 0.0
         self.tip_stbd = 0.0
