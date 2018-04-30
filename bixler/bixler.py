@@ -291,7 +291,8 @@ class Bixler:
         X = -D
         
         # Sideforce
-        Y = 0.5 * self.rho * (v**2) * self.S * C_Yv * v
+        #Y = 0.5 * self.rho * (v**2) * self.S * C_Yv * v
+        Y = 0 # (removed to check against JAVA_MODEL)
 
         # Lift
         C_L = C_L0 + (C_Lalpha * self.alpha) + (C_Lq * q)
@@ -307,8 +308,9 @@ class Bixler:
         m = Q * self.S * self.c * C_m
         
         # Yawing moment
-        C_n = C_n0 + (C_nrudder * self.rudder) + (C_nr * np.deg2rad(r))
-        n = Q * self.S * self.c * C_n
+        C_n = C_n0 + (C_nrudder * self.rudder) + (C_nr * r)
+        #n = Q * self.S * self.c * C_n
+        n = Q * self.S * C_n # What!? No chord! To match JAVA_MODEL...
         
         return (
             np.array([[X],[Y],[Z]]), # Forces
@@ -530,7 +532,7 @@ class Bixler:
         elif self.elev <= -1.2:
             C_melev_samples = CMYelev_m1p2tom5
 
-        # Override the above...
+        # Override the above to match JAVA_MODEL
         C_melev_samples = CMYelev_overall
 
         C_melev = self._interpolate(self.alpha,alpha_sample_elev,C_melev_samples)
@@ -572,7 +574,8 @@ class Bixler:
 
     def _get_coefficients_C_n(self):
         # Rudder effectiveness coefficient estimation
-        C_n0 = 0.0020716
+        #C_n0 = 0.0020716
+        C_n0 = 0.0 # From JAVA_MODEL
 
         # Rudder effectiveness Yawing Moment Coefficient
         alpha_sample_rudd = [-5, -2.5, 0, 2.5, 5]
