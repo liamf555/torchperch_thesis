@@ -2,7 +2,7 @@
 import numpy as np
 from scipy import interpolate
 
-accel_gravity = 9.81
+accel_gravity = 9.81 # m.s^-2
 
 class Bixler:
     
@@ -14,10 +14,10 @@ class Bixler:
         self.sweep_rates = [ -60, -10, -5, 0, 5, 10, 60 ]
         
         # Physical parameters
-        self.mass = 1.285
-        self.rho = 1.225
-        self.S = 0.26
-        self.c = 0.2
+        self.mass = 1.285 # kg
+        self.rho = 1.225  # kg.m^-3
+        self.S = 0.26     # m^2
+        self.c = 0.2      # m
         self.inertia = np.array([
             [ 0.042,     0,     0 ],
             [     0, 0.029,     0 ],
