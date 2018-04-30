@@ -226,7 +226,7 @@ class Bixler:
         # Get acceleration of body
         self.acceleration_b = force_b * (1/self.mass)
         # Remove effects of rotating reference frame
-        self.acceleration_b = self.acceleration_b - 1.0 * np.cross(self.omega_b, self.velocity_b, axis=0)
+        self.acceleration_b = self.acceleration_b - np.cross(self.omega_b, self.velocity_b, axis=0)
         # Generate noise
         noise = np.random.rand(3,1) * self.noiselevel
         # Add noise to acceleration
@@ -237,8 +237,8 @@ class Bixler:
         moments_b = np.matmul(self.dcm_wind2body, moments_w)
         # Define angular acceleration
         iw = np.matmul(self.inertia, self.omega_b)
-        cp =  -1.0 * np.cross(self.omega_b, iw, axis=0)
-        idw = moments_b + cp
+        cp = np.cross(self.omega_b, iw, axis=0)
+        idw = moments_b - cp
         
         self.omega_dot_b = np.matmul(np.linalg.inv(self.inertia), idw)
 
