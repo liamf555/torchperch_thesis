@@ -282,7 +282,7 @@ class Bixler:
         r = np.rad2deg(self.omega_b[2,0])
 
         # Sideslip
-        # TODO: Fix definition of v, should be relative to airmass
+        # TODO: Fix definition of v, should be relative to airmass i.e. calculate using airdata
         v = self.velocity_b[1,0]
 
         # Drag
@@ -306,6 +306,11 @@ class Bixler:
         # Pitching moment
         C_m = C_m0 + (C_malpha * self.alpha) + (C_melev * self.elev) + (C_msweep * self.sweep) + (C_mwashout * self.washout) + (C_mq * q)
         m = Q * self.S * self.c * C_m
+        #print("0: {}, a: {}, e: {}, s: {}, w: {}, q: {}".format(C_m0,(C_malpha * self.alpha),(C_melev * self.elev),(C_msweep * self.sweep),(C_mwashout * self.washout),(C_mq * q)))
+        #print("{},{},{},{},{},{}".format(C_m0,(C_malpha * self.alpha),(C_melev * self.elev),(C_msweep * self.sweep),(C_mwashout * self.washout),(C_mq * q)))
+        #print("a: {}, e: {}, s: {}, w: {}, q: {}".format(self.alpha,self.elev,self.sweep,self.washout,q))
+        #print("alpha: {}, u: {}, w: {}".format(self.alpha,self.velocity_b[0,0],self.velocity_b[2,0]))
+        #print("Moment: {}".format(m))
         
         # Yawing moment
         C_n = C_n0 + (C_nrudder * self.rudder) + (C_nr * r)
@@ -518,6 +523,7 @@ class Bixler:
             C_malpha_samples = CMYalpha_over14
         
         C_m0 = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_m0_samples,0))
+        #print('ASI: {}, result: {}, speeds: {}, samples: {}'.format(self.airspeed,C_m0,airspeeds,C_m0_samples))
         C_malpha = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_malpha_samples,0))
         
         C_melev_samples = []
