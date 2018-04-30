@@ -55,6 +55,10 @@ class Bixler:
         self.beta     = 0.0 # (deg)
         self.airspeed = 0.0 # (m/s)
         
+        # Control surface rates
+        self.sweep_rate = 0 # (deg/s)
+        self.elev_rate = 0  # (deg/s)
+        
         # Control surface limits
         self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
         self.elev_limits = np.rad2deg([-0.1745, 0.1745])
