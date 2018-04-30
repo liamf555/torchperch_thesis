@@ -3,6 +3,8 @@ import math
 from collections import namedtuple
 from itertools import count
 
+import warnings
+
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -102,19 +104,30 @@ for episode_num in range(num_episodes):
     state = bixler.get_state()[0:12].T
     next_state = bixler.get_state()[0:12].T
     
+
+    bixlerNaN = False
+
     for t in count():
         action = select_action(state)
         # Apply action to bixler
         bixler.set_action(action[0,0])
         # Update bixler state
-        for i in range(1,10):
-            bixler.step(0.01)
-        
+        with warnings.catch_warnings():
+            warnings.filterwarnings('error')
+            try:
+                for i in range(1,10):
+                    bixler.step(0.01)
+            except Warning as e:
+                    # Set NaN state...
+                    bixlerNaN = True
+
         # Check for NaNs in bixler state
         
         # Get a reward for the transition
         reward = torch.Tensor([0])
-        if bixler.is_terminal():
+        if bixlerNaN:
+            reward = torch.Tensor([ -1 ])
+        elif bixler.is_terminal():
             cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
             cost = np.dot( np.squeeze(bixler.get_state()) ** 2, cost_vector ) / 2500
             reward = torch.Tensor([ ((1 - cost) * 2) - 1 ])
