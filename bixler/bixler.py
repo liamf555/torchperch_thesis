@@ -84,9 +84,9 @@ class Bixler:
         return False
     
     def set_action(self,action_index):
-        elev_rate_idx = action_index // 7
-        sweep_rate_idx = action_index % 7
-        
+        elev_rate_idx = int(action_index) // 7
+        sweep_rate_idx = int(action_index) % 7
+
         self.elev_rate =  self.elev_rates[elev_rate_idx]
         self.sweep_rate = self.sweep_rates[sweep_rate_idx]
     
