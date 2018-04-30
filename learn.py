@@ -90,7 +90,7 @@ def train_on_experience():
     reward_batch = torch.cat(batch.reward)
 
     # Get the currently predicted Q-values for each of the state-action pairs from the experience batch
-    state_action_values = model(state_batch).gather(1, action_batch)
+    state_action_values = model(state_batch).gather(1, action_batch[:,None])
     
     # Set up a tensor of values for the next state
     next_state_values = Variable(torch.zeros(BATCH_SIZE).type(torch.DoubleTensor))
@@ -136,7 +136,7 @@ for episode_num in range(num_episodes):
         # Select an action
         action = select_action(state)
         # Apply action to bixler
-        bixler.set_action(action[0,0])
+        bixler.set_action(action[0])
         # Update bixler state
         with warnings.catch_warnings():
             warnings.filterwarnings('error')
