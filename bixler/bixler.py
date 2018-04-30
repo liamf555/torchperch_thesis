@@ -614,11 +614,37 @@ class Bixler:
             )
 
 if __name__ == '__main__':
+    import sys
+    
     bixler = Bixler()
-
-    print("x,y,z,Roll,Pitch,Yaw,u,v,w,Roll rate,Theta dot,Yaw rate,Sweep,Elevator,Tip")
-
-    for i in np.arange(200):
-        for i in range(1,10):
-            bixler.step(0.01)
-        print( "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}".format(*[elem[0] for elem in bixler.get_state()]) )
+    
+    if len(sys.argv) > 1:
+    
+        def setairstate(airstate):
+            bixler.airspeed = airstate[0]
+            bixler.alpha = airstate[1]
+            bixler.beta = airstate[2]
+            
+            bixler.elev = airstate[4]
+            bixler.sweep = airstate[5]
+            bixler.washout = airstate[6]
+            bixler.tip_stbd = airstate[7]
+            bixler.tip_port = airstate[8]
+            bixler.rudder = airstate[9]
+            
+            bixler.omega_b[0,0] = np.deg2rad(airstate[10])
+            bixler.omega_b[1,0] = np.deg2rad(airstate[ 3])
+            bixler.omega_b[2,0] = np.deg2rad(airstate[11])
+            
+        # Setup the model state
+        setairstate([ float(x) for x in sys.argv[1:] ])
+        
+        print(bixler.get_forces_and_moments())
+    
+    else:
+        print("x,y,z,Roll,Pitch,Yaw,u,v,w,Roll rate,Theta dot,Yaw rate,Sweep,Elevator,Tip")
+        
+        for i in np.arange(200):
+            for i in range(1,10):
+                bixler.step(0.01)
+            print( "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}".format(*[elem[0] for elem in bixler.get_state()]) )
