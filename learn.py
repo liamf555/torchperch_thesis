@@ -34,7 +34,10 @@ sync_rate = 100 # Update target network every 100 iterations
 steps = 0
 
 def select_action(state):
+    """Select an action based on the epsilon-greedy policy"""
+    
     def should_take_max():
+        """Return true if random sample > current epsilon"""
         global steps
         sample = random.random()
         epsilon_threshold = 1.0
@@ -48,14 +51,23 @@ def select_action(state):
         return False
     
     if should_take_max():
-        return model(Variable(torch.from_numpy(state).double())).data.max(1)[1].view(1,1)
+        # Get the current Q-values from the network
+        current_q_matrix = model( Variable(torch.from_numpy(state).double()) )
+        # Get index of the maximum Q value and return it
+        max_action_index = current_q_matrix.data.max(1,keepdim=False)[1]
+        return max_action_index
     else:
-        return torch.LongTensor([[random.randrange(49)]])
+        # Return a random index
+        return torch.LongTensor([random.randrange(49)])
 
 
 def train_on_experience():
+    """Train the network on experience replay"""
     if len(memory) < BATCH_SIZE:
+        # If there aren't enough experiences, skip training
         return
+    
+    # Get a sample set of transitions
     transitions = memory.sample(BATCH_SIZE)
     # Split up transitions list into args & pass to zip
     # zip returns an iterator of tuples:
@@ -68,6 +80,7 @@ def train_on_experience():
         tuple(map(lambda s: s is not None, batch.next_state))
         )
     
+    # Get the set of experiences where next_state is non-terminal
     non_final_next_states = Variable(torch.cat([s for s in batch.next_state
                                                 if s is not None]),
                                      volatile=True)
@@ -75,22 +88,36 @@ def train_on_experience():
     action_batch = Variable(torch.cat(batch.action))
     reward_batch = Variable(torch.cat(batch.reward))
 
+    # Get the currently predicted Q-values for each of the state-action pairs from the experience batch
     state_action_values = model(state_batch).gather(1, action_batch)
     
+    # Set up a tensor of values for the next state
     next_state_values = Variable(torch.zeros(BATCH_SIZE).type(torch.DoubleTensor))
+    # For all non-final states, get the max Q-value over all actions
     next_state_values[non_final_mask] = model(non_final_next_states).max(1)[0]
     
+    # Clear volatile inherited from non_final_next_states. Variable Deprecated??
     next_state_values.volatile = False
     
-    expected_state_action_values = (next_state_values * GAMMA) + reward_batch.double()
+    # Calculate the expected value for the state-action pair from the batch
+    expected_state_action_values = reward_batch.double() + (GAMMA * next_state_values)
     
+    # Effectively corrects against errors for the immediate reward in the batch
+    #  i.e. the error in the Q-value predicted for an action-state and the reward from the environment
+    # The use of next_state_values makes this prone to instability as large changes in next_state_values
+    #  as predicted by the network may mask errors in immediate reward. For bixler case, much of the immediate reward
+    #  is zero so should be correcting its future estimates...
     loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
 
     # Optimize the model
+    # Zero the gradients held in the model
     optimizer.zero_grad()
+    # Propogate the loss backwards to compute the gradients
     loss.backward()
+    # For each parameter in the model, restrict the gradient to limit divergence
     for param in model.parameters():
         param.grad.data.clamp_(-1, 1)
+    # Apply gradients using the optimizer
     optimizer.step()
 
 num_episodes = 500000
@@ -99,21 +126,25 @@ for episode_num in range(num_episodes):
     # Initialise bixler state
     bixler.set_state(initial_state)
     
+    # Set up initial state variables
     state = bixler.get_state()[0:12].T
     next_state = bixler.get_state()[0:12].T
     
+    # Until an episode ends
     for t in count():
+        # Select an action
         action = select_action(state)
         # Apply action to bixler
         bixler.set_action(action[0,0])
-        # Update bixler state
+        # Update bixler state (0.01s steps for stability)
         for i in range(1,10):
-            bixler.step(0.01)
+            bixler.step(0.01) # What if the state decays to NaN some way through the 0.1s superstep?
         
         # Check for NaNs in bixler state
         
-        # Get a reward for the transition
+        # Compute the reward for the new state
         reward = torch.Tensor([0])
+        # If at end of episode, compute reward based on location
         if bixler.is_terminal():
             cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
             cost = np.dot( np.squeeze(bixler.get_state()) ** 2, cost_vector ) / 2500
@@ -125,6 +156,7 @@ for episode_num in range(num_episodes):
         else:
             next_state = bixler.get_state()[0:12].T
 
+        # Add the transition to the replay memory
         memory.push(
             torch.from_numpy(state).double(),
             action,
@@ -132,11 +164,16 @@ for episode_num in range(num_episodes):
             reward
             )
         
+        # Update the stored state for next iteration's experience storage
         state = next_state
         
+        # Train from the experience bank
         train_on_experience()
+        
+        # If at end of episode, print some data and break
         if bixler.is_terminal():
             print('Episode {} completed. {} frames. Reward: {}'.format(episode_num, t, reward[0]))
             break
 
+# At end of training, save the model
 torch.save(model,'qNetwork.pkl')
