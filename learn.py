@@ -69,24 +69,22 @@ def train_on_experience():
     non_final_mask = torch.ByteTensor(
         tuple(map(lambda s: s is not None, batch.next_state))
         )
-    
-    non_final_next_states = Variable(torch.cat([s for s in batch.next_state
-                                                if s is not None]),
-                                     volatile=True)
-    state_batch = Variable(torch.cat(batch.state))
-    action_batch = Variable(torch.cat(batch.action))
-    reward_batch = Variable(torch.cat(batch.reward))
+
+    with torch.no_grad():
+        non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
+    state_batch = torch.cat(batch.state)
+    action_batch = torch.cat(batch.action)
+    reward_batch = torch.cat(batch.reward)
 
     state_action_values = model(state_batch).gather(1, action_batch)
     
     next_state_values = Variable(torch.zeros(BATCH_SIZE).type(torch.DoubleTensor))
     next_state_values[non_final_mask] = model(non_final_next_states).max(1)[0]
-    
-    next_state_values.volatile = False
-    
-    expected_state_action_values = (next_state_values * GAMMA) + reward_batch.double()
-    
-    loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
+
+    with torch.no_grad():
+        expected_state_action_values = (next_state_values * GAMMA) + reward_batch.double()
+
+    loss = F.smooth_l1_loss(state_action_values, expected_state_action_values[:,None])
 
     # Optimize the model
     optimizer.zero_grad()
