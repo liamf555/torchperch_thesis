@@ -3,6 +3,8 @@ import math
 from collections import namedtuple
 from itertools import count
 
+import warnings
+
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -79,14 +81,13 @@ def train_on_experience():
     non_final_mask = torch.ByteTensor(
         tuple(map(lambda s: s is not None, batch.next_state))
         )
-    
     # Get the set of experiences where next_state is non-terminal
-    non_final_next_states = Variable(torch.cat([s for s in batch.next_state
-                                                if s is not None]),
-                                     volatile=True)
-    state_batch = Variable(torch.cat(batch.state))
-    action_batch = Variable(torch.cat(batch.action))
-    reward_batch = Variable(torch.cat(batch.reward))
+
+    with torch.no_grad():
+        non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
+    state_batch = torch.cat(batch.state)
+    action_batch = torch.cat(batch.action)
+    reward_batch = torch.cat(batch.reward)
 
     # Get the currently predicted Q-values for each of the state-action pairs from the experience batch
     state_action_values = model(state_batch).gather(1, action_batch)
@@ -95,19 +96,17 @@ def train_on_experience():
     next_state_values = Variable(torch.zeros(BATCH_SIZE).type(torch.DoubleTensor))
     # For all non-final states, get the max Q-value over all actions
     next_state_values[non_final_mask] = model(non_final_next_states).max(1)[0]
-    
-    # Clear volatile inherited from non_final_next_states. Variable Deprecated??
-    next_state_values.volatile = False
-    
+
     # Calculate the expected value for the state-action pair from the batch
-    expected_state_action_values = reward_batch.double() + (GAMMA * next_state_values)
-    
+    with torch.no_grad():
+        expected_state_action_values = (next_state_values * GAMMA) + reward_batch.double()
+
     # Effectively corrects against errors for the immediate reward in the batch
     #  i.e. the error in the Q-value predicted for an action-state and the reward from the environment
     # The use of next_state_values makes this prone to instability as large changes in next_state_values
     #  as predicted by the network may mask errors in immediate reward. For bixler case, much of the immediate reward
     #  is zero so should be correcting its future estimates...
-    loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
+    loss = F.smooth_l1_loss(state_action_values, expected_state_action_values[:,None])
 
     # Optimize the model
     # Zero the gradients held in the model
@@ -131,21 +130,30 @@ for episode_num in range(num_episodes):
     next_state = bixler.get_state()[0:12].T
     
     # Until an episode ends
+    bixlerNaN = False
+
     for t in count():
         # Select an action
         action = select_action(state)
         # Apply action to bixler
         bixler.set_action(action[0,0])
-        # Update bixler state (0.01s steps for stability)
-        for i in range(1,10):
-            bixler.step(0.01) # What if the state decays to NaN some way through the 0.1s superstep?
-        
+        # Update bixler state
+        with warnings.catch_warnings():
+            warnings.filterwarnings('error')
+            try:
+                for i in range(1,10):
+                    bixler.step(0.01)
+            except Warning as e:
+                    # Set NaN state...
+                    bixlerNaN = True
+
         # Check for NaNs in bixler state
         
         # Compute the reward for the new state
         reward = torch.Tensor([0])
-        # If at end of episode, compute reward based on location
-        if bixler.is_terminal():
+        if bixlerNaN:
+            reward = torch.Tensor([ -1 ])
+        elif bixler.is_terminal():
             cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
             cost = np.dot( np.squeeze(bixler.get_state()) ** 2, cost_vector ) / 2500
             reward = torch.Tensor([ ((1 - cost) * 2) - 1 ])
