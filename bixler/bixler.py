@@ -1,5 +1,6 @@
 #import tensorflow as tf
 import numpy as np
+from scipy import interpolate
 
 accel_gravity = 9.81
 
@@ -59,6 +60,10 @@ class Bixler:
         self.elev_limits = np.rad2deg([-0.1745, 0.1745])
         
         self.update_air_data()
+    
+    def _interpolate(self,x_target, x_data, y_data):
+        f = interpolate.interp1d(x_data,y_data,fill_value="extrapolate")
+        return f(x_target)
     
     def get_state(self):
         return np.concatenate((
@@ -341,8 +346,8 @@ class Bixler:
             C_L0_samples = CL0_over10
             C_Lalpha_samples = CLalpha_over10
 
-        C_L0     = np.interp(self.airspeed, np.flip(airspeeds,0), np.flip(C_L0_samples,0))
-        C_Lalpha = np.interp(self.airspeed, np.flip(airspeeds,0), np.flip(C_Lalpha_samples,0))
+        C_L0     = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_L0_samples,0))
+        C_Lalpha = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_Lalpha_samples,0))
 
         C_Lq = 0.0
 
@@ -350,11 +355,11 @@ class Bixler:
             C_Lq = 0;
         else:
             # scipy.interpolate.RectBivariateSpline?
-            CLq6 = np.interp(self.sweep, sweep_sample_dynamic, CLq_6ms)
-            CLq8 = np.interp(self.sweep, sweep_sample_dynamic, CLq_8ms)
-            CLq10 = np.interp(self.sweep, sweep_sample_dynamic, CLq_10ms)
+            CLq6 = self._interpolate(self.sweep, sweep_sample_dynamic, CLq_6ms)
+            CLq8 = self._interpolate(self.sweep, sweep_sample_dynamic, CLq_8ms)
+            CLq10 = self._interpolate(self.sweep, sweep_sample_dynamic, CLq_10ms)
             CLq_speeds = [CLq6, CLq8, CLq10];		
-            C_Lq = np.interp( self.airspeed, speed_sample_dynamic, CLq_speeds)
+            C_Lq = self._interpolate( self.airspeed, speed_sample_dynamic, CLq_speeds)
 
         return (C_L0, C_Lalpha, C_Lq)
 
@@ -387,8 +392,8 @@ class Bixler:
             C_D0_samples =  CD0_over10
             C_Dalpha_samples = CDalpha_over10
 
-        C_D0     = np.interp(self.airspeed, np.flip(airspeeds,0), np.flip(C_D0_samples,0))
-        C_Dalpha = np.interp(self.airspeed, np.flip(airspeeds,0), np.flip(C_Dalpha_samples,0))
+        C_D0     = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_D0_samples,0))
+        C_Dalpha = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_Dalpha_samples,0))
 
         return (C_D0, C_Dalpha)
 
@@ -419,25 +424,25 @@ class Bixler:
         if (self.alpha + self.tip_port) >= 15:
             C_ldTipPort = 0.0;
         else:
-            CMXportwingtipM10 = np.interp(self.alpha,alpha_sample_wingtip,CMXportwingtip_m10sweep)
-            CMXportwingtip0 = np.interp(self.alpha,alpha_sample_wingtip,CMXportwingtip_0sweep)
-            CMXportwingtip10 = np.interp(self.alpha,alpha_sample_wingtip,CMXportwingtip_10sweep)
-            CMXportwingtip20 = np.interp(self.alpha,alpha_sample_wingtip,CMXportwingtip_20sweep)
+            CMXportwingtipM10 = self._interpolate(self.alpha,alpha_sample_wingtip,CMXportwingtip_m10sweep)
+            CMXportwingtip0 = self._interpolate(self.alpha,alpha_sample_wingtip,CMXportwingtip_0sweep)
+            CMXportwingtip10 = self._interpolate(self.alpha,alpha_sample_wingtip,CMXportwingtip_10sweep)
+            CMXportwingtip20 = self._interpolate(self.alpha,alpha_sample_wingtip,CMXportwingtip_20sweep)
             
             CMXportwingtip_sweeps = [CMXportwingtipM10, CMXportwingtip0, CMXportwingtip10, CMXportwingtip20]
 
-            C_ldTipPort = np.interp(self.sweep,sweep_sample_wingtip,CMXportwingtip_sweeps)
+            C_ldTipPort = self._interpolate(self.sweep,sweep_sample_wingtip,CMXportwingtip_sweeps)
     
         if (self.alpha + self.tip_stbd) >= 15:
             C_ldTipStbd = 0;
         else:
-            CMXstarboardwingtipM10 = np.interp(self.alpha,alpha_sample_wingtip,CMXstarboardwingtip_m10sweep)
-            CMXstarboardwingtip0 = np.interp(self.alpha,alpha_sample_wingtip,CMXstarboardwingtip_0sweep)
-            CMXstarboardwingtip10 = np.interp(self.alpha,alpha_sample_wingtip,CMXstarboardwingtip_10sweep)
-            CMXstarboardwingtip20 = np.interp(self.alpha,alpha_sample_wingtip,CMXstarboardwingtip_20sweep)
+            CMXstarboardwingtipM10 = self._interpolate(self.alpha,alpha_sample_wingtip,CMXstarboardwingtip_m10sweep)
+            CMXstarboardwingtip0 = self._interpolate(self.alpha,alpha_sample_wingtip,CMXstarboardwingtip_0sweep)
+            CMXstarboardwingtip10 = self._interpolate(self.alpha,alpha_sample_wingtip,CMXstarboardwingtip_10sweep)
+            CMXstarboardwingtip20 = self._interpolate(self.alpha,alpha_sample_wingtip,CMXstarboardwingtip_20sweep)
             CMXstarboardwingtip_sweeps = [CMXstarboardwingtipM10, CMXstarboardwingtip0, CMXstarboardwingtip10, CMXstarboardwingtip20]
 
-            C_ldTipStbd = np.interp(self.sweep, sweep_sample_wingtip, CMXstarboardwingtip_sweeps)
+            C_ldTipStbd = self._interpolate(self.sweep, sweep_sample_wingtip, CMXstarboardwingtip_sweeps)
 
         return (C_l0, C_ldTipStbd, C_ldTipPort, C_lp)
 
@@ -506,8 +511,8 @@ class Bixler:
             C_m0_samples = CMY0_over14
             C_malpha_samples = CMYalpha_over14
         
-        C_m0 = np.interp(self.airspeed, np.flip(airspeeds,0), np.flip(C_m0_samples,0))
-        C_malpha = np.interp(self.airspeed, np.flip(airspeeds,0), np.flip(C_malpha_samples,0))
+        C_m0 = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_m0_samples,0))
+        C_malpha = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_malpha_samples,0))
         
         C_melev_samples = []
         
@@ -524,40 +529,40 @@ class Bixler:
         # Override the above...
         C_melev_samples = CMYelev_overall
 
-        C_melev = np.interp(self.alpha,alpha_sample_elev,C_melev_samples)
+        C_melev = self._interpolate(self.alpha,alpha_sample_elev,C_melev_samples)
 
         # Wing Sweep effictiveness coefficient estimation
-        CMYsweep6 = np.interp(self.alpha, alpha_sample_sweep,CMYsweep_6ms)
-        CMYsweep8 = np.interp(self.alpha, alpha_sample_sweep,CMYsweep_8ms)
-        CMYsweep10 = np.interp(self.alpha, alpha_sample_sweep,CMYsweep_10ms)
-        CMYsweep12 = np.interp(self.alpha, alpha_sample_sweep[0:5],CMYsweep_12ms)
-        CMYsweep14 = np.interp(self.alpha, alpha_sample_sweep[0:3],CMYsweep_14ms)
+        CMYsweep6 = self._interpolate(self.alpha, alpha_sample_sweep,CMYsweep_6ms)
+        CMYsweep8 = self._interpolate(self.alpha, alpha_sample_sweep,CMYsweep_8ms)
+        CMYsweep10 = self._interpolate(self.alpha, alpha_sample_sweep,CMYsweep_10ms)
+        CMYsweep12 = self._interpolate(self.alpha, alpha_sample_sweep[0:5],CMYsweep_12ms)
+        CMYsweep14 = self._interpolate(self.alpha, alpha_sample_sweep[0:3],CMYsweep_14ms)
 
         CMYsweep_speeds = [CMYsweep6, CMYsweep8, CMYsweep10, CMYsweep12, CMYsweep14]
-        C_msweep = np.interp(self.airspeed,speed_sample_sweep,CMYsweep_speeds)
+        C_msweep = self._interpolate(self.airspeed,speed_sample_sweep,CMYsweep_speeds)
 
         # Wing Tip Symetric Washout effictiveness coefficient estimation
         C_mwashout = 0.0
         
         if self.sweep < 5:
             if self.washout <= -10:
-                C_mwashout = np.interp(self.alpha, alpha_sample_washout, CMYwashout_0sweep_m30tom10deflec)
+                C_mwashout = self._interpolate(self.alpha, alpha_sample_washout, CMYwashout_0sweep_m30tom10deflec)
             elif self.washout > -10:
-                C_mwashout = np.interp(self.alpha, alpha_sample_washout[3:7], CMYwashout_0sweep_m10to5deflec)
+                C_mwashout = self._interpolate(self.alpha, alpha_sample_washout[3:7], CMYwashout_0sweep_m10to5deflec)
         elif self.sweep >= 5:
-            CMYwashout10 = np.interp(self.alpha, alpha_sample_washout, CMYwashout_10sweep)
-            CMYwashout20 = np.interp(self.alpha, alpha_sample_washout, CMYwashout_20sweep)
-            CMYwashout30 = np.interp(self.alpha, alpha_sample_washout, CMYwashout_30sweep)
+            CMYwashout10 = self._interpolate(self.alpha, alpha_sample_washout, CMYwashout_10sweep)
+            CMYwashout20 = self._interpolate(self.alpha, alpha_sample_washout, CMYwashout_20sweep)
+            CMYwashout30 = self._interpolate(self.alpha, alpha_sample_washout, CMYwashout_30sweep)
             CMYwashout_sweeps = [CMYwashout10, CMYwashout20, CMYwashout30]
 
-            C_mwashout = np.interp(self.sweep, sweep_sample_washout, CMYwashout_sweeps)
+            C_mwashout = self._interpolate(self.sweep, sweep_sample_washout, CMYwashout_sweeps)
 
         # Dynamic Pitching Moment Coefficient estimation
-        CMYq6 = np.interp(self.sweep,sweep_sample_dynamic,CMYq_6ms)
-        CMYq8 = np.interp(self.sweep,sweep_sample_dynamic,CMYq_8ms)
-        CMYq10 = np.interp(self.sweep,sweep_sample_dynamic,CMYq_10ms)
+        CMYq6 = self._interpolate(self.sweep,sweep_sample_dynamic,CMYq_6ms)
+        CMYq8 = self._interpolate(self.sweep,sweep_sample_dynamic,CMYq_8ms)
+        CMYq10 = self._interpolate(self.sweep,sweep_sample_dynamic,CMYq_10ms)
         CMYq_speeds = [CMYq6, CMYq8, CMYq10]
-        C_mq = np.interp(self.airspeed,speed_sample_dynamic,CMYq_speeds)
+        C_mq = self._interpolate(self.airspeed,speed_sample_dynamic,CMYq_speeds)
 
         return (C_m0, C_malpha, C_melev, C_msweep, C_mwashout, C_mq)
 
@@ -583,9 +588,10 @@ class Bixler:
         elif self.rudder <= -10:
             C_nrudder_samples = CMZrudd_m10tom20
 
-        C_nrudder = np.interp(self.alpha, alpha_sample_rudd, C_nrudder_samples)
+        C_nrudder = self._interpolate(self.alpha, alpha_sample_rudd, C_nrudder_samples)
 
-        C_nr = -0.05 # Eye average from Stanford student projects. Units? Probably per radian...
+        #C_nr = -0.05 # Eye average from Stanford student projects. Units? Probably per radian...
+        C_nr = -0.002 # From JAVA_MODEL. Per degree
 
         return (C_n0, C_nrudder, C_nr)
 
