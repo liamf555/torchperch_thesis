@@ -79,7 +79,11 @@ class Bixler:
         self.tip_port      = state[0,14]
     
     def is_terminal(self):
+        if self.orientation_e[1,0] > np.pi / 2:
+            return True
         if self.position_e[2,0] > 0:
+            return True
+        if self.position_e[0,0] > 10:
             return True
         return False
     
