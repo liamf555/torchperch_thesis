@@ -83,13 +83,14 @@ class Bixler:
             ), axis=0)
     
     def set_state(self,state):
-        self.position_e    = np.array( [state[0,0:3]] ).T
-        self.orientation_e = np.array( [state[0,3:6]] ).T
-        self.velocity_b    = np.array( [state[0,6:9]] ).T
-        self.omega_b       = np.array( [state[0,9:12]] ).T
-        self.sweep         = state[0,12]
-        self.elev          = state[0,13]
-        self.tip_port      = state[0,14]
+        """Takes a row vector representing the state and stores it in local variables"""
+        self.position_e    = np.array( [state[0,0:3]], dtype='float64' ).T
+        self.orientation_e = np.array( [state[0,3:6]], dtype='float64' ).T
+        self.velocity_b    = np.array( [state[0,6:9]], dtype='float64' ).T
+        self.omega_b       = np.array( [state[0,9:12]], dtype='float64' ).T
+        self.sweep         = np.float64(state[0,12])
+        self.elev          = np.float64(state[0,13])
+        self.tip_port      = np.float64(state[0,14])
     
     def is_terminal(self):
         if self.orientation_e[1,0] > np.pi / 2:
