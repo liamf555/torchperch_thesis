@@ -161,7 +161,7 @@ def train_on_experience():
     # For each parameter in the model, restrict the gradient to limit divergence
     for param in model.parameters():
         param.grad.data.clamp_(-1, 1)
-        param.data -= 0.0025 * param.grad.data
+        param.data -= 0.005 * param.grad.data
     # Apply gradients using the optimizer
     #optimizer.step()
     
@@ -169,7 +169,7 @@ def train_on_experience():
 
 num_episodes = 5000
 
-max_frames = 50000
+max_frames = 1000000
 total_frames = 0
 
 episode_num = 0
