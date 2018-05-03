@@ -25,9 +25,12 @@ bixler = Bixler()
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 memory = ReplayMemory(100000,Transition)
-#optimizer = torch.optim.RMSprop(model.parameters(), lr = 0.0025)
+# RMSprop proved to be unstable
+#  Divides gradients by average gradient, if gradients are v. small, results in blow up
+#  Provides an epsilon term to improve stability. Default is 1e-8, may need to increase it...
+#optimizer = torch.optim.RMSprop(model.parameters(), lr = 0.0025, eps=1e-2)
 #optimizer = torch.optim.Adam(model.parameters(), lr = 0.0025)
-optimizer = torch.optim.Adam(model.parameters(), lr = 0.0025, amsgrad=True)
+#optimizer = torch.optim.Adam(model.parameters(), lr = 0.0025, amsgrad=True)
 
 EPS_START = 1.0
 EPS_END   = 0.1
@@ -128,6 +131,7 @@ def train_on_experience():
     # Get the set of experiences where next_state is non-terminal
 
     with torch.no_grad():
+        # Edge case where batch contains only final states stalls here...
         non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
     state_batch = torch.cat(batch.state)
     action_batch = torch.cat(batch.action)
