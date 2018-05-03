@@ -213,9 +213,12 @@ while total_frames < max_frames:
         if bixlerNaN:
             reward = torch.Tensor([ -1 ])
         elif bixler.is_terminal():
-            cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
-            cost = np.dot( np.squeeze(bixler.get_state()) ** 2, cost_vector ) / 2500
-            reward = torch.Tensor([ ((1 - cost) * 2) - 1 ])
+            if bixler.is_out_of_bounds():
+                reward = torch.Tensor([ -1 ])
+            else:
+                cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
+                cost = np.dot( np.squeeze(bixler.get_state()) ** 2, cost_vector ) / 2500
+                reward = torch.Tensor([ ((1 - cost) * 2) - 1 ])
         
         # Observe the new state
         if bixler.is_terminal():
