@@ -28,7 +28,7 @@ memory = ReplayMemory(100000,Transition)
 # RMSprop proved to be unstable
 #  Divides gradients by average gradient, if gradients are v. small, results in blow up
 #  Provides an epsilon term to improve stability. Default is 1e-8, may need to increase it...
-#optimizer = torch.optim.RMSprop(model.parameters(), lr = 0.0025, eps=1e-2)
+optimizer = torch.optim.RMSprop(model.parameters(), lr = 0.0025, eps=1e-2)
 #optimizer = torch.optim.Adam(model.parameters(), lr = 0.0025)
 #optimizer = torch.optim.Adam(model.parameters(), lr = 0.0025, amsgrad=True)
 
@@ -173,10 +173,12 @@ def train_on_experience():
 
 num_episodes = 5000
 
-max_frames = 1000000
+max_frames = 500000
 total_frames = 0
 
 episode_num = 0
+
+logfile = open('learning_log.txt','w')
 
 #for episode_num in range(num_episodes):
 while total_frames < max_frames:
@@ -244,7 +246,13 @@ while total_frames < max_frames:
         if bixler.is_terminal():
             total_frames = total_frames + frame_num
             
-            print('T: {:4}({:2}) F: {:7} R: {:8.5f} Q: {:8.5f} E: {:8.5f} L: {:8.5f}'.format(episode_num, frame_num, total_frames, reward[0], q_value[0], get_epsilon(total_frames,0), loss))
+            logString = 'T: {:4}({:2}) F: {:7} R: {:8.5f} Q: {:8.5f} E: {:8.5f} L: {:8.5f}'.format(episode_num, frame_num, total_frames, reward[0], q_value[0], get_epsilon(total_frames,0), loss)
+            logfile.write(logString)
+            print(logString)
+            
+            if (episode_num % 1000) == 0:
+                # Save the network every 1000 episodes
+                torch.save(model,'networks/qNetwork_EP{}.pkl'.format(episode_num))
             break
 
 # At end of training, save the model
