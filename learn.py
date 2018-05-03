@@ -39,24 +39,35 @@ sync_rate = 100 # Update target network every 100 iterations ( NOT_IMPLEMENTED )
 
 steps = 0
 
+def interp_linear(current,initial,final,start,stop):
+    if current < start:
+        return initial
+    if current > stop:
+        return final
+    m = (initial - final) / (start - stop)
+    c = initial - m*start
+    return m*current + c
+
 def get_epsilon(t_global,t_local):
     k_initial = 1
     k_final = 0.05
-    k_start = 1000
-    k_stop = 10000
+    k_start = 10000
+    k_stop = 100000
     def get_k(t_global):
-        if t_global < k_start:
-            return k_initial
-        if t_global > k_stop:
-            return k_final
-        m = (k_initial - k_final) / (k_start - k_stop)
-        c = k_initial - m*k_start
-        return m*t_global + c
+        return interp_linear(t_global,k_initial,k_final,k_start,k_stop)
+    
+    j_initial = 1
+    j_final = 0
+    j_start = 80000
+    j_stop = 300000
+    def get_j(t_global):
+        return interp_linear(t_global,j_initial,j_final,j_start,j_stop)
     
     average_length = 35 # Average length of episode
     x = t_local / average_length
     k = get_k(t_global)
-    return (1-k)*x**2 + k
+    j = get_j(t_global)
+    return (1-k)*(j*x)**2 + k
 
 #epsilon_threshold = 1.0
 #if steps < 10000:
