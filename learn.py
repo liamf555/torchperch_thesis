@@ -247,7 +247,7 @@ while total_frames < max_frames:
             total_frames = total_frames + frame_num
             
             logString = 'T: {:4}({:2}) F: {:7} R: {:8.5f} Q: {:8.5f} E: {:8.5f} L: {:8.5f}'.format(episode_num, frame_num, total_frames, reward[0], q_value[0], get_epsilon(total_frames,0), loss)
-            logfile.write(logString)
+            logfile.write(logString + '\n')
             print(logString)
             
             if (episode_num % 1000) == 0:
