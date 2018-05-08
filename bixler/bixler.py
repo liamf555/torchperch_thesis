@@ -93,11 +93,20 @@ class Bixler:
         self.tip_port      = np.float64(state[0,14])
     
     def is_terminal(self):
-        if self.orientation_e[1,0] > np.pi / 2:
-            return True
         if self.position_e[2,0] > 0:
             return True
-        if self.position_e[0,0] > 10:
+        return self.is_out_of_bounds()
+    
+    def is_out_of_bounds(self):
+        def is_in_range(x,lower,upper):
+            return lower < x and x < upper
+        if self.orientation_e[1,0] > np.pi / 2:
+            return True
+        if not is_in_range(self.position_e[0,0],-50,10):
+            return True
+        if not is_in_range(self.position_e[1,0],-2,2):
+            return True
+        if not is_in_range(self.position_e[2,0],-5,1):
             return True
         return False
     
