@@ -16,8 +16,6 @@ from network import QNetwork
 from bixler import Bixler
 from replay import ReplayMemory
 
-initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]])
-
 model = QNetwork()
 #for param in model.parameters():
 #    param = random.uniform(-0.1,0.1)
@@ -41,6 +39,18 @@ GAMMA = 0.99
 sync_rate = 100 # Update target network every 100 iterations ( NOT_IMPLEMENTED )
 
 steps = 0
+
+def get_initial_state():
+    # Set the default initial state
+    initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]])
+    # Add noise in x,z to the starting position
+    start_shift = np.array([[ np.random.rand(), 0, np.random.rand() ]])
+    # Scale for +- 1m in each
+    start_shift = (start_shift - 0.5) * 1
+    initial_state += np.concatenate((
+        start_shift,
+        np.zeros((1,12))
+        ), axis=1)
 
 def interp_linear(current,initial,final,start,stop):
     if current < start:
@@ -184,7 +194,7 @@ logfile = open('learning_log.txt','w')
 while total_frames < max_frames:
     episode_num = episode_num + 1
     # Initialise bixler state
-    bixler.set_state(initial_state)
+    bixler.set_state(get_initial_state())
     
     # Set up initial state variables
     state = bixler.get_state()[0:12].T
