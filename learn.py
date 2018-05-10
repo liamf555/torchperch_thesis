@@ -42,12 +42,12 @@ steps = 0
 
 def get_initial_state():
     # Set the default initial state
-    initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]])
+    initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype='float64')
     # Add noise in x,z to the starting position
     start_shift = np.array([[ np.random.rand(), 0, np.random.rand() ]])
     # Scale for +- 1m in each
     start_shift = (start_shift - 0.5) * 1
-    initial_state += np.concatenate((
+    return initial_state + np.concatenate((
         start_shift,
         np.zeros((1,12))
         ), axis=1)
