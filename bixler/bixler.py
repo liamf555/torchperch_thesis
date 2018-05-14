@@ -106,7 +106,7 @@ class Bixler:
             return True
         if not is_in_range(self.position_e[1,0],-2,2):
             return True
-        if not is_in_range(self.position_e[2,0],-5,1):
+        if not is_in_range(self.position_e[2,0],-10,1):
             return True
         return False
     
