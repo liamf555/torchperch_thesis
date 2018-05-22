@@ -48,7 +48,7 @@ class Bixler:
         self.tip_port = 0.0 # (deg)
         self.tip_stbd = 0.0 # (deg)
         self.washout  = 0.0 # (deg)
-        self.throttle = 0.0
+        self.throttle = 0.0 # (N)
         
         # Air data
         self.alpha    = 0.0 # (deg)
@@ -91,24 +91,6 @@ class Bixler:
         self.sweep         = np.float64(state[0,12])
         self.elev          = np.float64(state[0,13])
         self.tip_port      = np.float64(state[0,14])
-    
-    def is_terminal(self):
-        if self.position_e[2,0] > 0:
-            return True
-        return self.is_out_of_bounds()
-    
-    def is_out_of_bounds(self):
-        def is_in_range(x,lower,upper):
-            return lower < x and x < upper
-        if self.orientation_e[1,0] > np.pi / 2:
-            return True
-        if not is_in_range(self.position_e[0,0],-50,10):
-            return True
-        if not is_in_range(self.position_e[1,0],-2,2):
-            return True
-        if not is_in_range(self.position_e[2,0],-10,1):
-            return True
-        return False
     
     def set_action(self,action_index):
         elev_rate_idx = int(action_index) // 7
@@ -233,8 +215,8 @@ class Bixler:
         aeroforces_b = np.matmul(self.dcm_wind2body, aeroforces_w)
         # Rotate weight into the body frame
         weight_b = np.matmul(self.dcm_earth2body, self.weight)
-        # Generate a thrust force
-        thrust_b = np.array([[self.throttle*10],[0],[0]])
+        # Generate a thrust force (Assumes directly on x_body)
+        thrust_b = np.array([[self.throttle],[0],[0]])
         # Get sum of forces on in body frame
         force_b = aeroforces_b + weight_b + thrust_b
         # Get acceleration of body

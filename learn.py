@@ -40,6 +40,24 @@ sync_rate = 100 # Update target network every 100 iterations ( NOT_IMPLEMENTED )
 
 steps = 0
 
+def is_out_of_bounds(bixler):
+    def is_in_range(x,lower,upper):
+        return lower < x and x < upper
+    if bixler.orientation_e[1,0] > np.pi / 2:
+        return True
+    if not is_in_range(bixler.position_e[0,0],-50,10):
+        return True
+    if not is_in_range(bixler.position_e[1,0],-2,2):
+        return True
+    if not is_in_range(bixler.position_e[2,0],-10,1):
+        return True
+    return False
+
+def is_terminal(bixler):
+    if bixler.position_e[2,0] > 0:
+        return True
+    return is_out_of_bounds(bixler)
+
 def get_initial_state():
     # Set the default initial state
     initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype='float64')
@@ -203,7 +221,12 @@ while total_frames < max_frames:
     # Until an episode ends
     bixlerNaN = False
 
+    episodeHistory = []
+
     for frame_num in count():
+        # Save the state at this point
+        episodeHistory.push(bixler.get_state())
+        
         # Select an action
         action, q_value = select_action(normalize_state(state),total_frames,frame_num)
         # Apply action to bixler
@@ -224,8 +247,8 @@ while total_frames < max_frames:
         reward = torch.Tensor([0])
         if bixlerNaN:
             reward = torch.Tensor([ -1 ])
-        elif bixler.is_terminal():
-            if bixler.is_out_of_bounds():
+        elif is_terminal(bixler):
+            if is_out_of_bounds(bixler):
                 reward = torch.Tensor([ -1 ])
             else:
                 cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
@@ -233,7 +256,7 @@ while total_frames < max_frames:
                 reward = torch.Tensor([ ((1 - cost) * 2) - 1 ])
         
         # Observe the new state
-        if bixler.is_terminal():
+        if is_terminal(bixler):
             next_state = None
         else:
             next_state = bixler.get_state()[0:12].T
@@ -253,7 +276,7 @@ while total_frames < max_frames:
         loss = train_on_experience()
         
         # If at end of episode, print some data and break
-        if bixler.is_terminal():
+        if is_terminal(bixler):
             total_frames = total_frames + frame_num
             
             logString = 'T: {:4}({:2}) F: {:7} R: {:8.5f} Q: {:8.5f} E: {:8.5f} L: {:8.5f}'.format(episode_num, frame_num, total_frames, reward[0], q_value[0], get_epsilon(total_frames,0), loss)
