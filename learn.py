@@ -30,9 +30,6 @@ optimizer = torch.optim.RMSprop(model.parameters(), lr = 0.0025, eps=1e-2)
 #optimizer = torch.optim.Adam(model.parameters(), lr = 0.0025)
 #optimizer = torch.optim.Adam(model.parameters(), lr = 0.0025, amsgrad=True)
 
-EPS_START = 1.0
-EPS_END   = 0.1
-EPS_DECAY = 1000000 - 10000
 BATCH_SIZE = 32
 GAMMA = 0.99
 
@@ -43,32 +40,38 @@ steps = 0
 def is_out_of_bounds(bixler):
     def is_in_range(x,lower,upper):
         return lower < x and x < upper
-    if bixler.orientation_e[1,0] > np.pi / 2:
-        return True
+    # Check x remains sensible
     if not is_in_range(bixler.position_e[0,0],-50,10):
         return True
+    # Check y remains sensible
     if not is_in_range(bixler.position_e[1,0],-2,2):
         return True
-    if not is_in_range(bixler.position_e[2,0],-10,1):
+    # Check z remains sensible (i.e. not crashed)
+    if not is_in_range(bixler.position_e[2,0],-10,0):
+        return True
+    # Check u remains sensible, > 0
+    if not is_in_range(bixler.velocity_b[0,0],0,20):
         return True
     return False
 
 def is_terminal(bixler):
-    if bixler.position_e[2,0] > 0:
+    # Terminal point is reaching x=0 wall
+    if bixler.position_e[0,0] > 0:
         return True
     return is_out_of_bounds(bixler)
 
 def get_initial_state():
     # Set the default initial state
-    initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype='float64')
+    initial_state = np.array([[-20,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype='float64')
     # Add noise in x,z to the starting position
-    start_shift = np.array([[ np.random.rand(), 0, np.random.rand() ]])
+    #start_shift = np.array([[ np.random.rand(), 0, np.random.rand() ]])
     # Scale for +- 1m in each
-    start_shift = (start_shift - 0.5) * 1
-    return initial_state + np.concatenate((
-        start_shift,
-        np.zeros((1,12))
-        ), axis=1)
+    #start_shift = (start_shift - 0.5) * 1
+    #return initial_state + np.concatenate((
+    #    start_shift,
+    #    np.zeros((1,12))
+    #    ), axis=1)
+    return initial_state
 
 def interp_linear(current,initial,final,start,stop):
     if current < start:
@@ -99,12 +102,6 @@ def get_epsilon(t_global,t_local):
     k = get_k(t_global)
     j = get_j(t_global)
     return (1-k)*(j*x)**2 + k
-
-#epsilon_threshold = 1.0
-#if steps < 10000:
-#    epsilon_threshold = EPS_START
-#else:
-#    epsilon_threshold = EPS_END + (EPS_START - EPS_END) * math.exp( -1.0 * (steps-10000) / EPS_DECAY )
 
 
 def select_action(state,t_global,t_local):
@@ -225,7 +222,7 @@ while total_frames < max_frames:
 
     for frame_num in count():
         # Save the state at this point
-        episodeHistory.push(bixler.get_state())
+        episodeHistory.append(bixler.get_state())
         
         # Select an action
         action, q_value = select_action(normalize_state(state),total_frames,frame_num)
@@ -251,9 +248,14 @@ while total_frames < max_frames:
             if is_out_of_bounds(bixler):
                 reward = torch.Tensor([ -1 ])
             else:
+                target_state = np.array([[0,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype='float64')
                 cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
-                cost = np.dot( np.squeeze(bixler.get_state()) ** 2, cost_vector ) / 2500
-                reward = torch.Tensor([ ((1 - cost) * 2) - 1 ])
+                # Penalise deviation from target state
+                cost = np.dot( (np.squeeze(bixler.get_state()) - target_state) ** 2, cost_vector ) / 2500
+                # Add reward for maximum theta over the episode
+                episodeHistory = np.array(episodeHistory)
+                max_theta = np.max(episodeHistory[:,4,:])
+                reward = torch.Tensor( ((1 - cost) * 2) - 1 + max_theta/(np.pi/2))
         
         # Observe the new state
         if is_terminal(bixler):
