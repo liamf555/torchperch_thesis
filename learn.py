@@ -9,13 +9,16 @@ import torch.nn.functional as F
 import numpy as np
 
 from network import QNetwork
-from bixler import Bixler
 from replay import ReplayMemory
+
+from controllers.sweep_throttle import Bixler_SweepThrottle
+import scenarios
 
 model = QNetwork()
 #for param in model.parameters():
 #    param = random.uniform(-0.1,0.1)
-bixler = Bixler()
+scenario = scenarios.cobra
+bixler = scenario.wrap_class(Bixler_SweepThrottle)()
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 memory = ReplayMemory(100000,Transition)
@@ -32,42 +35,6 @@ GAMMA = 0.99
 sync_rate = 100 # Update target network every 100 iterations ( NOT_IMPLEMENTED )
 
 steps = 0
-
-def is_out_of_bounds(bixler):
-    def is_in_range(x,lower,upper):
-        return lower < x and x < upper
-    # Check x remains sensible
-    if not is_in_range(bixler.position_e[0,0],-50,10):
-        return True
-    # Check y remains sensible
-    if not is_in_range(bixler.position_e[1,0],-2,2):
-        return True
-    # Check z remains sensible (i.e. not crashed)
-    if not is_in_range(bixler.position_e[2,0],-10,0):
-        return True
-    # Check u remains sensible, > 0
-    if not is_in_range(bixler.velocity_b[0,0],0,20):
-        return True
-    return False
-
-def is_terminal(bixler):
-    # Terminal point is reaching x=0 wall
-    if bixler.position_e[0,0] > 0:
-        return True
-    return is_out_of_bounds(bixler)
-
-def get_initial_state():
-    # Set the default initial state
-    initial_state = np.array([[-20,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype='float64')
-    # Add noise in x,z to the starting position
-    #start_shift = np.array([[ np.random.rand(), 0, np.random.rand() ]])
-    # Scale for +- 1m in each
-    #start_shift = (start_shift - 0.5) * 1
-    #return initial_state + np.concatenate((
-    #    start_shift,
-    #    np.zeros((1,12))
-    #    ), axis=1)
-    return initial_state
 
 def interp_linear(current,initial,final,start,stop):
     if current < start:
@@ -124,12 +91,6 @@ def select_action(state,t_global,t_local):
         #print("Taking random: {}".format(action_index))
     
     return action_index, current_q_matrix[:,action_index[0]]
-
-def normalize_state(state):
-    pb2 = np.pi/2
-    mins = np.array([ -50, -2, -10, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2 ])
-    maxs = np.array([  10,  2,   1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2 ])
-    return (state-mins)/(maxs-mins)
 
 def train_on_experience():
     """Train the network on experience replay"""
@@ -205,7 +166,7 @@ logfile = open('learning_log.txt','w')
 while total_frames < max_frames:
     episode_num = episode_num + 1
     # Initialise bixler state
-    bixler.set_state(get_initial_state())
+    bixler.reset_scenario()
     
     # Set up initial state variables
     state = bixler.get_state()[0:12].T
@@ -221,13 +182,12 @@ while total_frames < max_frames:
         episodeHistory.append(bixler.get_state())
         
         # Select an action
-        action, q_value = select_action(normalize_state(state),total_frames,frame_num)
+        action, q_value = select_action(scenario.normalize_state(state),total_frames,frame_num)
         # Apply action to bixler
         bixler.set_action(action[0])
         # Update bixler state
         try:
-            for i in range(10):
-                bixler.step(0.01)
+            bixler.step(0.1)
         except FloatingPointError as e:
             # Set NaN state...
             bixlerNaN = True
@@ -238,8 +198,9 @@ while total_frames < max_frames:
         reward = torch.Tensor([0])
         if bixlerNaN:
             reward = torch.Tensor([ -1 ])
-        elif is_terminal(bixler):
-            if is_out_of_bounds(bixler):
+            sys.exit()
+        elif bixler.is_terminal():
+            if bixler.is_out_of_bounds():
                 reward = torch.Tensor([ -1 ])
             else:
                 target_state = np.array([[0,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype='float64')
@@ -252,16 +213,16 @@ while total_frames < max_frames:
                 reward = torch.Tensor( ((1 - cost) * 2) - 1 + max_theta/(np.pi/2))
         
         # Observe the new state
-        if is_terminal(bixler):
+        if bixler.is_terminal():
             next_state = None
         else:
             next_state = bixler.get_state()[0:12].T
 
         # Add the transition to the replay memory
         memory.push(
-            torch.from_numpy(normalize_state(state)).double(),
+            torch.from_numpy(scenario.normalize_state(state)).double(),
             action,
-            torch.from_numpy(normalize_state(next_state)).double() if next_state is not None else None,
+            torch.from_numpy(scenario.normalize_state(next_state)).double() if next_state is not None else None,
             reward
             )
         
@@ -272,7 +233,7 @@ while total_frames < max_frames:
         loss = train_on_experience()
         
         # If at end of episode, print some data and break
-        if is_terminal(bixler):
+        if bixler.is_terminal() or bixlerNaN:
             total_frames = total_frames + frame_num
             
             logString = 'T: {:4}({:2}) F: {:7} R: {:8.5f} Q: {:8.5f} E: {:8.5f} L: {:8.5f}'.format(episode_num, frame_num, total_frames, reward[0], q_value[0], get_epsilon(total_frames,0), loss)
@@ -281,8 +242,8 @@ while total_frames < max_frames:
             
             if (episode_num % 1000) == 0:
                 # Save the network every 1000 episodes
-                torch.save(model,'networks/qNetwork_EP{}.pkl'.format(episode_num))
+                torch.save(model,'networks_throttle/qNetwork_EP{}.pkl'.format(episode_num))
             break
 
 # At end of training, save the model
-torch.save(model,'qNetwork.pkl')
+torch.save(model,'qNetwork_throttle.pkl')
