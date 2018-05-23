@@ -11,14 +11,48 @@ import numpy as np
 from network import QNetwork
 from replay import ReplayMemory
 
-from controllers.sweep_throttle import Bixler_SweepThrottle
+import controllers
 import scenarios
+
+import argparse, sys, os
+
+def check_controller(controller_name):
+    if hasattr(controllers,controller_name):
+        return getattr(controllers,controller_name)
+    else:
+        msg = "Could not find controller {}".format(controller_name)
+        raise argparse.ArgumentTypeError(msg)
+
+def check_scenario(scenario_name):
+    if hasattr(scenarios,scenario_name):
+        return getattr(scenarios,scenario_name)
+    else:
+        msg = "Could not find scenario {}".format(scenario_name)
+        raise argparse.ArgumentTypeError(msg)
+
+def check_folder(folder_name):
+    if os.path.exists(folder_name):
+        if os.path.isdir(folder_name):
+            return folder_name
+        else:
+            msg = "File {} exists and is not a directory".format(folder_name)
+            raise argparse.ArgumentTypeError(msg)
+    os.mkdir(folder_name)
+    return folder_name
+
+parser = argparse.ArgumentParser(description='Q-Learning for UAV manoeuvres in PyTorch')
+parser.add_argument('--controller', nargs='?', type=check_controller)
+parser.add_argument('--scenario', nargs='?', type=check_scenario)
+parser.add_argument('--logfile', nargs='?', type=argparse.FileType('w'))
+parser.add_argument('--networks', nargs='?', type=check_folder )
+args = parser.parse_args()
+
 
 model = QNetwork()
 #for param in model.parameters():
 #    param = random.uniform(-0.1,0.1)
-scenario = scenarios.cobra
-bixler = scenario.wrap_class(Bixler_SweepThrottle)()
+scenario = args.scenario
+bixler = scenario.wrap_class(args.controller)()
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 memory = ReplayMemory(100000,Transition)
@@ -160,7 +194,7 @@ total_frames = 0
 
 episode_num = 0
 
-logfile = open('learning_log.txt','w')
+logfile = args.logfile
 
 #for episode_num in range(num_episodes):
 while total_frames < max_frames:
@@ -225,7 +259,7 @@ while total_frames < max_frames:
             
             if (episode_num % 1000) == 0:
                 # Save the network every 1000 episodes
-                torch.save(model,'networks_throttle/qNetwork_EP{}.pkl'.format(episode_num))
+                torch.save(model,'{}/qNetwork_EP{}.pkl'.format(args.networks,episode_num))
             break
 
 # At end of training, save the model
