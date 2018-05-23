@@ -2,20 +2,25 @@ import torch, sys, numpy as np
 
 import matplotlib.pyplot as plt
 
-from bixler import Bixler
+from controllers.sweep_elevator import Bixler_SweepElevator
 
-initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]])
+import scenarios
 
-model = torch.load(sys.argv[1])
-bixler = Bixler()
+scenario = None
+if hasattr(scenarios,sys.argv[1]):
+    scenario = getattr(scenarios, sys.argv[1])
+else:
+    scenario = scenarios.perching
 
-def normalize_state(state):
-    pb2 = np.pi/2
-    mins = np.array([ -50, -2, -5, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2 ])
-    maxs = np.array([  10,  2,  1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2 ])
-    return (state-mins)/(maxs-mins)
+bixler = scenario.wrap_class(Bixler_SweepElevator,random_starts=False)()
 
-bixler.set_state(initial_state)
+networkFile = sys.argv[1]
+if len(sys.argv) > 2:
+    networkFile = sys.argv[2]
+
+model = torch.load(networkFile)
+
+bixler.reset_scenario()
 
 state_history = []
 
@@ -25,13 +30,12 @@ while not bixler.is_terminal():
     print( ','.join(map(str,bixler_state[:,0])) )
     state_history.append(bixler_state)
 
-    q_matrix = model( torch.from_numpy(normalize_state(bixler_state[0:12].T)).double() )
+    q_matrix = model( torch.from_numpy(scenario.normalize_state(bixler_state[0:12].T)).double() )
     max_action = q_matrix.data.max(1,keepdim=False)[1]
     
     bixler.set_action(max_action.item())
     
-    for i in range(1,10):
-        bixler.step(0.01)
+    bixler.step(0.1)
 
 states = np.array(state_history)
 
