@@ -2,6 +2,9 @@
 import numpy as np
 from scipy import interpolate
 
+# Force numpy to raise FloatingPointError for overflow
+np.seterr(all='raise')
+
 accel_gravity = 9.81 # m.s^-2
 
 class Bixler:

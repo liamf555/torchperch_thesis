@@ -3,11 +3,7 @@ import math
 from collections import namedtuple
 from itertools import count
 
-import warnings
-
 import torch
-import torch.nn as nn
-from torch.autograd import Variable
 import torch.nn.functional as F
 
 import numpy as np
@@ -229,14 +225,12 @@ while total_frames < max_frames:
         # Apply action to bixler
         bixler.set_action(action[0])
         # Update bixler state
-        with warnings.catch_warnings():
-            warnings.filterwarnings('error')
-            try:
-                for i in range(1,10):
-                    bixler.step(0.01)
-            except Warning as e:
-                    # Set NaN state...
-                    bixlerNaN = True
+        try:
+            for i in range(10):
+                bixler.step(0.01)
+        except FloatingPointError as e:
+            # Set NaN state...
+            bixlerNaN = True
 
         # Check for NaNs in bixler state
         
