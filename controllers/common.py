@@ -1,5 +1,5 @@
 import bixler
-import warnings
+import math
 
 class BixlerController(bixler.Bixler):
     def __init__(self,noise=0.0):
@@ -11,7 +11,7 @@ class BixlerController(bixler.Bixler):
         step_fraction, whole_steps = math.modf( steptime / base_steptime )
         try:
             for i in range(int(whole_steps)):
-                self.step(base_steptime)
-            self.step(base_steptime*step_fraction)
+                super().step(base_steptime)
+            super().step(base_steptime*step_fraction)
         except Exception as e:
             raise
