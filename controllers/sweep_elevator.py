@@ -24,11 +24,6 @@ class Bixler_SweepElevator(common.BixlerController):
         self.elev_rate =  self.elev_rates[elev_rate_idx]
         self.sweep_rate = self.sweep_rates[sweep_rate_idx]
     
-    def step(self,steptime):
-        # Update control surface positions
-        self.update_control_surfaces(steptime)
-        super().step(steptime)
-    
     def update_control_surfaces(self,steptime):
         self.sweep = np.clip(self.sweep + self.sweep_rate * steptime, self.sweep_limits[0], self.sweep_limits[1])
         self.elev = np.clip(self.elev + self.elev_rate * steptime, self.elev_limits[0], self.elev_limits[1])
