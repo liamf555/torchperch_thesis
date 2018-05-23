@@ -41,18 +41,25 @@ def check_folder(folder_name):
     return folder_name
 
 parser = argparse.ArgumentParser(description='Q-Learning for UAV manoeuvres in PyTorch')
-parser.add_argument('--controller', nargs='?', type=check_controller)
-parser.add_argument('--scenario', nargs='?', type=check_scenario)
-parser.add_argument('--logfile', nargs='?', type=argparse.FileType('w'))
-parser.add_argument('--networks', nargs='?', type=check_folder )
+parser.add_argument('--controller', nargs=1, type=check_controller, default='sweep_elevator')
+parser.add_argument('--scenario', nargs=1, type=check_scenario, default='perching')
+parser.add_argument('--scenario-opts', nargs=1, type=str, default='')
+parser.add_argument('--logfile', nargs=1, type=argparse.FileType('w'), default='learning_log.txt')
+parser.add_argument('--networks', nargs=1, type=check_folder, default='networks' )
 args = parser.parse_args()
-
 
 model = QNetwork()
 #for param in model.parameters():
 #    param = random.uniform(-0.1,0.1)
-scenario = args.scenario
-bixler = scenario.wrap_class(args.controller)()
+scenario = args.scenario[0]
+
+scenario_args = None
+if len(args.scenario_opts) is not 0:
+    scenario_args = scenario.parser.parse_args(args.scenario_opts[0].split(' '))
+else:
+    scenario_args = scenario.parser.parse_args([])
+
+bixler = scenario.wrap_class(args.controller, scenario_args)()
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 memory = ReplayMemory(100000,Transition)

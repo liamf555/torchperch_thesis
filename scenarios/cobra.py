@@ -1,9 +1,12 @@
 import numpy as np
 import torch
+import argparse
 
 # Cobra scenario
 
-def wrap_class(BixlerClass):
+parser = argparse.ArgumentParser(prog='Cobra Scenario', usage='--scenario-opts "[options]"')
+
+def wrap_class(BixlerClass,options):
     class CobraBixler(BixlerClass):
         def __init__(self,noise=0.0):
             super().__init__(noise)

@@ -1,20 +1,21 @@
 import numpy as np
 import torch
+import argparse
 
 # Perching scenario
 
-options = {
-    'random_starts': True,
-    'height_limit': 10
-    }
+parser = argparse.ArgumentParser(prog='Perching Scenario', usage='--scenario-opts "[options]"')
+parser.add_argument('--no-random-start', action='store_false', dest='random_start', default=True)
+parser.add_argument('--height-limit', type=float, default=10)
 
-def wrap_class(BixlerClass, opts=options):
+
+def wrap_class(BixlerClass, options):
     class PerchingBixler(BixlerClass):
                 def __init__(self,noise=0.0):
                     super().__init__(noise)
                 
                 def is_out_of_bounds(self):
-                    h_min = -opts['height_limit']
+                    h_min = -options.height_limit
                     def is_in_range(x,lower,upper):
                         return lower < x and x < upper
                     # Prevent flipping over
@@ -53,14 +54,14 @@ def wrap_class(BixlerClass, opts=options):
                     if state is None:
                         state=self.get_state()[0:12].T
                     pb2 = np.pi/2
-                    h_min = -opts['height_limit']
+                    h_min = -options.height_limit
                     mins = np.array([ -50, -2, h_min, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2 ])
                     maxs = np.array([  10,  2,     1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2 ])
                     return (state-mins)/(maxs-mins)
                 
                 def reset_scenario(self):
                     initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype="float64")
-                    if opts['random_starts']:
+                    if options.random_start:
                         # Add noise in x,z to the starting position
                         start_shift = np.array([[ np.random.rand(), 0, np.random.rand() ]])
                         # Scale for +- 1m in each
