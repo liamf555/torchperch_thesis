@@ -3,12 +3,6 @@ import torch
 
 # Cobra scenario
 
-def normalize_state(state):
-    pb2 = np.pi/2
-    mins = np.array([ -50, -2, -10, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2 ])
-    maxs = np.array([  10,  2,   1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2 ])
-    return (state-mins)/(maxs-mins)
-
 def wrap_class(BixlerClass):
     class CobraBixler(BixlerClass):
         def __init__(self,noise=0.0):
@@ -32,6 +26,14 @@ def wrap_class(BixlerClass):
             if not is_in_range(self.velocity_b[0,0],0,20):
                 return True
             return False
+
+        def get_normalized_state(self, state=None):
+            if state is None:
+                state=self.get_state()[0:12].T
+            pb2 = np.pi/2
+            mins = np.array([ -50, -2, -10, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2 ])
+            maxs = np.array([  10,  2,   1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2 ])
+            return (state-mins)/(maxs-mins)
 
         def step(self,steptime):
             # Add state to episode history then step

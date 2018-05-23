@@ -4,21 +4,17 @@ import torch
 # Perching scenario
 
 options = {
-    'random_starts': True
+    'random_starts': True,
+    'height_limit': 10
     }
 
-def normalize_state(state):
-    pb2 = np.pi/2
-    mins = np.array([ -50, -2, -10, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2 ])
-    maxs = np.array([  10,  2,   1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2 ])
-    return (state-mins)/(maxs-mins)
-
-def wrap_class(BixlerClass, random_starts=True):
+def wrap_class(BixlerClass, opts=options):
     class PerchingBixler(BixlerClass):
                 def __init__(self,noise=0.0):
                     super().__init__(noise)
                 
                 def is_out_of_bounds(self):
+                    h_min = -opts['height_limit']
                     def is_in_range(x,lower,upper):
                         return lower < x and x < upper
                     # Prevent flipping over
@@ -31,7 +27,7 @@ def wrap_class(BixlerClass, random_starts=True):
                     if not is_in_range(self.position_e[1,0],-2,2):
                         return True
                     # Check z remains sensible (i.e. not crashed)
-                    if not is_in_range(self.position_e[2,0],-10,1):
+                    if not is_in_range(self.position_e[2,0],h_min,1):
                         return True
                     # Check u remains sensible, > 0
                     if not is_in_range(self.velocity_b[0,0],0,20):
@@ -52,10 +48,19 @@ def wrap_class(BixlerClass, random_starts=True):
                     if self.position_e[2,0] > 0:
                         return True
                     return self.is_out_of_bounds()
+
+                def get_normalized_state(self, state=None):
+                    if state is None:
+                        state=self.get_state()[0:12].T
+                    pb2 = np.pi/2
+                    h_min = -opts['height_limit']
+                    mins = np.array([ -50, -2, h_min, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2 ])
+                    maxs = np.array([  10,  2,     1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2 ])
+                    return (state-mins)/(maxs-mins)
                 
                 def reset_scenario(self):
                     initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype="float64")
-                    if random_starts:
+                    if opts['random_starts']:
                         # Add noise in x,z to the starting position
                         start_shift = np.array([[ np.random.rand(), 0, np.random.rand() ]])
                         # Scale for +- 1m in each

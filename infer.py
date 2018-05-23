@@ -12,7 +12,7 @@ if hasattr(scenarios,sys.argv[1]):
 else:
     scenario = scenarios.perching
 
-bixler = scenario.wrap_class(Bixler_SweepElevator,random_starts=False)()
+bixler = scenario.wrap_class(Bixler_SweepElevator,opts={'random_starts':False,'height_limit':5})()
 
 networkFile = sys.argv[1]
 if len(sys.argv) > 2:
@@ -30,7 +30,7 @@ while not bixler.is_terminal():
     print( ','.join(map(str,bixler_state[:,0])) )
     state_history.append(bixler_state)
 
-    q_matrix = model( torch.from_numpy(scenario.normalize_state(bixler_state[0:12].T)).double() )
+    q_matrix = model( torch.from_numpy(bixler.get_normalized_state()).double() )
     max_action = q_matrix.data.max(1,keepdim=False)[1]
     
     bixler.set_action(max_action.item())

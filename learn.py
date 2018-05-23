@@ -178,7 +178,7 @@ while total_frames < max_frames:
     for frame_num in count():
         
         # Select an action
-        action, q_value = select_action(scenario.normalize_state(state),total_frames,frame_num)
+        action, q_value = select_action(bixler.get_normalized_state(),total_frames,frame_num)
         # Apply action to bixler
         bixler.set_action(action[0])
         # Update bixler state
@@ -203,9 +203,9 @@ while total_frames < max_frames:
 
         # Add the transition to the replay memory
         memory.push(
-            torch.from_numpy(scenario.normalize_state(state)).double(),
+            torch.from_numpy(bixler.get_normalized_state(state)).double(),
             action,
-            torch.from_numpy(scenario.normalize_state(next_state)).double() if next_state is not None else None,
+            torch.from_numpy(bixler.get_normalized_state(next_state)).double() if next_state is not None else None,
             reward
             )
         
