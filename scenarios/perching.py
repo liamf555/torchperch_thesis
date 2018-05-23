@@ -38,18 +38,14 @@ def wrap_class(BixlerClass, random_starts=True):
                         return True
                     return False
         
-                def get_reward():
-                    reward = torch.Tensor([0])
-                    if bixlerNaN:
-                        reward = torch.Tensor([ -1 ])
-                        sys.exit()
-                    elif bixler.is_terminal():
-                        if bixler.is_out_of_bounds():
-                            reward = torch.Tensor([ -1 ])
-                        else:
-                            cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
-                            cost = np.dot( np.squeeze(bixler.get_state()) ** 2, cost_vector ) / 2500
-                            reward = torch.Tensor( ((1 - cost) * 2) - 1 + max_theta/(np.pi/2))
+                def get_reward(self):
+                    if self.is_terminal():
+                        if self.is_out_of_bounds():
+                            return torch.Tensor([-1])
+                        cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
+                        cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector ) / 2500
+                        return torch.Tensor([ ((1 - cost) * 2) - 1 ])
+                    return torch.Tensor([0])
         
                 def is_terminal(self):
                     # Terminal point is floor

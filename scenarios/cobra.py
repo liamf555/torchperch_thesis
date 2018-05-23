@@ -9,27 +9,12 @@ def normalize_state(state):
     maxs = np.array([  10,  2,   1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2 ])
     return (state-mins)/(maxs-mins)
 
-def get_reward(bixler):
-    if bixlerNaN:
-        return torch.Tensor(-1)
-    if self.is_terminal():
-        if self.is_out_of_bounds():
-            return torch.Tensor(-1)
-        # Aiming for same as initial state, translated in x
-        target_state = np.array([[0,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype='float64')
-        cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
-        # Penalise deviation from target state
-        cost = np.dot( (np.squeeze(bixler.get_state()) - target_state) ** 2, cost_vector ) / 2500
-        # Add reward for maximum theta over the episode
-        episodeHistory = np.array(episodeHistory)
-        max_theta = np.max(episodeHistory[:,4,:])
-        return torch.Tensor( ((1 - cost) * 2) - 1 + max_theta/(np.pi/2))
-    return torch.Tensor(0)
-
 def wrap_class(BixlerClass):
     class CobraBixler(BixlerClass):
         def __init__(self,noise=0.0):
             super().__init__(noise)
+            
+            self.episode_history = []
         
         def is_out_of_bounds(self):
             def is_in_range(x,lower,upper):
@@ -49,8 +34,24 @@ def wrap_class(BixlerClass):
             return False
 
         def step(self,steptime):
-            # Add step to episode historys
+            # Add state to episode history then step
+            self.episode_history.append(self.get_state())
             super().step(steptime)
+
+        def get_reward(self):
+            if self.is_terminal():
+                if self.is_out_of_bounds():
+                    return torch.Tensor([-1])
+                # Aiming for same as initial state, translated in x
+                target_state = np.array([0,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0], dtype='float64')
+                cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
+                # Penalise deviation from target state
+                cost = np.dot( (np.squeeze(self.get_state()) - target_state) ** 2, cost_vector ) / 2500
+                # Add reward for maximum theta over the episode
+                self.episode_history = np.array(self.episode_history)
+                max_theta = np.max(self.episode_history[:,4,:])
+                return torch.Tensor([ ((1 - cost) * 2) - 1 + max_theta/(np.pi/2) ])
+            return torch.Tensor([0])
 
         def is_terminal(self):
             # Terminal point is reaching x=0 wall

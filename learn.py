@@ -172,14 +172,10 @@ while total_frames < max_frames:
     state = bixler.get_state()[0:12].T
     next_state = bixler.get_state()[0:12].T
     
-    # Until an episode ends
     bixlerNaN = False
 
-    episodeHistory = []
-
+    # Until an episode ends
     for frame_num in count():
-        # Save the state at this point
-        episodeHistory.append(bixler.get_state())
         
         # Select an action
         action, q_value = select_action(scenario.normalize_state(state),total_frames,frame_num)
@@ -195,22 +191,9 @@ while total_frames < max_frames:
         # Check for NaNs in bixler state
         
         # Compute the reward for the new state
-        reward = torch.Tensor([0])
-        if bixlerNaN:
-            reward = torch.Tensor([ -1 ])
-            sys.exit()
-        elif bixler.is_terminal():
-            if bixler.is_out_of_bounds():
-                reward = torch.Tensor([ -1 ])
-            else:
-                target_state = np.array([[0,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype='float64')
-                cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
-                # Penalise deviation from target state
-                cost = np.dot( (np.squeeze(bixler.get_state()) - target_state) ** 2, cost_vector ) / 2500
-                # Add reward for maximum theta over the episode
-                episodeHistory = np.array(episodeHistory)
-                max_theta = np.max(episodeHistory[:,4,:])
-                reward = torch.Tensor( ((1 - cost) * 2) - 1 + max_theta/(np.pi/2))
+        reward = torch.Tensor([-1]) # Default reward for NaN state
+        if not bixlerNaN:
+            reward = bixler.get_reward()
         
         # Observe the new state
         if bixler.is_terminal():
