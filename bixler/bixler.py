@@ -10,9 +10,6 @@ class Bixler:
         # Model parameters
         self.noiselevel = noise
         
-        self.elev_rates = [-60, -10, -5, 0, 5, 10, 60]
-        self.sweep_rates = [ -60, -10, -5, 0, 5, 10, 60 ]
-        
         # Physical parameters
         self.mass = 1.285 # kg
         self.rho = 1.225  # kg.m^-3
@@ -55,10 +52,6 @@ class Bixler:
         self.beta     = 0.0 # (deg)
         self.airspeed = 0.0 # (m/s)
         
-        # Control surface rates
-        self.sweep_rate = 0 # (deg/s)
-        self.elev_rate = 0  # (deg/s)
-        
         # Control surface limits
         self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
         self.elev_limits = np.rad2deg([-0.1745, 0.1745])
@@ -92,19 +85,9 @@ class Bixler:
         self.elev          = np.float64(state[0,13])
         self.tip_port      = np.float64(state[0,14])
     
-    def set_action(self,action_index):
-        elev_rate_idx = int(action_index) // 7
-        sweep_rate_idx = int(action_index) % 7
-
-        self.elev_rate =  self.elev_rates[elev_rate_idx]
-        self.sweep_rate = self.sweep_rates[sweep_rate_idx]
-    
     def step(self,steptime):
         # Update the cosine matricies
         self.update_dcms()
-        
-        # Update control surface positions
-        self.update_control_surfaces(steptime)
         
         # Update derivatives (Accel and AngAccel)
         self.update_derivatives()
@@ -124,16 +107,6 @@ class Bixler:
         
         # Update alpha and beta for next step
         self.update_air_data()
-
-    
-    def update_control_surfaces(self,steptime):
-        self.sweep = np.clip(self.sweep + self.sweep_rate * steptime, self.sweep_limits[0], self.sweep_limits[1])
-        self.elev = np.clip(self.elev + self.elev_rate * steptime, self.elev_limits[0], self.elev_limits[1])
-        self.rudder = 0.0
-        self.tip_port = 0.0
-        self.tip_stbd = 0.0
-        self.washout = 0.0
-        self.throttle = 0.0
     
     def _update_dcm_earth2body(self):
         roll  = self.orientation_e[0,0]
