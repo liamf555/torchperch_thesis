@@ -12,13 +12,16 @@ if hasattr(scenarios,sys.argv[1]):
 else:
     scenario = scenarios.perching
 
-bixler = scenario.wrap_class(Bixler_SweepElevator,opts={'random_starts':False,'height_limit':5})()
+scenario_opts = scenario.parser.parse_args(['--no-random-start','--height-limit','5'])
+bixler = scenario.wrap_class(Bixler_SweepElevator,scenario_opts)()
 
 networkFile = sys.argv[1]
 if len(sys.argv) > 2:
     networkFile = sys.argv[2]
 
-model = torch.load(networkFile)
+from network import QNetwork
+model = QNetwork()
+model.load_state_dict(torch.load(networkFile))
 
 bixler.reset_scenario()
 
