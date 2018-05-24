@@ -87,6 +87,9 @@ class Bixler:
         self.sweep         = np.float64(state[0,12])
         self.elev          = np.float64(state[0,13])
         self.tip_port      = np.float64(state[0,14])
+        
+        # Ensure air data reflects new state
+        self.update_air_data()
     
     def step(self,steptime):
         # Update the cosine matricies
