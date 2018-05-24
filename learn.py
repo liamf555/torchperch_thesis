@@ -228,6 +228,12 @@ while total_frames < max_frames:
         except FloatingPointError as e:
             # Set NaN state...
             bixlerNaN = True
+            if frame_num == 0:
+                print("Failed at frame 0. Action: {}, Q: {}".format(action[0],q_value[0]))
+                print("Start state: {}".format(state))
+                print("Final state: {}".format(bixler.get_state().T))
+                print(e)
+                sys.exit()
 
         # Check for NaNs in bixler state
         
