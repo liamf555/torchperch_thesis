@@ -48,10 +48,11 @@ parser.add_argument('--logfile', type=argparse.FileType('w'), default='learning_
 parser.add_argument('--networks', type=check_folder, default='networks' )
 args = parser.parse_args()
 
-model = QNetwork()
+scenario = args.scenario
+
+model = QNetwork(scenario.state_dims,scenario.actions)
 #for param in model.parameters():
 #    param = random.uniform(-0.1,0.1)
-scenario = args.scenario
 
 scenario_args = None
 if len(args.scenario_opts) is not 0:
@@ -272,8 +273,8 @@ while total_frames < max_frames:
             
             if (episode_num % 1000) == 0:
                 # Save the network every 1000 episodes
-                torch.save(model,'{}/qNetwork_EP{}.pkl'.format(args.networks,episode_num))
+                torch.save(model.state_dict(),'{}/qNetwork_EP{}.pkl'.format(args.networks,episode_num))
             break
 
 # At end of training, save the model
-torch.save(model,'qNetwork_throttle.pkl')
+torch.save(model.state_dict(),'qNetwork_throttle.pkl')

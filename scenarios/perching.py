@@ -9,6 +9,9 @@ parser.add_argument('--no-random-start', action='store_false', dest='random_star
 parser.add_argument('--height-limit', type=float, default=10)
 
 
+state_dims = 12
+actions = 49
+
 def wrap_class(BixlerClass, options):
     class PerchingBixler(BixlerClass):
                 def __init__(self,noise=0.0):

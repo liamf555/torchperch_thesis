@@ -6,6 +6,9 @@ import argparse
 
 parser = argparse.ArgumentParser(prog='Cobra Scenario', usage='--scenario-opts "[options]"')
 
+state_dims = 12
+actions = 49
+
 def wrap_class(BixlerClass,options):
     class CobraBixler(BixlerClass):
         def __init__(self,noise=0.0):
