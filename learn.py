@@ -239,7 +239,7 @@ while total_frames < max_frames:
         # Check for NaNs in bixler state
         
         # Compute the reward for the new state
-        reward = torch.Tensor([-1]) # Default reward for NaN state
+        reward = torch.Tensor([scenario.failReward]) # Default reward for NaN state
         if not bixlerNaN:
             reward = bixler.get_reward()
         
@@ -277,4 +277,4 @@ while total_frames < max_frames:
             break
 
 # At end of training, save the model
-torch.save(model.state_dict(),'qNetwork_throttle.pkl')
+torch.save(model.state_dict(),'qNetwork.pkl')

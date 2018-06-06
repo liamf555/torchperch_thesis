@@ -8,6 +8,7 @@ parser = argparse.ArgumentParser(prog='Cobra Scenario', usage='--scenario-opts "
 
 state_dims = 12
 actions = 49
+failReward = -10
 
 def wrap_class(BixlerClass,options):
     class CobraBixler(BixlerClass):
@@ -61,7 +62,7 @@ def wrap_class(BixlerClass,options):
                 if not self.is_out_of_bounds():
                     max_theta = np.max(self.episode_history[:,4,:])
                 reward = ((1 - cost) * 2) - 1 + max_theta/(np.pi/2)
-                return torch.Tensor([ max(reward,-10) ])
+                return torch.Tensor([ max(reward,failReward) ])
             return torch.Tensor([0])
 
         def is_terminal(self):
