@@ -211,8 +211,8 @@ while total_frames < max_frames:
     bixler.reset_scenario()
     
     # Set up initial state variables
-    state = bixler.get_state()[0:12].T
-    next_state = bixler.get_state()[0:12].T
+    state = bixler.get_state()
+    next_state = bixler.get_state()
     
     bixlerNaN = False
 
@@ -232,7 +232,7 @@ while total_frames < max_frames:
             if frame_num == 0:
                 print("Failed at frame 0. Action: {}, Q: {}".format(action[0],q_value[0]))
                 print("Start state: {}".format(state))
-                print("Final state: {}".format(bixler.get_state().T))
+                print("Final state: {}".format(bixler.get_state()))
                 print(e)
                 sys.exit()
 
@@ -247,7 +247,7 @@ while total_frames < max_frames:
         if bixler.is_terminal():
             next_state = None
         else:
-            next_state = bixler.get_state()[0:12].T
+            next_state = bixler.get_state()
 
         # Add the transition to the replay memory
         memory.push(

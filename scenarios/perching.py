@@ -9,7 +9,7 @@ parser.add_argument('--no-random-start', action='store_false', dest='random_star
 parser.add_argument('--height-limit', type=float, default=10)
 
 
-state_dims = 12
+state_dims = 14
 actions = 49
 failReward = -1
 
@@ -43,7 +43,7 @@ def wrap_class(BixlerClass, options):
                     if self.is_terminal():
                         if self.is_out_of_bounds():
                             return torch.Tensor([failReward])
-                        cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
+                        cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0 ])
                         cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector ) / 2500
                         return torch.Tensor([ ((1 - cost) * 2) - 1 ])
                     return torch.Tensor([0])
@@ -54,13 +54,16 @@ def wrap_class(BixlerClass, options):
                         return True
                     return self.is_out_of_bounds()
 
+                def get_state(self):
+                    return super().get_state()[0:14].T
+
                 def get_normalized_state(self, state=None):
                     if state is None:
-                        state=self.get_state()[0:12].T
+                        state=self.get_state()
                     pb2 = np.pi/2
                     h_min = -options.height_limit
-                    mins = np.array([ -50, -2, h_min, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2 ])
-                    maxs = np.array([  10,  2,     1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2 ])
+                    mins = np.array([ -50, -2, h_min, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2, self.sweep_limits[0], self.elev_limits[0]])
+                    maxs = np.array([  10,  2,     1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2, self.sweep_limits[1], self.elev_limits[1]])
                     return (state-mins)/(maxs-mins)
                 
                 def reset_scenario(self):
