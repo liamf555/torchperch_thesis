@@ -8,6 +8,7 @@ parser = argparse.ArgumentParser(prog='Height gain scenario', usage='--scenario-
 
 state_dims = 12
 actions = 49
+failReward = -1
 
 def wrap_class(BixlerClass,options):
     class HeightGainBixler(BixlerClass):
@@ -42,7 +43,7 @@ def wrap_class(BixlerClass,options):
         def get_reward(self):
             if self.is_terminal():
                 if self.is_out_of_bounds():
-                    return torch.Tensor([-1])
+                    return torch.Tensor([failReward])
                 # Aiming for same as initial state, translated in x and z
                 target_state = np.array([0,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0], dtype='float64')
                 cost_vector = np.array([1,0,0, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
