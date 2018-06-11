@@ -1,0 +1,29 @@
+# environment_blue3
+
+# Add CUDA-8.0 (Not a module as no driver support)
+#PATH=/cm/shared/apps/cuda-8.0/bin:$PATH
+#CUDA_PATH=/cm/shared/apps/cuda-8.0
+#CUDA_INC_PATH=/cm/shared/apps/cuda-8.0
+#CUDA_HOME=/cm/shared/apps/cuda-8.0
+#CUDA_CACHE_DISABLE=1
+#CUDA_INSTALL_PATH=/cm/shared/apps/cuda-8.0
+
+#LIBRARY_PATH=/cm/shared/apps/cuda-8.0/lib64:$LIBRARY_PATH
+#LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cm/shared/apps/cuda-8.0/lib64:/cm/shared/apps/cuda-8.0/extras/CUPTI/lib
+#CPATH=$CPATH:/cm/shared/apps/cuda-8.0/include
+#INCLUDEPATH=$INCLUDEPATH:/cm/shared/apps/cuda-8.0/include:/cm/shared/apps/cuda-8.0/include/CL:/cm/shared/apps/cuda-8.0/extras/CUPTI/include:/cm/shared/apps/cuda-8.0/extras/Debugger/include
+
+
+# Add cuDNN to paths
+INCLUDEPATH=$INCLUDEPATH:$HOME/cuda/include
+LIBRARY_PATH=$HOME/cuda/lib64:$LIBRARY_PATH
+
+#module add cuda/toolkit/7.5.18
+module add tools/git-2.18.0
+module add languages/python-anaconda-5.0.1-2.7
+module add tools/cmake-3.8.1
+export CXX=g++
+export CC=gcc
+
+# Something conda related...
+source /cm/shared/languages/anaconda2-5.0.1/etc/profile.d/conda.sh

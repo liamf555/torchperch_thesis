@@ -206,7 +206,7 @@ episode_num = 0
 
 logfile = args.logfile
 
-def on_sigterm():
+def on_sigterm(signum,frame):
     logfile.flush()
     logfile.close()
 signal.signal(signal.SIGTERM, on_sigterm)
