@@ -60,10 +60,20 @@ class Bixler:
         self.elev_limits = np.rad2deg([-0.1745, 0.1745])
         
         self.update_air_data()
-    
-    def _interpolate(self,x_target, x_data, y_data):
-        f = interpolate.interp1d(x_data,y_data,fill_value="extrapolate")
-        return f(x_target)
+
+    def _interpolate(self, x_target, x_data, y_data):
+        if x_target < x_data[0]:
+            m = (y_data[0] - y_data[1])/(x_data[0] - x_data[1])
+            return m * x_target + (y_data[0] - m * x_data[0])
+        if x_target > x_data[-1]:
+            m = (y_data[-2] - y_data[-1])/(x_data[-2] - x_data[-1])
+            return m * x_target + (y_data[-1] - m * x_data[-1])
+        highidx = np.argmax( x_data < np.array(x_target) )
+        lowidx = highidx - 1
+        m = (y_data[lowidx] - y_data[highidx])/(x_data[lowidx] - x_data[highidx])
+        return m * x_target + (y_data[lowidx] - m * x_data[lowidx])
+        #f = interpolate.interp1d(x_data,y_data,fill_value="extrapolate")
+        #return f(x_target)
     
     def get_state(self):
         return np.concatenate((
