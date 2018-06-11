@@ -47,6 +47,7 @@ parser.add_argument('--scenario', type=check_scenario, default='perching')
 parser.add_argument('--scenario-opts', nargs=1, type=str, default='')
 parser.add_argument('--logfile', type=argparse.FileType('w'), default='learning_log.txt')
 parser.add_argument('--networks', type=check_folder, default='networks' )
+parser.add_argument('--no-stdout', action='store_false', dest='use_stdout', default=True)
 args = parser.parse_args()
 
 scenario = args.scenario
@@ -206,6 +207,7 @@ episode_num = 0
 logfile = args.logfile
 
 def on_sigterm():
+    logfile.flush()
     logfile.close()
 signal.signal(signal.SIGTERM, on_sigterm)
 
@@ -274,7 +276,8 @@ while total_frames < max_frames:
             
             logString = 'T: {:4}({:2}) F: {:7} R: {:8.5f} Q: {:8.5f} E: {:8.5f} L: {:8.5f}'.format(episode_num, frame_num, total_frames, reward[0], q_value[0], get_epsilon(total_frames,0), loss)
             logfile.write(logString + '\n')
-            print(logString, flush=True)
+            if args.use_stdout:
+                print(logString, flush=True)
             
             if (episode_num % 1000) == 0:
                 # Save the network every 1000 episodes
