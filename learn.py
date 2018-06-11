@@ -2,6 +2,7 @@ import random
 import math
 from collections import namedtuple
 from itertools import count
+import signal
 
 import torch
 import torch.nn.functional as F
@@ -204,6 +205,10 @@ episode_num = 0
 
 logfile = args.logfile
 
+def on_sigterm():
+    logfile.close()
+signal.signal(signal.SIGTERM, on_sigterm)
+
 #for episode_num in range(num_episodes):
 while total_frames < max_frames:
     episode_num = episode_num + 1
@@ -269,7 +274,7 @@ while total_frames < max_frames:
             
             logString = 'T: {:4}({:2}) F: {:7} R: {:8.5f} Q: {:8.5f} E: {:8.5f} L: {:8.5f}'.format(episode_num, frame_num, total_frames, reward[0], q_value[0], get_epsilon(total_frames,0), loss)
             logfile.write(logString + '\n')
-            print(logString)
+            print(logString, flush=True)
             
             if (episode_num % 1000) == 0:
                 # Save the network every 1000 episodes
@@ -277,4 +282,4 @@ while total_frames < max_frames:
             break
 
 # At end of training, save the model
-torch.save(model.state_dict(),'qNetwork.pkl')
+torch.save(model.state_dict(),'{}/qNetwork_final.pkl'.format(args.networks))
