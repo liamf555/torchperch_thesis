@@ -209,6 +209,7 @@ logfile = args.logfile
 def on_sigterm(signum,frame):
     logfile.flush()
     logfile.close()
+    sys.exit()
 signal.signal(signal.SIGTERM, on_sigterm)
 
 #for episode_num in range(num_episodes):
