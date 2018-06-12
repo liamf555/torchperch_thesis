@@ -254,8 +254,11 @@ class Bixler:
         if self.airspeed == 0:
             self.beta = 0
         else:
-            cosBeta = (uSqd + wSqd) / (self.airspeed * np.sqrt( uSqd + wSqd ));
-            cosBeta = np.clip(cosBeta,-1.0,1.0);
+            cosBeta = (uSqd + wSqd) / (self.airspeed * np.sqrt( uSqd + wSqd ))
+            # numpy slowness...
+            #cosBeta = np.clip(cosBeta,-1.0,1.0)
+            if cosBeta < -1.0: cosBeta = -1.0
+            elif cosBeta > 1.0: cosBeta = 1.0
             # Apply sign convention
             self.beta = np.rad2deg(np.copysign(np.arccos(cosBeta), self.velocity_b[1,0]))
     
@@ -321,17 +324,18 @@ class Bixler:
 
     def _get_coefficients_C_L(self):
         # Definition of characteristic Aerodynamic Coefficient Arrays obtained from wind tunnel testing 
-        # The tested airspeeds being [14 12 10 8 6] m/s
-        airspeeds = [14, 12, 10, 8, 6]
+        # The tested airspeeds being [6 8 10 12 14] m/s
+        airspeeds = [6, 8, 10, 12, 14]
         
         # Lift coefficient data
-        CL0_m5to5 = [0.43, 0.41, 0.39, 0.3771, 0.3417]
-        CL0_5to10 = [0.593, 0.586, 0.604, 0.6106, 0.634]
-        CL0_over10 = [1.0313, 1.026, 1.0296, 1.077, 1.103]
+        CL0_m5to5 = [ 0.3417,  0.3771, 0.39, 0.41, 0.43 ]
+        CL0_5to10 = [ 0.634, 0.6106, 0.604, 0.586, 0.593 ]
+        CL0_over10 = [ 1.103, 1.077, 1.0296, 1.026, 1.0313 ]
 
-        CLalpha_m5to5 = [0.0753, 0.0778, 0.0791, 0.08117, 0.085]
-        CLalpha_5to10 = [0.039, 0.039, 0.037, 0.0354, 0.0299]
-        CLalpha_over10 = [-0.0048, -0.005, -0.0056, -0.0113, -0.0170] # Post-stall
+        CLalpha_m5to5 = [ 0.085, 0.08117, 0.0791, 0.0778, 0.0753 ]
+        CLalpha_5to10 = [ 0.0299, 0.0354, 0.037, 0.039, 0.039 ]
+        CLalpha_over10 = [ -0.0170, -0.0113, -0.0056, -0.005, -0.0048 ] # Post-stall
+
         
         # Dynamic Pitching Lift coefficient
         speed_sample_dynamic = [6, 8, 10]
@@ -354,8 +358,8 @@ class Bixler:
             C_L0_samples = CL0_over10
             C_Lalpha_samples = CLalpha_over10
 
-        C_L0     = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_L0_samples,0))
-        C_Lalpha = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_Lalpha_samples,0))
+        C_L0     = self._interpolate(self.airspeed, airspeeds, C_L0_samples)
+        C_Lalpha = self._interpolate(self.airspeed, airspeeds, C_Lalpha_samples)
 
         C_Lq = 0.0
 
@@ -372,18 +376,19 @@ class Bixler:
         return (C_L0, C_Lalpha, C_Lq)
 
     def _get_coefficients_C_D(self):
-        # The tested airspeeds being [14 12 10 8 6] m/s
-        airspeeds = [14, 12, 10, 8, 6]
+        # The tested airspeeds being [6 8 10 12 14] m/s
+        airspeeds = [6, 8, 10, 12, 14]
+
+        CD0_m5to5 =  [  0.0682 ,  0.075 ,  0.0765, 0.087 ,  0.084  ]
+        CD0_5to10 =  [ -0.02125, -0.0054,  0.0259, 0.0394,  0.0456 ]
+        CD0_over10 = [  0.0027 , -0.0167, -0.0715, -0.06 , -0.039  ]
         
-        CD0_m5to5 = [0.084, 0.087, 0.0765, 0.075, 0.0682]
-        CD0_5to10 = [0.0456, 0.0394, 0.0259, -0.0054, -0.02125]
-        CD0_over10 = [-0.039, -0.06, -0.0715, -0.0167, 0.0027]
         
-        CDalpha_m5to0 = [0.0005, 0.0003, 0.0003, 0, 0.0006]
-        CDalpha_0to5 = [0.00436, 0.00414, 0.00584, 0.00463, 0.0067]
-        CDalpha_5to10 = [0.01204, 0.01366, 0.01596, 0.02071, 0.02457]
-        CDalpha_over10 = [0.0205, 0.0236, 0.0257, 0.02185, 0.02217]    #Post-Stall
-        
+        CDalpha_m5to0 =  [ 0.0006 , 0      , 0.0003 , 0.0003 , 0.0005  ] 
+        CDalpha_0to5 =   [ 0.0067 , 0.00463, 0.00584, 0.00414, 0.00436 ]
+        CDalpha_5to10 =  [ 0.02457, 0.02071, 0.01596, 0.01366, 0.01204 ]
+        CDalpha_over10 = [ 0.02217, 0.02185, 0.0257 , 0.0236 , 0.0205  ] #Post-Stall
+
         C_D0_samples = []
         C_Dalpha_samples = []
         
@@ -400,8 +405,8 @@ class Bixler:
             C_D0_samples =  CD0_over10
             C_Dalpha_samples = CDalpha_over10
 
-        C_D0     = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_D0_samples,0))
-        C_Dalpha = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_Dalpha_samples,0))
+        C_D0     = self._interpolate(self.airspeed, airspeeds, C_D0_samples)
+        C_Dalpha = self._interpolate(self.airspeed, airspeeds, C_Dalpha_samples)
 
         return (C_D0, C_Dalpha)
 
@@ -455,19 +460,20 @@ class Bixler:
         return (C_l0, C_ldTipStbd, C_ldTipPort, C_lp)
 
     def _get_coefficients_C_m(self):
-        # The tested airspeeds being [14 12 10 8 6] m/s
-        airspeeds = [14, 12, 10, 8, 6]
+        # The tested airspeeds being [6 8 10 12 14] m/s
+        airspeeds = [6, 8, 10, 12, 14]
         # Dynamic sample points
         speed_sample_dynamic = [6, 8, 10]
         sweep_sample_dynamic = [0, 10, 20, 30]
         
         # Pitching Moment Coefficients
-        CMY0_m5to14 = [-0.006, 0.01, 0.02, 0.0215, 0.01045]
-        CMY0_over14 = [-0.3065, -0.307, -0.323, -0.304, -0.29075]
+        CMY0_m5to14 = [  0.01045,  0.0215,  0.02 ,  0.01 , -0.006  ]
+        CMY0_over14 = [ -0.29075, -0.304 , -0.323, -0.307, -0.3065 ]
 
-        CMYalpha_m5to0 = [-0.01224, -0.01054, -0.01152, -0.0115, -0.01185]
-        CMYalpha_0to14 = [-0.02154, -0.02264, -0.0245, -0.02325, -0.02151]
-        CMYalpha_over14 = [0, 0, 0, 0, 0]
+        CMYalpha_m5to0 =  [ -0.01185, -0.0115 , -0.01152, -0.01054, -0.01224 ]
+        CMYalpha_0to14 =  [ -0.02151, -0.02325, -0.0245 , -0.02264, -0.02154 ]
+        CMYalpha_over14 = [ 0       ,        0,        0,        0,        0 ]
+
 
         # Dynamic Pitching Moment Coefficient
         CMYq_6ms = [-0.0024608, -0.0033244, -0.003728, -0.0046806]
@@ -519,9 +525,9 @@ class Bixler:
             C_m0_samples = CMY0_over14
             C_malpha_samples = CMYalpha_over14
         
-        C_m0 = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_m0_samples,0))
+        C_m0 = self._interpolate(self.airspeed, airspeeds, C_m0_samples)
         #print('ASI: {}, result: {}, speeds: {}, samples: {}'.format(self.airspeed,C_m0,airspeeds,C_m0_samples))
-        C_malpha = self._interpolate(self.airspeed, np.flip(airspeeds,0), np.flip(C_malpha_samples,0))
+        C_malpha = self._interpolate(self.airspeed, airspeeds, C_malpha_samples)
         
         C_melev_samples = []
         
