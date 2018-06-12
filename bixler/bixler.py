@@ -1,6 +1,4 @@
-#import tensorflow as tf
 import numpy as np
-from scipy import interpolate
 
 # Force numpy to raise FloatingPointError for overflow
 np.seterr(all='raise')
@@ -68,7 +66,12 @@ class Bixler:
         if x_target > x_data[-1]:
             m = (y_data[-2] - y_data[-1])/(x_data[-2] - x_data[-1])
             return m * x_target + (y_data[-1] - m * x_data[-1])
-        highidx = np.argmax( x_data < np.array(x_target) )
+        #highidx = np.argmax( x_data < np.array(x_target) )
+        highidx = 1
+        for i in range(1,len(x_data)):
+            if x_data[i] > x_target:
+                highidx = i
+                break
         lowidx = highidx - 1
         m = (y_data[lowidx] - y_data[highidx])/(x_data[lowidx] - x_data[highidx])
         return m * x_target + (y_data[lowidx] - m * x_data[lowidx])
