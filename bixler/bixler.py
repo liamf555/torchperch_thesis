@@ -199,6 +199,11 @@ class Bixler:
         self._update_dcm_wind2body()
         self._update_jacobian()
 
+    def _cross(self,a,b):
+        return np.array([ ((a[1] * b[2]) - (a[2] * b[1])),
+                          ((a[2] * b[0]) - (a[0] * b[2])),
+                          ((a[0] * b[1]) - (a[1] * b[0])) ])
+
     def update_derivatives(self):
         aeroforces_w, moments_w = self.get_forces_and_moments()
         
@@ -214,7 +219,9 @@ class Bixler:
         # Get acceleration of body
         self.acceleration_b = force_b * (1/self.mass)
         # Remove effects of rotating reference frame
-        self.acceleration_b = self.acceleration_b - np.cross(self.omega_b, self.velocity_b, axis=0)
+        # np.cross slow for small sets so replace with own (function call overhead?)
+        #self.acceleration_b = self.acceleration_b - np.cross(self.omega_b, self.velocity_b, axis=0)
+        self.acceleration_b = self.acceleration_b - self._cross(self.omega_b, self.velocity_b)
         # Generate noise
         noise = np.random.rand(3,1) * self.noiselevel
         # Add noise to acceleration
@@ -225,7 +232,9 @@ class Bixler:
         moments_b = np.matmul(self.dcm_wind2body, moments_w)
         # Define angular acceleration
         iw = np.matmul(self.inertia, self.omega_b)
-        cp = np.cross(self.omega_b, iw, axis=0)
+        # np.cross slow for small sets so replace with own (function call overhead?)
+        #cp = np.cross(self.omega_b, iw, axis=0)
+        cp = self._cross(self.omega_b, iw)
         idw = moments_b - cp
         
         self.omega_dot_b = np.matmul(np.linalg.inv(self.inertia), idw)
