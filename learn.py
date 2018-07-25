@@ -159,9 +159,9 @@ def train_on_experience():
     with torch.no_grad():
         # Edge case where batch contains only final states stalls here...
         non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
-    state_batch = torch.cat(batch.state)
-    action_batch = torch.cat(batch.action)
-    reward_batch = torch.cat(batch.reward)
+        state_batch = torch.cat(batch.state)
+        action_batch = torch.cat(batch.action)
+        reward_batch = torch.cat(batch.reward)
 
     # Get the currently predicted Q-values for each of the state-action pairs from the experience batch
     state_action_values = model(state_batch).gather(1, action_batch[:,None])
