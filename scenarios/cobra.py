@@ -6,7 +6,7 @@ import argparse
 
 parser = argparse.ArgumentParser(prog='Cobra Scenario', usage='--scenario-opts "[options]"')
 
-state_dims = 12
+state_dims = 15
 actions = 49
 failReward = -10
 
@@ -35,14 +35,14 @@ def wrap_class(BixlerClass,options):
             return False
 
         def get_state(self):
-            return super().get_state()[0:12].T
+            return super().get_state()[0:15].T
 
         def get_normalized_state(self, state=None):
             if state is None:
                 state=self.get_state()
             pb2 = np.pi/2
-            mins = np.array([ -110, -2, -10, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2 ])
-            maxs = np.array([  10,  2,   1,  pb2,  pb2,  pb2, 25,  2,  5,  pb2,  pb2,  pb2 ])
+            mins = np.array([ -110, -2, -10, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2, -10, -10, -10 ])
+            maxs = np.array([  10,  2,   1,  pb2,  pb2,  pb2, 25,  2,  5,  pb2,  pb2,  pb2,   30,  10,  10 ])
             return (state-mins)/(maxs-mins)
 
         def step(self,steptime):
@@ -60,10 +60,10 @@ def wrap_class(BixlerClass,options):
                 # Penalise deviation from target state
                 cost = np.dot( (np.squeeze(self.get_state()) - target_state) ** 2, cost_vector ) /2500
                 # Add reward for maximum theta over the episode
-                self.episode_history = np.array(self.episode_history)
                 max_theta = 0
                 if not self.is_out_of_bounds():
-                    max_theta = np.max(self.episode_history[:,4,:])
+                    self.episode_history = np.array(self.episode_history).squeeze()
+                    max_theta = np.max(self.episode_history[:,4])
                 reward = ((1 - cost) * 2) - 1 + max_theta/(np.pi/2)
                 return torch.Tensor([ max(reward,failReward) ])
             return torch.Tensor([0])
