@@ -18,12 +18,11 @@
 INCLUDEPATH=$INCLUDEPATH:$HOME/cuda/include
 LIBRARY_PATH=$HOME/cuda/lib64:$LIBRARY_PATH
 
-#module add cuda/toolkit/7.5.18
-module add tools/git-2.18.0
+# Load the conda module
 module add languages/python-anaconda-5.0.1-2.7
-module add tools/cmake-3.8.1
-export CXX=g++
-export CC=gcc
 
 # Something conda related...
 source /cm/shared/languages/anaconda2-5.0.1/etc/profile.d/conda.sh
+
+# Activate the conda environment
+conda activate pytorch
