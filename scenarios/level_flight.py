@@ -45,7 +45,6 @@ def wrap_class(BixlerClass,options):
 
         def step(self,steptime):
             # Add state to episode history then step
-            self.episode_history.append(self.get_state())
             super().step(steptime)
 
         def get_reward(self):
