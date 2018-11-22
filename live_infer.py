@@ -1,16 +1,21 @@
 import torch, sys, argparse, numpy as np
-import infer
+import time, infer
 from pymavlink import mavutil
 
 def process_msg(msg):
     # Process incoming message
     # Convert state into required format for agent
-    pass
+    return np.array([[msg.x,     msg.y,        msg.z,
+                      msg.phi,   msg.theta,    msg.psi,
+                      msg.u,     msg.v,        msg.w,
+                      msg.p,     msg.q,        msg.r,
+                      msg.sweep, msg.elevator, msg.tip ]])
 
 def check_heartbeat(master):
     if time.time() - check_heartbeat.last_heartbeat_time >= 1.0:
-        master.send_heartbeat(mavutil.mavlink.MAV_TYPE_ONBOARD_CONTROLLER, mavutil.mavlink.MAV_AUTOPILOT_INVALID,0,0,0)
+        master.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_ONBOARD_CONTROLLER, mavutil.mavlink.MAV_AUTOPILOT_INVALID,0,0,0)
         check_heartbeat.last_heartbeat_time = time.time()
+	print('Sent heartbeat')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Q-Learning inference for UAV manoeuvres in PyTorch')
@@ -59,13 +64,14 @@ if __name__ == "__main__":
         msg = master.recv_msg()
         if msg is None:
             continue
-        if msg.name is not 'MLAGENT_STATE':
+        if not hasattr(msg,'name') or (msg.name is not 'MLAGENT_STATE'):
             continue
-        
+
         state = process_msg(msg)
         bixler.set_state(state)
         q_matrix = model( torch.from_numpy(bixler.get_normalized_state()).double() )
         max_action = q_matrix.data.max(1,keepdim=False)[1]
         # Convert action into an elevator rate
-        rate = rates[max_action]
-        master.mav.mlagent_action_send(1,1,sweep_rate,elevator_rate)
+        bixler.set_action(max_action)
+        print('Processing MLAGENT_STATE message. Rate {}'.format(bixler.elev_rate))
+        master.mav.mlagent_action_send(1,1,bixler.sweep_rate,bixler.elev_rate)
