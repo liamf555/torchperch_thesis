@@ -16,7 +16,7 @@ failReward = -1
 def wrap_class(BixlerClass, options):
     class PerchingBixler(BixlerClass):
                 def __init__(self,noise=0.0):
-                    super().__init__(noise)
+                    super(PerchingBixler,self).__init__(noise)
                 
                 def is_out_of_bounds(self):
                     h_min = -options.height_limit
@@ -55,7 +55,7 @@ def wrap_class(BixlerClass, options):
                     return self.is_out_of_bounds()
 
                 def get_state(self):
-                    return super().get_state()[0:14].T
+                    return super(PerchingBixler,self).get_state()[0:14].T
 
                 def get_normalized_state(self, state=None):
                     if state is None:

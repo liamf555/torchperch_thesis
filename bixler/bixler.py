@@ -5,7 +5,7 @@ np.seterr(all='raise')
 
 accel_gravity = 9.81 # m.s^-2
 
-class Bixler:
+class Bixler(object):
     
     def __init__(self,noise=0.0):
         # Model parameters

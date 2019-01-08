@@ -3,7 +3,7 @@ import math
 
 class BixlerController(bixler.Bixler):
     def __init__(self,noise=0.0):
-        super().__init__(noise)
+        super(BixlerController,self).__init__(noise)
     
     def step(self,steptime):
         # Bixler model stability needs timesteps of < 0.01s

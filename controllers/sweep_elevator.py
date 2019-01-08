@@ -5,7 +5,7 @@ import controllers.common as common
 class Bixler_SweepElevator(common.BixlerController):
     
     def __init__(self,noise=0.0):
-        super().__init__(noise)
+        super(Bixler_SweepElevator, self).__init__(noise)
         
         # Control surface rates for each action
         self.elev_rates = [-60, -10, -5, 0, 5, 10, 60]

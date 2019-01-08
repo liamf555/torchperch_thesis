@@ -64,7 +64,12 @@ if __name__ == "__main__":
         msg = master.recv_msg()
         if msg is None:
             continue
-        if not hasattr(msg,'name') or (msg.name is not 'MLAGENT_STATE'):
+        if not hasattr(msg,'name'):
+            continue
+        if msg.name is not 'MLAGENT_STATE':
+            if msg.name is 'PARAM_REQUEST_LIST':
+		# If an attempt to get parameters is made, return a PARAM_VALUE message indicating no parameters
+                master.mav.param_value_send("",0,master.mavlink.MAV_PARAM_TYPE_UINT8,0,0)
             continue
 
         state = process_msg(msg)
@@ -74,4 +79,4 @@ if __name__ == "__main__":
         # Convert action into an elevator rate
         bixler.set_action(max_action)
         print('Processing MLAGENT_STATE message. Rate {}'.format(bixler.elev_rate))
-        master.mav.mlagent_action_send(1,1,bixler.sweep_rate,bixler.elev_rate)
+        master.mav.mlagent_action_send(1,1,bixler.sweep_rate,10)

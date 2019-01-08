@@ -1,1 +1,1 @@
-from bixler.bixler import *
+from bixler import *

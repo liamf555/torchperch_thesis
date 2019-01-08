@@ -1,0 +1,9 @@
+[Unit]
+Description=Live NN inference over MAVLink
+
+[Service]
+Environment="MAVLINK20=1"
+ExecStart=/usr/bin/python /home/nvidia/Desktop/torchperch/live_infer.py --controller sweep_elevator --scenario perching /home/nvidia/Desktop/qNetwork_EP24000_87p_0.pkl
+
+[Install]
+WantedBy=multi-user.target
