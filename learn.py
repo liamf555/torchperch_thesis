@@ -2,26 +2,67 @@ import random
 import math
 from collections import namedtuple
 from itertools import count
-
-import warnings
+import signal
 
 import torch
-import torch.nn as nn
-from torch.autograd import Variable
 import torch.nn.functional as F
 
 import numpy as np
 
 from network import QNetwork
-from bixler import Bixler
 from replay import ReplayMemory
 
-initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]])
+import controllers
+import scenarios
 
-model = QNetwork()
+import argparse, sys, os
+
+def check_controller(controller_name):
+    if hasattr(controllers,controller_name):
+        return getattr(controllers,controller_name)
+    else:
+        msg = "Could not find controller {}".format(controller_name)
+        raise argparse.ArgumentTypeError(msg)
+
+def check_scenario(scenario_name):
+    if hasattr(scenarios,scenario_name):
+        return getattr(scenarios,scenario_name)
+    else:
+        msg = "Could not find scenario {}".format(scenario_name)
+        raise argparse.ArgumentTypeError(msg)
+
+def check_folder(folder_name):
+    if os.path.exists(folder_name):
+        if os.path.isdir(folder_name):
+            return folder_name
+        else:
+            msg = "File {} exists and is not a directory".format(folder_name)
+            raise argparse.ArgumentTypeError(msg)
+    os.mkdir(folder_name)
+    return folder_name
+
+parser = argparse.ArgumentParser(description='Q-Learning for UAV manoeuvres in PyTorch')
+parser.add_argument('--controller', type=check_controller, default='sweep_elevator')
+parser.add_argument('--scenario', type=check_scenario, default='perching')
+parser.add_argument('--scenario-opts', nargs=1, type=str, default='')
+parser.add_argument('--logfile', type=argparse.FileType('w'), default='learning_log.txt')
+parser.add_argument('--networks', type=check_folder, default='networks' )
+parser.add_argument('--no-stdout', action='store_false', dest='use_stdout', default=True)
+args = parser.parse_args()
+
+scenario = args.scenario
+
+model = QNetwork(scenario.state_dims,scenario.actions)
 #for param in model.parameters():
 #    param = random.uniform(-0.1,0.1)
-bixler = Bixler()
+
+scenario_args = None
+if len(args.scenario_opts) is not 0:
+    scenario_args = scenario.parser.parse_args(args.scenario_opts[0].split(' '))
+else:
+    scenario_args = scenario.parser.parse_args([])
+
+bixler = scenario.wrap_class(args.controller, scenario_args)()
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 memory = ReplayMemory(100000,Transition)
@@ -32,9 +73,6 @@ optimizer = torch.optim.RMSprop(model.parameters(), lr = 0.0025, eps=1e-2)
 #optimizer = torch.optim.Adam(model.parameters(), lr = 0.0025)
 #optimizer = torch.optim.Adam(model.parameters(), lr = 0.0025, amsgrad=True)
 
-EPS_START = 1.0
-EPS_END   = 0.1
-EPS_DECAY = 1000000 - 10000
 BATCH_SIZE = 32
 GAMMA = 0.99
 
@@ -72,12 +110,6 @@ def get_epsilon(t_global,t_local):
     j = get_j(t_global)
     return (1-k)*(j*x)**2 + k
 
-#epsilon_threshold = 1.0
-#if steps < 10000:
-#    epsilon_threshold = EPS_START
-#else:
-#    epsilon_threshold = EPS_END + (EPS_START - EPS_END) * math.exp( -1.0 * (steps-10000) / EPS_DECAY )
-
 
 def select_action(state,t_global,t_local):
     """Select an action based on the epsilon-greedy policy"""
@@ -104,12 +136,6 @@ def select_action(state,t_global,t_local):
     
     return action_index, current_q_matrix[:,action_index[0]]
 
-def normalize_state(state):
-    pb2 = np.pi/2
-    mins = np.array([ -50, -2, -5, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2 ])
-    maxs = np.array([  10,  2,  1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2 ])
-    return (state-mins)/(maxs-mins)
-
 def train_on_experience():
     """Train the network on experience replay"""
     if len(memory) < BATCH_SIZE:
@@ -133,9 +159,9 @@ def train_on_experience():
     with torch.no_grad():
         # Edge case where batch contains only final states stalls here...
         non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
-    state_batch = torch.cat(batch.state)
-    action_batch = torch.cat(batch.action)
-    reward_batch = torch.cat(batch.reward)
+        state_batch = torch.cat(batch.state)
+        action_batch = torch.cat(batch.action)
+        reward_batch = torch.cat(batch.reward)
 
     # Get the currently predicted Q-values for each of the state-action pairs from the experience batch
     state_action_values = model(state_batch).gather(1, action_batch[:,None])
@@ -178,61 +204,64 @@ total_frames = 0
 
 episode_num = 0
 
-logfile = open('learning_log.txt','w')
+logfile = args.logfile
+
+def on_sigterm(signum,frame):
+    logfile.flush()
+    logfile.close()
+    sys.exit()
+signal.signal(signal.SIGTERM, on_sigterm)
 
 #for episode_num in range(num_episodes):
 while total_frames < max_frames:
     episode_num = episode_num + 1
     # Initialise bixler state
-    bixler.set_state(initial_state)
+    bixler.reset_scenario()
     
     # Set up initial state variables
-    state = bixler.get_state()[0:12].T
-    next_state = bixler.get_state()[0:12].T
+    state = bixler.get_state()
+    next_state = bixler.get_state()
     
-    # Until an episode ends
     bixlerNaN = False
 
+    # Until an episode ends
     for frame_num in count():
+        
         # Select an action
-        action, q_value = select_action(normalize_state(state),total_frames,frame_num)
+        action, q_value = select_action(bixler.get_normalized_state(),total_frames,frame_num)
         # Apply action to bixler
         bixler.set_action(action[0])
         # Update bixler state
-        with warnings.catch_warnings():
-            warnings.filterwarnings('error')
-            try:
-                for i in range(1,10):
-                    bixler.step(0.01)
-            except Warning as e:
-                    # Set NaN state...
-                    bixlerNaN = True
+        try:
+            bixler.step(0.1)
+        except FloatingPointError as e:
+            # Set NaN state...
+            bixlerNaN = True
+            if frame_num == 0:
+                print("Failed at frame 0. Action: {}, Q: {}".format(action[0],q_value[0]))
+                print("Start state: {}".format(state))
+                print("Final state: {}".format(bixler.get_state()))
+                print(e)
+                sys.exit()
 
         # Check for NaNs in bixler state
         
         # Compute the reward for the new state
-        reward = torch.Tensor([0])
-        if bixlerNaN:
-            reward = torch.Tensor([ -1 ])
-        elif bixler.is_terminal():
-            if bixler.is_out_of_bounds():
-                reward = torch.Tensor([ -1 ])
-            else:
-                cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
-                cost = np.dot( np.squeeze(bixler.get_state()) ** 2, cost_vector ) / 2500
-                reward = torch.Tensor([ ((1 - cost) * 2) - 1 ])
+        reward = torch.Tensor([scenario.failReward]) # Default reward for NaN state
+        if not bixlerNaN:
+            reward = bixler.get_reward()
         
         # Observe the new state
         if bixler.is_terminal():
             next_state = None
         else:
-            next_state = bixler.get_state()[0:12].T
+            next_state = bixler.get_state()
 
         # Add the transition to the replay memory
         memory.push(
-            torch.from_numpy(normalize_state(state)).double(),
+            torch.from_numpy(bixler.get_normalized_state(state)).double(),
             action,
-            torch.from_numpy(normalize_state(next_state)).double() if next_state is not None else None,
+            torch.from_numpy(bixler.get_normalized_state(next_state)).double() if next_state is not None else None,
             reward
             )
         
@@ -243,17 +272,18 @@ while total_frames < max_frames:
         loss = train_on_experience()
         
         # If at end of episode, print some data and break
-        if bixler.is_terminal():
+        if bixler.is_terminal() or bixlerNaN:
             total_frames = total_frames + frame_num
             
             logString = 'T: {:4}({:2}) F: {:7} R: {:8.5f} Q: {:8.5f} E: {:8.5f} L: {:8.5f}'.format(episode_num, frame_num, total_frames, reward[0], q_value[0], get_epsilon(total_frames,0), loss)
             logfile.write(logString + '\n')
-            print(logString)
+            if args.use_stdout:
+                print(logString, flush=True)
             
             if (episode_num % 1000) == 0:
                 # Save the network every 1000 episodes
-                torch.save(model,'networks/qNetwork_EP{}.pkl'.format(episode_num))
+                torch.save(model.state_dict(),'{}/qNetwork_EP{}.pkl'.format(args.networks,episode_num))
             break
 
 # At end of training, save the model
-torch.save(model,'qNetwork.pkl')
+torch.save(model.state_dict(),'{}/qNetwork_final.pkl'.format(args.networks))
