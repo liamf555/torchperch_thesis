@@ -6,5 +6,3 @@ module add languages/python-anaconda-5.0.1-2.7
 # Something conda related...
 source /cm/shared/languages/anaconda2-5.0.1/etc/profile.d/conda.sh
 
-# Activate the conda environment
-conda activate pytorch
