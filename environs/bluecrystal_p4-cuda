@@ -1,0 +1,8 @@
+# bluecrystal_p4-cuda
+
+# Load CUDA modules
+module load libs/cuda/9.0-gcc-5.4.0-2.26 libs/cudnn/7.1-cuda-9.0
+
+# Load the conda module + setup
+source ~/.bashrc.d/conda.sh
+
