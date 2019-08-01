@@ -9,8 +9,10 @@ from gym import error, spaces, logger
 from gym import utils
 from gym.utils import seeding
 import numpy as np 
+import argparse
 
-from scenarios import perching
+import controllers
+import scenarios
 
 import logging
 logger = logging.getLogger(__name__) 
@@ -20,32 +22,55 @@ class BixlerEnv(gym.Env):
 
     def __init__(self):
 
-        self.bixler = perching.wrap_class('sweep_elevator', [])
-        
-        self.action_space = spaces.Discrete(self.bixler.actions)
+        parser = argparse.ArgumentParser(description='Q-Learning for UAV manoeuvres in PyTorch')
+        parser.add_argument('--controller', type=self.check_controller, default='sweep_elevator')
+        parser.add_argument('--scenario', type=self.check_scenario, default='perching')
+        parser.add_argument('--scenario-opts', nargs=1, type=str, default='')
+        parser.add_argument('--logfile', type=argparse.FileType('w'), default='learning_log.txt')
+        parser.add_argument('--networks', type=self.check_folder, default='networks' )
+        parser.add_argument('--no-stdout', action='store_false', dest='use_stdout', default=True)
+        args = parser.parse_args()
 
-        self.observation_space = spaces.Box(low =0, high =1, shape = self.bixler.state_dims)
+        
+        scenario = args.scenario
+
+        scenario_args = None
+        if len(args.scenario_opts) is not 0:
+            scenario_args = scenario.parser.parse_args(args.scenario_opts[0].split(' '))
+        else:
+            scenario_args = scenario.parser.parse_args([])
+
+        self.bixler = scenario.wrap_class(args.controller, scenario_args)()
+
+        self.action_space = spaces.Discrete(49)
+
+        self.reward = 0
+
+        self.observation_space = spaces.Box(low=0, high = 1, shape = self.bixler.get_normalized_state().shape)
 
         self.state = None
 
         
 
 
-    def _step(self, action):
+    def step(self, action):
         # peform action
 
-        episode_over = False
+        self.episode_over = False
+
         self.bixler.set_action(action)
 
         #bixler step function with timestep 1
         self.bixler.step(0.1)
 
         #get reward
-        reward = self.get_reward(episode_over)
+        self.reward = self.get_reward()
 
         #get observation
 
         self.state = self.bixler.get_normalized_state()
+        
+
 
         #    ob (object) :
         #         an environment-specific object representing your observation of
@@ -69,11 +94,11 @@ class BixlerEnv(gym.Env):
         info = {}
 
 
-        return self.state, reward, episode_over, info
+        return self.state, self.reward, self.episode_over, info
         
 
 
-    def _reset(self):
+    def reset(self):
 
         self.bixler.reset_scenario()
 
@@ -81,22 +106,44 @@ class BixlerEnv(gym.Env):
 
 
      
-    def _render(self, mode='human', close=False):
-      print(f'Reward: {reward}')
+    def render(self, mode='human'):
+      print(f'State: {self.bixler.get_state()}')
         
 
-    # def _take_action(self, action):
-    #     self.bixler.set_action(action)
 
-    def _get_reward(self, epsiode_over):
+    def get_reward(self):
         #get_reward function from perching.py, removing pytorch functions
         if self.bixler.is_terminal():
-            episode_over = True
-            if self.bixler.bixler.is_out_of_bounds():
-                return self.bixler.failReward
+            self.episode_over = True
+            if self.bixler.is_out_of_bounds():
+                return -1 #failreward
             cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0 ])
             cost = np.dot( np.squeeze(self.bixler.get_state()) ** 2, cost_vector ) / 2500
             return ((1 - cost) * 2) - 1
         return 0
+
+    def check_controller(self, controller_name):
+        if hasattr(controllers,controller_name):
+            return getattr(controllers,controller_name)
+        else:
+            msg = "Could not find controller {}".format(controller_name)
+            raise argparse.ArgumentTypeError(msg)
+
+    def check_scenario(self, scenario_name):
+        if hasattr(scenarios,scenario_name):
+            return getattr(scenarios,scenario_name)
+        else:
+            msg = "Could not find scenario {}".format(scenario_name)
+            raise argparse.ArgumentTypeError(msg)
+
+    def check_folder(self, folder_name):
+        if os.path.exists(folder_name):
+            if os.path.isdir(folder_name):
+                return folder_name
+            else:
+                msg = "File {} exists and is not a directory".format(folder_name)
+                raise argparse.ArgumentTypeError(msg)
+        os.mkdir(folder_name)
+        return folder_name
 
         

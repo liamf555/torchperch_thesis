@@ -42,7 +42,7 @@ def check_folder(folder_name):
     return folder_name
 
 parser = argparse.ArgumentParser(description='Q-Learning for UAV manoeuvres in PyTorch')
-parser.add_argument('--controller', type=check_controller, default='sweep_elevator')
+parser.add_argument('--controller', type=str, default='sweep_elevator')
 parser.add_argument('--scenario', type=check_scenario, default='perching')
 parser.add_argument('--scenario-opts', nargs=1, type=str, default='')
 parser.add_argument('--logfile', type=argparse.FileType('w'), default='learning_log.txt')

@@ -1,6 +1,7 @@
 import bixler
 import math
 
+
 class BixlerController(bixler.Bixler):
     def __init__(self,noise=0.0):
         super(BixlerController,self).__init__(noise)
