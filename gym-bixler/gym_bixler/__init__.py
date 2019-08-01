@@ -11,3 +11,7 @@ register(
     # nondeterministic = True,
 )
 
+register(
+	id='rBixler-v0',
+	entry_point='gym_bixler.envs:RobsBixlerEnv'
+)
