@@ -287,6 +287,7 @@ class Bixler(object):
 
         # Drag
         C_D = C_D0 + C_Dalpha * self.alpha
+
         D = Q * self.S * C_D
         X = -D
         

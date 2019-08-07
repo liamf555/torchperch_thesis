@@ -17,11 +17,5 @@ class CustomPolicy(FeedForwardPolicy):
 
 env = gym.make('Bixler-v0')
 model = DQN(CustomPolicy, env, verbose = 1)
-model.learn(total_timesteps = 10000)
-model.save("deepq_cartpole")
-
-obs = env.reset()
-while True:
-    action, _states = model.predict(obs)
-    obs, rewards, done, info = env.step(action)
-    env.render()
+model.learn(total_timesteps = 100000)
+model.save("deepq_bixler")
