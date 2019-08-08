@@ -65,6 +65,8 @@ class BixlerEnv(gym.Env):
 
         info = {}
 
+        self.state_data()
+
         return obs, reward, done, info
         
 
