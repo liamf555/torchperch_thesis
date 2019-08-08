@@ -23,7 +23,7 @@ def check_scenario(scenario_name):
 		raise ValueError(msg)
 
 class BixlerEnv(gym.Env):
-    metadata = {'render.modes': []}
+    metadata = {'render.modes': ['file', 'none']}
 
     def __init__(self, controller='sweep_elevator',
 			scenario='perching',
@@ -44,6 +44,8 @@ class BixlerEnv(gym.Env):
         self.action_space = gym.spaces.Discrete(self.scenario.actions)
 
         self.observation_space = gym.spaces.Box(low=0, high = 1, shape = (1, self.scenario.state_dims))
+
+        self.state = self.bixler.get_state[1]
 
     def step(self, action):
         # peform action
@@ -74,9 +76,29 @@ class BixlerEnv(gym.Env):
         return self.bixler.get_normalized_state()
 
      
-    def render(self, mode):
-         super(BixlerEnv, self).render(mode=mode) # just raise an exception
+    def render(self, mode='file', **kwargs):
+
+        if mode == 'file':
+            self._render_to_file(kwargs.get('filename', 'render.txt'))
     
+     
+    def state_data(self):
+
+        self.time += 0.1
+        self.state = self.bixler.get_state[1]
+
+    def _render_to_file(self, filename='/tmp/gym/render.txt'):
+
         
+        with open file (filename, 'a+') as file:
+
+            file.write(f'Time: {self.time}')
+            file.write(f'Altitude: {-self.state}')
+
+        file.close()
+        
+
+
+
 
         
