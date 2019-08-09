@@ -4,6 +4,8 @@ performing a perched landing manoeuvre.
 """
 import gym
 import numpy as np 
+import pandas as pd
+import matplotlib.pyplot as plt
 
 import controllers
 import scenarios
@@ -45,8 +47,17 @@ class BixlerEnv(gym.Env):
 
         self.observation_space = gym.spaces.Box(low=0, high = 1, shape = (1, self.scenario.state_dims))
 
-        self.state = self.bixler.get_state[1]
 
+        self.bixler.reset_scenario()
+        self.state = self.bixler.get_state()
+        
+        state_list = self.state[0].tolist()
+        state_list.insert(0, 0)
+        self.state_array = []
+        self.state_array.append(state_list)
+
+        self.render_flag = False
+    
     def step(self, action):
         # peform action
 
@@ -65,8 +76,6 @@ class BixlerEnv(gym.Env):
 
         info = {}
 
-        self.state_data()
-
         return obs, reward, done, info
         
 
@@ -74,30 +83,104 @@ class BixlerEnv(gym.Env):
     def reset(self):
 
         self.bixler.reset_scenario()
+        self.time = 0
 
         return self.bixler.get_normalized_state()
 
      
-    def render(self, mode='file', **kwargs):
+    def render(self, mode='file'):
+
+        self.render_flag = True
 
         if mode == 'file':
-            self._render_to_file(kwargs.get('filename', 'render.txt'))
+            self._render_to_file()
+
     
-     
-    def state_data(self):
+    def _render_to_file(self):
 
         self.time += 0.1
-        self.state = self.bixler.get_state[1]
+        self.state = self.bixler.get_state()
+        state_list = self.state[0].tolist()
+        state_list.insert(0, self.time)
+        self.state_array.append(state_list)
+    
 
-    def _render_to_file(self, filename='/tmp/gym/render.txt'):
+    def close(self, filename='./data'):
+
+        if self.render_flag == True:
+
+            self.df = pd.DataFrame(self.state_array,columns = ['time', 'x','y', 'z', 'roll', 'pitch', 'yaw', 'u', 'v', 'w', 'p', 'q', 'r', 'sweep', 'elev'])
+            self.plot_data()
+            plt.show()
+            print(self.df.to_string())
+
+            
+
+            self.df.to_pickle(f'{filename}.pkl')
+            self.df.to_csv(f'{filename}.csv', index=False)
+
+    def plot_data(self):
+
+        fig = plt.figure()
+
+        ax1 = fig.add_subplot(3,2,1)
+        #pitch
+        self.df['pitch'] = np.rad2deg(self.df['pitch'])
+        self.df.plot(x = 'time', y = 'pitch',  ax = ax1, legend=False)
+        ax1.set_xlabel("Time (seconds)")
+        ax1.set_ylabel(r'$\theta$ (deg)')
+        ax1.grid()
+
+        ax2 = fig.add_subplot(3,2,2)
+        #pitch rate
+        self.df['q'] = np.rad2deg(self.df['q'])
+        self.df.plot(x = 'time', y = 'q',  ax = ax2, legend=False)
+        ax2.set_xlabel("Time (seconds)")
+        ax2.set_ylabel(r'q (deg/s)')
+        ax2.grid()
+
+        ax3 = fig.add_subplot(3,2,3)
+        #Sweep
+        self.df.plot(x = 'time', y = 'sweep',  ax = ax3, legend=False)
+        ax3.set_xlabel("Time (seconds)")
+        ax3.set_ylabel(r'Sweep (deg)')
+        ax3.grid()
+
+        ax4 = fig.add_subplot(3,2,4)
+        #elev
+        self.df.plot(x = 'time', y = 'elev',  ax = ax4, legend=False)
+        ax4.set_xlabel("Time (seconds)")
+        ax4.set_ylabel(r'Elevator (deg)')
+        ax4.grid()
+
+        ax5 = fig.add_subplot(3,2,5)
+        #x vs y
+        self.df['altitude'] = (self.df['z']*-1)
+        self.df.plot(x = 'x', y = 'altitude',  ax = ax5, legend=False)
+        ax5.set_xlabel("x position (m)")
+        ax5.set_ylabel(r'Height (m)')
+        ax5.grid()
+
+        ax6 = fig.add_subplot(3,2,6)
+        #airspeed
+        self.df['airspeed'] = np.sqrt((self.df['u']**2)+(self.df['v']**2)+(self.df['w']**2))
+
+        self.df.plot(x = 'time', y = 'airspeed',  ax = ax6, legend=False)
+        ax6.set_xlabel("Time (seconds)")
+        ax6.set_ylabel(r'Airspeed (m/s)')
+        ax6.grid()
+
+
+
+
+
 
         
-        with open file (filename, 'a+') as file:
 
-            file.write(f'Time: {self.time}')
-            file.write(f'Altitude: {-self.state}')
+        
 
-        file.close()
+        
+        
         
 
 

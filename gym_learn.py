@@ -16,6 +16,17 @@ class CustomPolicy(FeedForwardPolicy):
                                            feature_extraction="mlp")
 
 env = gym.make('Bixler-v0')
-model = DQN(CustomPolicy, env, verbose = 1)
-model.learn(total_timesteps = 100000)
+model = DQN(CustomPolicy, env, verbose = 0)
+model.learn(total_timesteps = 1000)
 model.save("deepq_bixler")
+
+obs = env.reset()
+
+while True:
+    action, _states = model.predict(obs)
+    obs, rewards, done, info = env.step(action)
+    if done == True:
+        break
+    env.render()
+env.close()
+  
