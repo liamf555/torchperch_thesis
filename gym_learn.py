@@ -28,5 +28,5 @@ while True:
     if done == True:
         break
     env.render()
-env.close()
+env.close('./testing')
   

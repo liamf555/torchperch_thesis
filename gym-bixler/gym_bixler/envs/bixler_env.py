@@ -105,7 +105,7 @@ class BixlerEnv(gym.Env):
         self.state_array.append(state_list)
     
 
-    def close(self, filename='./data'):
+    def close(self):
 
         if self.render_flag == True:
 
@@ -114,10 +114,8 @@ class BixlerEnv(gym.Env):
             plt.show()
             print(self.df.to_string())
 
-            
-
-            self.df.to_pickle(f'{filename}.pkl')
-            self.df.to_csv(f'{filename}.csv', index=False)
+            self.df.to_pickle('/tmp/gym/infer/state_data')
+            self.df.to_csv('/tmp/gym/infer/state_data', index=False)
 
     def plot_data(self):
 
