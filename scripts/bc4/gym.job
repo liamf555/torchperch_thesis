@@ -4,7 +4,7 @@
 #SBATCH --partition=test
 #SBATCH --nodes=1
 #SBATCH --mail-type END
-#SBATCH --mail-user robert.clarke@bristol.ac.uk
+#SBATCH --mail-user liam.fletcher@bristol.ac.uk
 
 #SBATCH --time=0:30:00
 
@@ -35,4 +35,4 @@ echo "Beginning training"
 
 JOB_NID=${SLURM_JOBID}-${SLURM_ARRAY_TASK_ID}
 
-exec python ${CODE_ROOT}/gym_test.py
+exec python ${CODE_ROOT}/gym_bc.py
