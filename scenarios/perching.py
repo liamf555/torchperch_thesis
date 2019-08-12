@@ -5,7 +5,7 @@ import argparse
 # Perching scenario
 
 parser = argparse.ArgumentParser(prog='Perching Scenario', usage='--scenario-opts "[options]"')
-parser.add_argument('--no-random-start', action='store_false', dest='random_start', default=True)
+parser.add_argument('--no-random-start', action='store_false', dest='random_start', default=False)
 parser.add_argument('--height-limit', type=float, default=10)
 
 

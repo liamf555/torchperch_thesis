@@ -31,7 +31,6 @@ class BixlerEnv(gym.Env):
 			scenario='perching',
 			scenario_opts=''):
 
-       
         self.scenario = check_scenario(scenario)
         self.controller = check_controller(controller)
 		
@@ -47,6 +46,7 @@ class BixlerEnv(gym.Env):
 
         self.observation_space = gym.spaces.Box(low=0, high = 1, shape = (1, self.scenario.state_dims))
 
+        self.reward_range = (0.0,1.0)
 
         self.bixler.reset_scenario()
         self.state = self.bixler.get_state()
@@ -57,6 +57,7 @@ class BixlerEnv(gym.Env):
         self.state_array.append(state_list)
 
         self.render_flag = False
+
     
     def step(self, action):
         # peform action
@@ -70,15 +71,14 @@ class BixlerEnv(gym.Env):
         obs = self.bixler.get_normalized_state()
 
         #get reward
-        reward = self.bixler.get_reward()
+        self.reward = self.bixler.get_reward()
 		
         done = self.bixler.is_terminal()
 
         info = {}
 
-        return obs, reward, done, info
+        return obs, self.reward, done, info
         
-
 
     def reset(self):
 
@@ -103,9 +103,10 @@ class BixlerEnv(gym.Env):
         state_list = self.state[0].tolist()
         state_list.insert(0, self.time)
         self.state_array.append(state_list)
+        
     
 
-    def close(self):
+    def close(self, output_path):
 
         if self.render_flag == True:
 
@@ -114,9 +115,11 @@ class BixlerEnv(gym.Env):
             plt.show()
             print(self.df.to_string())
 
-            self.df.to_pickle('/tmp/gym/infer/state_data')
-            self.df.to_csv('/tmp/gym/infer/state_data', index=False)
+            self.df.to_pickle(f'{output_path}.pkl')
+            self.df.to_csv(f'{output_path}.csv', index=False)
 
+
+   
     def plot_data(self):
 
         fig = plt.figure()
@@ -150,6 +153,7 @@ class BixlerEnv(gym.Env):
         ax4.set_xlabel("Time (seconds)")
         ax4.set_ylabel(r'Elevator (deg)')
         ax4.grid()
+        
 
         ax5 = fig.add_subplot(3,2,5)
         #x vs y
@@ -158,30 +162,12 @@ class BixlerEnv(gym.Env):
         ax5.set_xlabel("x position (m)")
         ax5.set_ylabel(r'Height (m)')
         ax5.grid()
+        
 
         ax6 = fig.add_subplot(3,2,6)
         #airspeed
         self.df['airspeed'] = np.sqrt((self.df['u']**2)+(self.df['v']**2)+(self.df['w']**2))
-
         self.df.plot(x = 'time', y = 'airspeed',  ax = ax6, legend=False)
         ax6.set_xlabel("Time (seconds)")
         ax6.set_ylabel(r'Airspeed (m/s)')
         ax6.grid()
-
-
-
-
-
-
-        
-
-        
-
-        
-        
-        
-
-
-
-
-        
