@@ -28,7 +28,7 @@ model = DQN('MlpPolicy', env, verbose = 0, tensorboard_log="/output/log")
 # model = PPO2(MlpPolicy, env, verbose=1, tensorboard_log="../log")
 
 start = timeit.default_timer()
-model.learn(total_timesteps = 1000000)
+model.learn(total_timesteps = 1000)
 
 
 model.save("/output/DQN_fixed")

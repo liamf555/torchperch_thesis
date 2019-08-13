@@ -1,0 +1,10 @@
+# bluecrystal_p3_gym
+
+
+module add \
+  openmpi/gcc/64/2.1.1 \
+  tools/git-2.22.0
+
+# Load the conda module + setup
+source ~/.bashrc.d/conda.sh
+

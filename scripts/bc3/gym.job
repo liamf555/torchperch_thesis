@@ -5,7 +5,7 @@
 
 ## Send abort, begin, end mail
 #PBS -m abe
-#PBS -M robert.clarke@bristol.ac.uk
+#PBS -M liam.fletcher@bristol.ac.uk
 
 ## Run with one node and 4 cores per job
 #PBS -l nodes=1:ppn=4
@@ -18,11 +18,11 @@ cd $PBS_O_WORKDIR
 echo "Current working_directory: $PWD"
 
 # Setup the environment for running training and notify
-source environs/bluecrystal_p3
-conda activate pytorch
+source environs/bluecrystal_p3_gym
+conda activate gym
 echo "Activated environment"
 
-SCENARIO="${SCENARIO-cobra}"
+SCENARIO="${SCENARIO-perching}"
 CONTROLLER="${CONTROLLER-sweep_elevator}"
 
 # Echo some meta information
