@@ -6,5 +6,5 @@ module add \
   tools/git-2.22.0
 
 # Load the conda module + setup
-source ~/.bashrc.d/conda.sh
+source /cm/shared/languages/Anaconda3-2019.03/etc/profile.d/conda.sh
 

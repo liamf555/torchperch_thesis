@@ -12,6 +12,16 @@ register(
 )
 
 register(
+    id='Bixler-v2',
+    entry_point='gym_bixler.envs:BixlerEnvContRate',
+)
+
+register(
+    id='Bixler-v1',
+    entry_point='gym_bixler.envs:BixlerEnvCont',
+)
+
+register(
 	id='rBixler-v0',
 	entry_point='gym_bixler.envs:RobsBixlerEnv'
 )

@@ -8,10 +8,10 @@
 #PBS -M liam.fletcher@bristol.ac.uk
 
 ## Run with one node and 4 cores per job
-#PBS -l nodes=1:ppn=4
+#PBS -l nodes=1:ppn=16
 
 ## Run with a maximum of 6h walltime
-#PBS -l walltime=06:00:00
+#PBS -l walltime=10:00:00
 
 # Change to workdir and print
 cd $PBS_O_WORKDIR
@@ -34,9 +34,11 @@ echo "JobID $PBS_JOBID"
 echo "Beginning training"
 
 JOB_NID=${PBS_JOBID%%[.\[]*}${PBS_ARRAYID:+-$PBS_ARRAYID}
-mkdir output/$JOB_NID
+mkdir ../output/$JOB_NID
 
-export OMP_NUM_THREADS=4
+export OMP_NUM_THREADS=16
 export KMP_AFFINITY=granularity=fine,compact,1,0
 
-exec python ${CODE_ROOT}/gym_bc.py
+exec python gym_bc.py --model_file ../output/$JOB_NID/PPO_cont_rate \
+	--algo PPO \
+	--logfile ../output/$JOB_NID
