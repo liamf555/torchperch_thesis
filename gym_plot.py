@@ -16,6 +16,7 @@ parser = argparse.ArgumentParser(description='Load trained model and plot result
 parser.add_argument('--input', type=str, default = '../models/deepq_bixler' )
 parser.add_argument('--output', type=str, default = '../data/output' )
 parser.add_argument('--algo', type = str, default = 'DQN')
+parser.add_argument('--mode', type = str, default = 'save_file')
 args = parser.parse_args()
 
 env = gym.make('Bixler-v0')   
@@ -43,5 +44,5 @@ while True:
     obs, rewards, done, info = env.step(action)
     if done == True:
         break
-    env.render()
+    env.render(args.mode)
 env.close()
