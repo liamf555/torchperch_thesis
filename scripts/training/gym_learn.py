@@ -1,32 +1,48 @@
 import gym
-#from gym_bixler.envs.bixler_env import BixlerEnv
 import gym_bixler
 
+from stable_baselines.common.vec_env import DummyVecEnv
+from stable_baselines.common.policies import MlpPolicy
+from stable_baselines.common.vec_env import SubprocVecEnv
 
-from stable_baselines.deepq.policies import FeedForwardPolicy
 from stable_baselines import DQN
+from stable_baselines import PPO1
+from stable_baselines import ACKTR
+from stable_baselines import A2C
+from stable_baselines import TRPO
 
-#env = DummyVecEnv([lambda: BixlerEnv])
 
-class CustomPolicy(FeedForwardPolicy):
-    def __init__(self, *args, **kwargs):
-        super(CustomPolicy, self).__init__(*args, **kwargs,
-                                           layers=[512, 512, 512, 512],
-                                           layer_norm=False,
-                                           feature_extraction="mlp")
+import argparse
 
-env = gym.make('Bixler-v0')
-model = DQN(CustomPolicy, env, verbose = 0)
+parser = argparse.ArgumentParser(description='RL for Bixler UAV')
+parser.add_argument('--model_file', type=str, default='../output/DQN_fixed')
+parser.add_argument('--algo', type=str, default ='DQN')
+parser.add_argument('--logfile', type = str, default='../output/logs')
+args = parser.parse_args()
+
+
+if (args.algo == 'DQN'):
+    env = gym.make('Bixler-v0')
+    model = DQN('MlpPolicy', env, verbose = 1, tensorboard_log=args.logfile)
+elif (args.algo == 'ACKTR'):
+    env = gym.make('Bixler-v0')
+    env = DummyVecEnv([lambda: env])
+    model = ACKTR(MlpPolicy, env, verbose=0, tensorboard_log=args.logfile)
+elif (args.algo == 'A2C'):
+    env = gym.make('Bixler-v0')
+    env = DummyVecEnv([lambda: env])
+    model = A2C(MlpPolicy, env, verbose=0, tensorboard_log=args.logfile)
+elif(args.algo == 'PPO'):
+    env = gym.make('Bixler-v0')
+    env = DummyVecEnv([lambda: env])
+    model = PPO1(MlpPolicy, env, verbose=1, tensorboard_log=args.logfile)
+elif (args.algo == 'TRPO'):
+    env = gym.make('Bixler-v0')
+    env = DummyVecEnv([lambda: env])
+    model = TRPO(MlpPolicy, env, verbose=0, tensorboard_log=args.logfile)
+
+
 model.learn(total_timesteps = 1000)
-model.save("deepq_bixler")
 
-obs = env.reset()
 
-while True:
-    action, _states = model.predict(obs)
-    obs, rewards, done, info = env.step(action)
-    if done == True:
-        break
-    env.render()
-env.close('./testing')
-  
+model.save(args.model_file)

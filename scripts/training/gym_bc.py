@@ -23,7 +23,7 @@ args = parser.parse_args()
 
 if (args.algo == 'DQN'):
     env = gym.make('Bixler-v0')
-    model = DQN('MlpPolicy', env, verbose = 0, tensorboard_log=args.logfile)
+    model = DQN('MlpPolicy', env, verbose = 1, tensorboard_log=args.logfile)
 elif (args.algo == 'ACKTR'):
     env = gym.make('Bixler-v0')
     env = DummyVecEnv([lambda: env])
@@ -35,13 +35,15 @@ elif (args.algo == 'A2C'):
 elif(args.algo == 'PPO'):
     env = gym.make('Bixler-v0')
     env = DummyVecEnv([lambda: env])
-    model = PPO1(MlpPolicy, env, verbose=0, tensorboard_log=args.logfile)
+    model = PPO1(MlpPolicy, env, verbose=1, tensorboard_log=args.logfile)
 elif (args.algo == 'TRPO'):
     env = gym.make('Bixler-v0')
     env = DummyVecEnv([lambda: env])
     model = TRPO(MlpPolicy, env, verbose=0, tensorboard_log=args.logfile)
 
 
-model.learn(total_timesteps = 1000000)
+
+model.learn(total_timesteps = 1000)
+
 
 model.save(args.model_file)
