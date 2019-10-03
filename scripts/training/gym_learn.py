@@ -20,24 +20,20 @@ parser.add_argument('--algo', type=str, default ='DQN')
 parser.add_argument('--logfile', type = str, default='../output/logs')
 args = parser.parse_args()
 
+env = gym.make('Bixler-v0')
 
 if (args.algo == 'DQN'):
-    env = gym.make('Bixler-v0')
     model = DQN('MlpPolicy', env, verbose = 1, tensorboard_log=args.logfile)
 elif (args.algo == 'ACKTR'):
-    env = gym.make('Bixler-v0')
     env = DummyVecEnv([lambda: env])
     model = ACKTR(MlpPolicy, env, verbose=0, tensorboard_log=args.logfile)
 elif (args.algo == 'A2C'):
-    env = gym.make('Bixler-v0')
     env = DummyVecEnv([lambda: env])
     model = A2C(MlpPolicy, env, verbose=0, tensorboard_log=args.logfile)
 elif(args.algo == 'PPO'):
-    env = gym.make('Bixler-v0')
     env = DummyVecEnv([lambda: env])
     model = PPO1(MlpPolicy, env, verbose=1, tensorboard_log=args.logfile)
 elif (args.algo == 'TRPO'):
-    env = gym.make('Bixler-v0')
     env = DummyVecEnv([lambda: env])
     model = TRPO(MlpPolicy, env, verbose=0, tensorboard_log=args.logfile)
 
