@@ -1,3 +1,4 @@
+import numpy as np
 import gym
 import gym_bixler
 import bixler
@@ -45,14 +46,14 @@ def check_heartbeat(master):
 
 def transform_obs(msg):
 
-    #get real state
+    # get real state
     state = process_msg(msg)
 
     # define offset
     x_offset = 40
     z_offset = -2
 
-    # define transformation matrix
+    # define transformation
     yaw = state[5]
 
     cy = np.cos(yaw)
@@ -63,6 +64,27 @@ def transform_obs(msg):
         [sy, cy, 0]
         [0, 0, 1]
         ])
+
+    offset_vector = np.array([[x_offset], [0], [-z_offset]])
+
+    offset_vector = np.matmul(rot, position_vector)
+
+    position = state[0:3]
+
+    o_agent_ekf = position - offset_vector
+
+    np.transpose 
+
+
+
+    return 
+
+
+
+
+
+
+
 
     
 
@@ -81,7 +103,7 @@ model = ModelType.load(args.trained_model_file.name)
 
 # Establish connection to autopilot
 MAVLINK20=1 python3 -i -c "from pymavlink import mavutil; mav = mavutil.mavlink_connection('/dev/ttyS0,115200')"
-master = mavutil.mavlink_connection('/dev/ttyS0', baud=115200, source_system=1, source_component=158)
+#master = mavutil.mavlink_connection('/dev/ttyS0', baud=115200, source_system=1, source_component=158)
 #master = mavutil.mavlink_connection('/dev/ttyTHS2', baud=57600, source_system=1, source_component=158)
 
 # Wait for ArduPilot to be up and running
