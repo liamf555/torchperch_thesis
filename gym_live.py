@@ -43,6 +43,52 @@ def check_heartbeat(master):
         print('Sent heartbeat')
 
 
+class Transform():
+
+    def __init__(self):
+        self.o_agent_ekf = np.zeros((3,1))
+        self.rotation = np.identity(3)
+        self.offset_vector = np.array([[x_offset], [0], [-z_offset]])
+
+    def setup(self, state):
+
+        yaw = state[5]
+
+        cy = np.cos(yaw)
+        sy = np.sin(yaw)
+
+        rot = np.array([
+            [cy, -sy, 0]
+            [sy, cy, 0]
+            [0, 0, 1]
+            ])
+
+        offset_vector_rot = np.matmul(rot, position_vector)
+
+        position = state[0:3]
+
+       self.o_agent_ekf = position - offset_vector_rot
+
+       self.rotation = np.transpose(rot)
+
+    def apply(self, state):
+
+        position_ekf = state[0:3]
+
+        rel_pos_ekf = position_ekf - self.o_agent_ekf
+
+        pos_agent = np.matmul(self.rotation, rel_pos_ekf)
+
+        pos_agent[1] = 0
+
+        state[0:3] = pos_agent
+
+        return state
+
+
+
+
+
 
 def transform_obs(msg):
 
@@ -73,11 +119,12 @@ def transform_obs(msg):
 
     o_agent_ekf = position - offset_vector
 
-    np.transpose 
+    rot_inv = np.transpose(rot)
 
+    orientation = state[3:6]
 
-
-    return 
+    np.matmul     
+    return  
 
 
 
@@ -113,48 +160,60 @@ master.wait_heartbeat()
 check_heartbeat.last_heartbeat_time = time.time() - 10.0
 check_heartbeat(master)
 
+transform = Transform()
+reset_flag = False
+emit_action = False
+
 while True:
     #Send heartbeat if needed
     check_heartbeat(master)
 
-    if switch_flag == True:
+    # Check for new MLAGENT_STATE message
+    msg = master.recv_msg()
+    if msg is None:
+        continue
+    if not hasattr(msg,'name'):
+        continue
+    if msg.name is not 'MLAGENT_STATE':
+        if msg.name is 'PARAM_REQUEST_LIST':
+            # If an attempt to get parameters is made, return a PARAM_VALUE message indicating no parameters
+            master.mav.param_value_send("",0,master.mavlink.MAV_PARAM_TYPE_UINT8,0,0)
+        if msg.name == 'STATUSTEXT':
+            if True: # Detected expr mode entry
+                reset_flag = True
+                emit_action = True
+            if False: # Experimetn done
+                emit_action = False
+        continue
 
-        # Check for new MLAGENT_STATE message
-        msg = master.recv_msg()
-        if msg is None:
-            continue
-        if not hasattr(msg,'name'):
-            continue
-        if msg.name is not 'MLAGENT_STATE':
-            if msg.name is 'PARAM_REQUEST_LIST':
-                # If an attempt to get parameters is made, return a PARAM_VALUE message indicating no parameters
-                master.mav.param_value_send("",0,master.mavlink.MAV_PARAM_TYPE_UINT8,0,0)
-            continue
+     # Extract state from message	
+    real_state = process_msg(msg)
 
-        # calculate obs first time round and each time switch activated
-         if reset_flag == True:
-            obs = transform_obs(msg)
-            reset_flag == False 
+    # calculate obs first time round and each time switch activated
+    if reset_flag == True:
+        obs = transform.setup(real_state)
+        reset_flag = False
+    
+    real_state = transform.apply(real_state)
 
-        # Get optimal action
-        action, _states = model.predict(obs, deterministic=True)
+    # Normalise state for model
+    obs = env.bixler.get_normalized_state(real_state)
 
-        # Convert action index to actions
-        env.bixler.set_action(action)
+    # Get optimal action
+    action, _states = model.predict(obs, deterministic=True)
 
-        # Get rates from bixler model
-        sweep_rate = env.bixler.sweep_rate
-        elev_rate = env.bixler.elev_rate
+    # Convert action index to actions
+    env.bixler.set_action(action)
 
+    # Get rates from bixler model
+    sweep_rate = env.bixler.sweep_rate
+    elev_rate = env.bixler.elev_rate
+
+    if emit_action:
         # Pass action on to autopilot
         master.mav.mlagent_action_send(1,1,sweep_rate, elev_rate)
 
-        # Extract state from message	
-        real_state = process_msg(msg)
-
-        # Normalise state for model
-        obs = env.bixler.get_normalized_state(real_state)
-  
+    
 
 
         
