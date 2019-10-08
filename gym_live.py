@@ -8,7 +8,7 @@ import stable_baselines
 from stable_baselines.deepq.policies import FeedForwardPolicy
 from stable_baselines import DQN
 
-from pymavlink import mavutil
+# from pymavlink import mavutil
 
 import argparse
 
@@ -22,6 +22,7 @@ def check_algorithm(algorithm_name):
 parser = argparse.ArgumentParser(prog='gym_infer', description="Live inference script for generic stable_baselines model")
 parser.add_argument('--algorithm', '-a', type=check_algorithm, required=True)
 parser.add_argument('trained_model_file', type=argparse.FileType('r'))
+parser.add_argument('--env', type=str, default = 'Bixler-v0')
 args = parser.parse_args()
 
 def process_msg(msg):
@@ -31,6 +32,7 @@ def process_msg(msg):
                       msg.phi,   msg.theta,    msg.psi,
                       msg.u,     msg.v,        msg.w,
                       msg.p,     msg.q,        msg.r,
+                      msg.sweep, msg.elevator
 	                  ]])
 
 def check_heartbeat(master):
@@ -39,12 +41,46 @@ def check_heartbeat(master):
         check_heartbeat.last_heartbeat_time = time.time()
         print('Sent heartbeat')
 
+
+
+def transform_obs(msg):
+
+    #get real state
+    state = process_msg(msg)
+
+    # define offset
+    x_offset = 40
+    z_offset = -2
+
+    # define transformation matrix
+    yaw = state[5]
+
+    cy = np.cos(yaw)
+    sy = np.sin(yaw)
+
+    rot = np.array([
+        [cy, -sy, 0]
+        [sy, cy, 0]
+        [0, 0, 1]
+        ])
+
+    
+
+
+
+    
+
+
+
+
 # Setup the model for inference
+
+env = gym.make(args.env)
 ModelType = args.algorithm
 model = ModelType.load(args.trained_model_file.name)
 
 # Establish connection to autopilot
-#MAVLINK20=1 python3 -i -c "from pymavlink import mavutil; mav = mavutil.mavlink_connection('/dev/ttyS0,115200')"
+MAVLINK20=1 python3 -i -c "from pymavlink import mavutil; mav = mavutil.mavlink_connection('/dev/ttyS0,115200')"
 master = mavutil.mavlink_connection('/dev/ttyS0', baud=115200, source_system=1, source_component=158)
 #master = mavutil.mavlink_connection('/dev/ttyTHS2', baud=57600, source_system=1, source_component=158)
 
@@ -55,35 +91,51 @@ master.wait_heartbeat()
 check_heartbeat.last_heartbeat_time = time.time() - 10.0
 check_heartbeat(master)
 
-
 while True:
-    # Send heartbeat if needed
+    #Send heartbeat if needed
     check_heartbeat(master)
 
-    # Check for new MLAGENT_STATE message
-    msg = master.recv_msg()
-    if msg is None:
-        continue
-    if not hasattr(msg,'name'):
-        continue
-    if msg.name is not 'MLAGENT_STATE':
-        if msg.name is 'PARAM_REQUEST_LIST':
-            # If an attempt to get parameters is made, return a PARAM_VALUE message indicating no parameters
-            master.mav.param_value_send("",0,master.mavlink.MAV_PARAM_TYPE_UINT8,0,0)
-        continue
+    if switch_flag == True:
 
-    # Extract state from message	
-    real_state = process_msg(msg)
+        # Check for new MLAGENT_STATE message
+        msg = master.recv_msg()
+        if msg is None:
+            continue
+        if not hasattr(msg,'name'):
+            continue
+        if msg.name is not 'MLAGENT_STATE':
+            if msg.name is 'PARAM_REQUEST_LIST':
+                # If an attempt to get parameters is made, return a PARAM_VALUE message indicating no parameters
+                master.mav.param_value_send("",0,master.mavlink.MAV_PARAM_TYPE_UINT8,0,0)
+            continue
 
-    # Normalise state for model
-    # TODO: env may be None, unclear if it is stored when saved
-    obs = model.get_env().normalise_state(real_state)
-    bixler.set_state(state)
-    q_matrix = model( torch.from_numpy(bixler.get_normalized_state()).double() )
+        # calculate obs first time round and each time switch activated
+         if reset_flag == True:
+            obs = transform_obs(msg)
+            reset_flag == False 
 
-    # Get optimal? action
-    action, _states = model.predict(obs, deterministic=True)
+        # Get optimal action
+        action, _states = model.predict(obs, deterministic=True)
 
-    # Pass action on to autopilot
-    real_action = model.get_env().controller.convert_action(action)
-    master.mav.mlagent_action_send(1,1,real_action[0,0],real_action[0,1])
+        # Convert action index to actions
+        env.bixler.set_action(action)
+
+        # Get rates from bixler model
+        sweep_rate = env.bixler.sweep_rate
+        elev_rate = env.bixler.elev_rate
+
+        # Pass action on to autopilot
+        master.mav.mlagent_action_send(1,1,sweep_rate, elev_rate)
+
+        # Extract state from message	
+        real_state = process_msg(msg)
+
+        # Normalise state for model
+        obs = env.bixler.get_normalized_state(real_state)
+  
+
+
+        
+
+
+    
