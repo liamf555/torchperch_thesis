@@ -9,7 +9,7 @@ import stable_baselines
 from stable_baselines.deepq.policies import FeedForwardPolicy
 from stable_baselines import DQN
 
-# from pymavlink import mavutil
+from pymavlink import mavutil
 
 import argparse
 
@@ -48,32 +48,33 @@ class Transform():
     def __init__(self):
         self.o_agent_ekf = np.zeros((3,1))
         self.rotation = np.identity(3)
-        self.offset_vector = np.array([[x_offset], [0], [-z_offset]])
+        self.offset_vector = np.array([[40], [0], [2]])
 
     def setup(self, state):
 
-        yaw = state[5]
+        position_ekf = np.transpose(state[:,0:3])
+        yaw = state[0,5]
 
         cy = np.cos(yaw)
         sy = np.sin(yaw)
 
         rot = np.array([
-            [cy, -sy, 0]
-            [sy, cy, 0]
+            [cy, -sy, 0],
+            [sy, cy, 0],
             [0, 0, 1]
             ])
 
-        offset_vector_rot = np.matmul(rot, position_vector)
+        offset_vector_rot = np.matmul(rot, self.offset_vector)
 
-        position = state[0:3]
+        position = np.transpose(state[:,0:3])
 
-       self.o_agent_ekf = position - offset_vector_rot
+        self.o_agent_ekf = position + offset_vector_rot
 
-       self.rotation = np.transpose(rot)
+        self.rotation = np.transpose(rot)
 
     def apply(self, state):
 
-        position_ekf = state[0:3]
+        position_ekf = np.transpose(state[:,0:3])
 
         rel_pos_ekf = position_ekf - self.o_agent_ekf
 
@@ -81,66 +82,9 @@ class Transform():
 
         pos_agent[1] = 0
 
-        state[0:3] = pos_agent
+        state[:,0:3] = np.transpose(pos_agent)
 
         return state
-
-
-
-
-
-
-def transform_obs(msg):
-
-    # get real state
-    state = process_msg(msg)
-
-    # define offset
-    x_offset = 40
-    z_offset = -2
-
-    # define transformation
-    yaw = state[5]
-
-    cy = np.cos(yaw)
-    sy = np.sin(yaw)
-
-    rot = np.array([
-        [cy, -sy, 0]
-        [sy, cy, 0]
-        [0, 0, 1]
-        ])
-
-    offset_vector = np.array([[x_offset], [0], [-z_offset]])
-
-    offset_vector = np.matmul(rot, position_vector)
-
-    position = state[0:3]
-
-    o_agent_ekf = position - offset_vector
-
-    rot_inv = np.transpose(rot)
-
-    orientation = state[3:6]
-
-    np.matmul     
-    return  
-
-
-
-
-
-
-
-
-    
-
-
-
-    
-
-
-
 
 # Setup the model for inference
 
@@ -149,8 +93,8 @@ ModelType = args.algorithm
 model = ModelType.load(args.trained_model_file.name)
 
 # Establish connection to autopilot
-MAVLINK20=1 python3 -i -c "from pymavlink import mavutil; mav = mavutil.mavlink_connection('/dev/ttyS0,115200')"
-#master = mavutil.mavlink_connection('/dev/ttyS0', baud=115200, source_system=1, source_component=158)
+#MAVLINK20=1 python3 -i -c "from pymavlink import mavutil; mav = mavutil.mavlink_connection('/dev/ttyS0,115200')"
+master = mavutil.mavlink_connection('/dev/ttyS0', baud=115200, source_system=1, source_component=158)
 #master = mavutil.mavlink_connection('/dev/ttyTHS2', baud=57600, source_system=1, source_component=158)
 
 # Wait for ArduPilot to be up and running
@@ -179,25 +123,30 @@ while True:
             # If an attempt to get parameters is made, return a PARAM_VALUE message indicating no parameters
             master.mav.param_value_send("",0,master.mavlink.MAV_PARAM_TYPE_UINT8,0,0)
         if msg.name == 'STATUSTEXT':
-            if True: # Detected expr mode entry
+            if 'enabled' in str(msg.text): # Detected expr mode entry
+                print('Experiment enabled, resetting transform')
                 reset_flag = True
                 emit_action = True
-            if False: # Experimetn done
+            if 'disabled' in str(msg.text): # Experiment done
+                print('Experiment disabled, disabling output')
                 emit_action = False
         continue
 
-     # Extract state from message	
+    # Extract state from message
     real_state = process_msg(msg)
 
     # calculate obs first time round and each time switch activated
     if reset_flag == True:
-        obs = transform.setup(real_state)
+        transform.setup(real_state)
+       # print(transform.rotation)
         reset_flag = False
-    
-    real_state = transform.apply(real_state)
+
+    transformed_state = transform.apply(real_state.copy())
+
+    print("r_ekf: {}, r_a: {}".format( str(real_state), str(transformed_state[:,0:3]) ) )
 
     # Normalise state for model
-    obs = env.bixler.get_normalized_state(real_state)
+    obs = env.bixler.get_normalized_state(transformed_state)
 
     # Get optimal action
     action, _states = model.predict(obs, deterministic=True)
@@ -212,11 +161,3 @@ while True:
     if emit_action:
         # Pass action on to autopilot
         master.mav.mlagent_action_send(1,1,sweep_rate, elev_rate)
-
-    
-
-
-        
-
-
-    
