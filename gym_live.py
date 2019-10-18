@@ -121,7 +121,7 @@ while True:
     if msg.name is not 'MLAGENT_STATE':
         if msg.name is 'PARAM_REQUEST_LIST':
             # If an attempt to get parameters is made, return a PARAM_VALUE message indicating no parameters
-            master.mav.param_value_send("",0,master.mavlink.MAV_PARAM_TYPE_UINT8,0,0)
+            master.mav.param_value_send("",0,mavutil.mavlink.MAV_PARAM_TYPE_UINT8,0,0)
         if msg.name == 'STATUSTEXT':
             if 'enabled' in str(msg.text): # Detected expr mode entry
                 print('Experiment enabled, resetting transform')
@@ -143,7 +143,7 @@ while True:
 
     transformed_state = transform.apply(real_state.copy())
 
-    print("r_ekf: {}, r_a: {}".format( str(real_state), str(transformed_state[:,0:3]) ) )
+    print("r_ekf: {}, r_a: {}".format( str(real_state[:,0:3]), str(transformed_state[:,0:3]) ) )
 
     # Normalise state for model
     obs = env.bixler.get_normalized_state(transformed_state)
