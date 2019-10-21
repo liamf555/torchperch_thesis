@@ -55,7 +55,7 @@ class Bixler(object):
         
         # Control surface limits
         self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
-        self.elev_limits = np.rad2deg([-0.1745, 0.1745])
+        self.elev_limits = np.rad2deg([-0.3491, 0.3491]) # changed from +- 10 to 20
         
         self.update_air_data()
 
@@ -126,7 +126,7 @@ class Bixler(object):
         
         # Update alpha and beta for next step
         self.update_air_data()
-    
+
     def _update_dcm_earth2body(self):
         roll  = self.orientation_e[0,0]
         theta = self.orientation_e[1,0]
@@ -224,6 +224,7 @@ class Bixler(object):
         self.acceleration_b = self.acceleration_b - self._cross(self.omega_b, self.velocity_b)
         # Generate noise
         noise = np.random.rand(3,1) * self.noiselevel
+        
         # Add noise to acceleration
         self.acceleration_b = self.acceleration_b + noise
 

@@ -29,7 +29,9 @@ class BixlerEnv(Rendermixin, gym.Env):
 
     def __init__(self, controller='sweep_elevator',
 			scenario='perching',
-			scenario_opts=''):
+			scenario_opts='',
+            latency = 0.0,
+            noise = 0.0):
 
         self.scenario = check_scenario(scenario)
         self.controller = check_controller(controller)
@@ -41,6 +43,10 @@ class BixlerEnv(Rendermixin, gym.Env):
             scenario_args = self.scenario.parser.parse_args([])
 
         self.bixler = self.scenario.wrap_class(self.controller, scenario_args)()
+
+        # set noise and latency model. Ok for now but ugly, add into init function eventually
+        self.bixler.latency = latency
+        self.bixler.noiselevel = noise
 
         self.action_space = gym.spaces.Discrete(self.scenario.actions)
 
@@ -58,6 +64,7 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         self.render_flag = False
         self.plot_flag = False
+        
 
     
     def step(self, action):
@@ -65,9 +72,9 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         self.bixler.set_action(action)
 
-        #bixler step function with timestep 1
+        #bixler step function with timestep 0.1
         self.bixler.step(0.1)
-		
+     	
 		#get observation
         obs = self.bixler.get_normalized_state()
 

@@ -68,7 +68,7 @@ class Transform():
 
         position = np.transpose(state[:,0:3])
 
-        self.o_agent_ekf = position + offset_vector_rot
+        self.o_agent_ekf = position_ekf + offset_vector_rot
 
         self.rotation = np.transpose(rot)
 
