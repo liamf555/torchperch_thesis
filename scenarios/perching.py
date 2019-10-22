@@ -6,6 +6,7 @@ import argparse
 
 parser = argparse.ArgumentParser(prog='Perching Scenario', usage='--scenario-opts "[options]"')
 parser.add_argument('--no-random-start', action='store_false', dest='random_start', default=False)
+parser.add_argument('--no-random-vel', action='store_false', dest='random_vel', default=True)
 parser.add_argument('--height-limit', type=float, default=10)
 
 
@@ -69,7 +70,7 @@ def wrap_class(BixlerClass, options):
                 def reset_scenario(self):
                     initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype="float64")
                     if options.random_start:
-                        # Add noise in x,z to the starting position
+                        # Add noise in x,z to the starting position needs fixing
                         start_shift = np.array([[ np.random.rand(), 0, np.random.rand() ]])
                         # Scale for +- 1m in each
                         start_shift = (start_shift - 0.5) * 1
@@ -77,6 +78,11 @@ def wrap_class(BixlerClass, options):
                             start_shift,
                             np.zeros((1,12))
                             ), axis=1)
+                    if options.random_vel:
+                        # Add noise to starting velocity
+                        start_shift =  np.random.uniform(-1.0, 1.0)
+                        # Scale for +- 1m/s
+                        initial_state[:,6] += start_shift
                     self.set_state(initial_state)
 
     return PerchingBixler

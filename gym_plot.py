@@ -1,6 +1,8 @@
 import gym
 import gym_bixler
 
+from gym_bixler.envs.bixler_env import BixlerEnv
+
 import argparse
 
 from stable_baselines.common.vec_env import DummyVecEnv
@@ -17,9 +19,13 @@ parser.add_argument('--input', type=str, default = '../models/deepq_bixler' )
 parser.add_argument('--output', type=str, default = '../data/output' )
 parser.add_argument('--algo', type = str, default = 'DQN')
 parser.add_argument('--mode', type = str, default = 'save_file')
+parser.add_argument('--latency', type = float, default = 0.0)
+parser.add_argument('--noise', type = float, default = 0.0)
 args = parser.parse_args()
 
-env = gym.make('Bixler-v0')   
+# env = gym.make('Bixler-v0')
+
+env = DummyVecEnv([lambda: BixlerEnv(latency = args.latency, noise = args.noise)])
 
 if (args.algo == 'DQN'):
     model = DQN.load(args.input)
