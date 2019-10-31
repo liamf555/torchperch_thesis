@@ -18,14 +18,19 @@ parser = argparse.ArgumentParser(description='Load trained model and plot result
 parser.add_argument('--input', type=str, default = '../models/deepq_bixler' )
 parser.add_argument('--output', type=str, default = '../data/output' )
 parser.add_argument('--algo', type = str, default = 'DQN')
-parser.add_argument('--mode', type = str, default = 'save_file')
+parser.add_argument('--mode', type = str, default = 'plot')
 parser.add_argument('--latency', type = float, default = 0.0)
 parser.add_argument('--noise', type = float, default = 0.0)
 args = parser.parse_args()
 
-# env = gym.make('Bixler-v0')
+env = gym.make('Bixler-v0')
 
-env = DummyVecEnv([lambda: BixlerEnv(latency = args.latency, noise = args.noise)])
+# latencies = [0.0, 0.023]
+# noises = [0.0, 0.3, 0.5, 1.0]
+
+
+# env = DummyVecEnv([lambda: BixlerEnv(latency = args.latency, noise = args.noise)])
+
 
 if (args.algo == 'DQN'):
     model = DQN.load(args.input)
@@ -41,8 +46,11 @@ elif(args.algo == 'PPO'):
 elif (args.algo == 'TRPO'):
     env = DummyVecEnv([lambda: env])
     model = TRPO.load(args.input)
+
+
                                                                                     
 obs = env.reset()
+
 
 while True:
     
