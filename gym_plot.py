@@ -28,6 +28,8 @@ env = gym.make('Bixler-v0')
 # latencies = [0.0, 0.023]
 # noises = [0.0, 0.3, 0.5, 1.0]
 
+env.bixler.latency = args.latency
+env.bixler.noiselevel = args.noise
 
 # env = DummyVecEnv([lambda: BixlerEnv(latency = args.latency, noise = args.noise)])
 
@@ -51,6 +53,8 @@ elif (args.algo == 'TRPO'):
                                                                                     
 obs = env.reset()
 
+print(env.bixler.noiselevel)
+print(env.bixler.latency)
 
 while True:
     

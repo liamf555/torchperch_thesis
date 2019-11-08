@@ -7,12 +7,12 @@ accel_gravity = 9.81 # m.s^-2
 
 class Bixler(object):
     
-    def __init__(self,noise=0.0):
+    def __init__(self,noise=0.0, latency = 0.0):
         # Model parameters
         self.noiselevel = noise
-        
+
         # Physical parameters
-        self.mass = 1.285 # kg
+        self.mass = 1.385 # kg (+100 for Pi, BEC etc)
         self.rho = 1.225  # kg.m^-3
         self.S = 0.26     # m^2
         self.c = 0.2      # m
@@ -224,7 +224,7 @@ class Bixler(object):
         self.acceleration_b = self.acceleration_b - self._cross(self.omega_b, self.velocity_b)
         # Generate noise
         noise = np.random.rand(3,1) * self.noiselevel
-        
+
         # Add noise to acceleration
         self.acceleration_b = self.acceleration_b + noise
 

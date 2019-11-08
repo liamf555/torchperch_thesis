@@ -6,9 +6,7 @@ from gym.envs.registration import register
 register(
     id='Bixler-v0',
     entry_point='gym_bixler.envs:BixlerEnv',
-    # timestep_limit=1000,
-    # reward_threshold=1.0,
-    # nondeterministic = True,
+    kwargs = {'noise': 0.0,'latency': 0.0, 'var_start': True},
 )
 
 register(

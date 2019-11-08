@@ -5,8 +5,6 @@ import argparse
 # Perching scenario
 
 parser = argparse.ArgumentParser(prog='Perching Scenario', usage='--scenario-opts "[options]"')
-parser.add_argument('--no-random-start', action='store_false', dest='random_start', default=False)
-parser.add_argument('--no-random-vel', action='store_false', dest='random_vel', default=False)
 parser.add_argument('--height-limit', type=float, default=10)
 
 
@@ -14,10 +12,11 @@ state_dims = 14
 actions = 49
 failReward = -1.0
 
-def wrap_class(BixlerClass, options):
+def wrap_class(BixlerClass, options, noise, latency, var_start):
     class PerchingBixler(BixlerClass):
-                def __init__(self):
-                    super(PerchingBixler,self).__init__()
+                def __init__(self):         
+                    super(PerchingBixler,self).__init__(noise, latency)
+                    self.var_start = var_start
                 
                 def is_out_of_bounds(self):
                     h_min = -options.height_limit
@@ -69,20 +68,19 @@ def wrap_class(BixlerClass, options):
                 
                 def reset_scenario(self):
                     initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype="float64")
-                    if options.random_start:
-                        # Add noise in x,z to the starting position needs fixing
-                        start_shift = np.array([[ np.random.rand(), 0, np.random.rand() ]])
-                        # Scale for +- 1m in each
-                        start_shift = (start_shift - 0.5) * 1
-                        initial_state += np.concatenate((
-                            start_shift,
-                            np.zeros((1,12))
-                            ), axis=1)
-                    if options.random_vel:
+                    if self.var_start:
                         # Add noise to starting velocity
-                        start_shift =  np.random.uniform(-1.0, 1.0)
+                        start_shift_u =  np.random.uniform(-1.0, 1.0)
+                        start_shift_w = np.random.uniform(-1.0, 1.0)
+                        start_shift_theta = np.random.uniform(-0.061, 0.061) #shift +-3.5degs in theta
                         # Scale for +- 1m/s
-                        initial_state[:,6] += start_shift
+                        initial_state[:,6] += start_shift_u
+                        initial_state[:,8] += start_shift_w
+                        initial_state[:,4] += start_shift_theta
+
+                        print(initial_state[:,4])
+
                     self.set_state(initial_state)
+
 
     return PerchingBixler

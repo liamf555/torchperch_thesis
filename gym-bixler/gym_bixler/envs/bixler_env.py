@@ -31,22 +31,20 @@ class BixlerEnv(Rendermixin, gym.Env):
 			scenario='perching',
 			scenario_opts='',
             latency = 0.0,
-            noise = 0.0):
+            noise = 0.0,
+            var_start = True):
 
         self.scenario = check_scenario(scenario)
         self.controller = check_controller(controller)
-		
+
         scenario_args = None
         if len(scenario_opts) is not 0:
             scenario_args = self.scenario.parser.parse_args(args.scenario_opts[0].split(' '))
         else:
             scenario_args = self.scenario.parser.parse_args([])
 
-        self.bixler = self.scenario.wrap_class(self.controller, scenario_args)()
 
-        # set noise and latency model. Ok for now but ugly, add into init function eventually
-        self.bixler.latency = latency
-        self.bixler.noiselevel = noise
+        self.bixler = self.scenario.wrap_class(self.controller, scenario_args, noise, latency, var_start)()
 
         self.action_space = gym.spaces.Discrete(self.scenario.actions)
 
@@ -65,8 +63,6 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.render_flag = False
         self.plot_flag = False
         
-
-    
     def step(self, action):
         # peform action
 

@@ -1,51 +1,40 @@
 import gym
-#import gym_bixler
+import gym_bixler
+import stable_baselines
 
-from gym_bixler.envs.bixler_env import BixlerEnv
-
-from stable_baselines.common.vec_env import DummyVecEnv
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import SubprocVecEnv
 
 from stable_baselines import DQN
-from stable_baselines import PPO1
-from stable_baselines import ACKTR
-from stable_baselines import A2C
-from stable_baselines import TRPO
+from stable_baselines import PPO2
 
 import argparse
 
+def check_algorithm(algorithm_name):
+	if hasattr(stable_baselines,algorithm_name):
+		return getattr(stable_baselines,algorithm_name)
+	else:
+		msg = "Could not find algorithm: {}".format(algorithm_name)
+		raise argparse.ArgumentTypeError(msg)
+
 parser = argparse.ArgumentParser(description='RL for Bixler UAV')
-parser.add_argument('--model_file', type=str, default='../output/DQN_fixed')
-parser.add_argument('--algo', type=str, default ='DQN')
+parser.add_argument('--model_file', type=str, default='../output/DQN')
+parser.add_argument('--algorithm', '-a', type=check_algorithm, required=True)
 parser.add_argument('--logfile', type = str, default='../output/logs')
 parser.add_argument('--latency', type = float, default = 0.0)
 parser.add_argument('--noise', type = float, default = 0.0)
+parser.add_argument('--var_start', type = bool, default = True)
 args = parser.parse_args()
 
 kwargs = {'latency': args.latency, 
           'noise': args.noise,
+          'var_start': args.var_start 
           }
 
-# env = gym.make('Bixler-v0', **kwargs)
-env = DummyVecEnv([lambda: BixlerEnv(latency = args.latency, noise = args.noise)])
+env = gym.make('Bixler-v0', **kwargs)
 
-
-if (args.algo == 'DQN'):
-    model = DQN('MlpPolicy', env, verbose = 1, tensorboard_log=args.logfile)
-elif (args.algo == 'ACKTR'):
-    env = DummyVecEnv([lambda: env])
-    model = ACKTR(MlpPolicy, env, verbose=0, tensorboard_log=args.logfile)
-elif (args.algo == 'A2C'):
-    env = DummyVecEnv([lambda: env])
-    model = A2C(MlpPolicy, env, verbose=0, tensorboard_log=args.logfile)
-elif(args.algo == 'PPO'):
-    env = DummyVecEnv([lambda: env])
-    model = PPO1(MlpPolicy, env, verbose=1, tensorboard_log=args.logfile)
-elif (args.algo == 'TRPO'):
-    env = DummyVecEnv([lambda: env])
-    model = TRPO(MlpPolicy, env, verbose=0, tensorboard_log=args.logfile)
-
+ModelType = args.algorithm
+model = ModelType('MlpPolicy', env, verbose = 1, tensorboard_log=args.logfile)
 
 model.learn(total_timesteps = 10000)
 
