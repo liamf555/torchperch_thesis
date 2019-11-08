@@ -11,7 +11,7 @@
 #PBS -l nodes=1:ppn=16
 
 ## Run with a maximum of 6h walltime
-#PBS -l walltime=10:00:00
+#PBS -l walltime=35:00:00
 
 # Change to workdir and print
 cd $PBS_O_WORKDIR
@@ -39,6 +39,8 @@ mkdir ../output/$JOB_NID
 export OMP_NUM_THREADS=16
 export KMP_AFFINITY=granularity=fine,compact,1,0
 
-exec python gym_bc.py --model_file ../output/$JOB_NID/PPO_cont_rate \
+exec python gym_learn.py --model_file ../output/$JOB_NID/PPO_lat_0_3_var \
 	--algo PPO \
-	--logfile ../output/$JOB_NID
+	--logfile ../output/$JOB_NID \
+	--latency 0.023 \
+	--noise 0.3
