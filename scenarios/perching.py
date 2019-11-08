@@ -12,11 +12,14 @@ state_dims = 14
 actions = 49
 failReward = -1.0
 
-def wrap_class(BixlerClass, options, noise, latency, var_start):
+def wrap_class(BixlerClass, options, noise, latency):
     class PerchingBixler(BixlerClass):
                 def __init__(self):         
                     super(PerchingBixler,self).__init__(noise, latency)
-                    self.var_start = var_start
+
+                    print(f'Latency: {self.latency}')
+                    print(f'Noise: {self.noiselevel}')
+                    
                 
                 def is_out_of_bounds(self):
                     h_min = -options.height_limit
@@ -77,8 +80,6 @@ def wrap_class(BixlerClass, options, noise, latency, var_start):
                         initial_state[:,6] += start_shift_u
                         initial_state[:,8] += start_shift_w
                         initial_state[:,4] += start_shift_theta
-
-                        print(initial_state[:,4])
 
                     self.set_state(initial_state)
 

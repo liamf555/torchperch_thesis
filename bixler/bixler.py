@@ -7,7 +7,7 @@ accel_gravity = 9.81 # m.s^-2
 
 class Bixler(object):
     
-    def __init__(self,noise=0.0, latency = 0.0):
+    def __init__(self,noise=0.0, latency = 0.0, var_start = True):
         # Model parameters
         self.noiselevel = noise
 

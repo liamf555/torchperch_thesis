@@ -44,7 +44,9 @@ class BixlerEnv(Rendermixin, gym.Env):
             scenario_args = self.scenario.parser.parse_args([])
 
 
-        self.bixler = self.scenario.wrap_class(self.controller, scenario_args, noise, latency, var_start)()
+        self.bixler = self.scenario.wrap_class(self.controller, scenario_args, noise, latency)()
+
+        self.bixler.var_start = var_start
 
         self.action_space = gym.spaces.Discrete(self.scenario.actions)
 
