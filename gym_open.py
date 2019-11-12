@@ -145,7 +145,7 @@ check_heartbeat(master)
 
 reset_flag = False
 emit_action = False
-done = False
+done = True
 
 while True:
 
@@ -167,15 +167,21 @@ while True:
                 print('Experiment enabled, resetting transform')
                 reset_flag = True
                 emit_action = True
+                done = False
             if 'disabled' in str(msg.text): # Experiment done
                 print('Experiment disabled, disabling output')
                 emit_action = False
+                done = True
         continue
 
     # Extract state from message
     real_state = process_msg(msg)
 
     # calculate obs first time round and each time switch activated
+
+    if reset_flag == True:
+        obs = env.reset()
+        reset_flag = False
    
     print("r_ekf: {}, r_a: {}".format( str(real_state[:,0:3]), str(transformed_state[:,0:3]) ) )
 
