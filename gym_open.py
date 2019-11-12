@@ -161,7 +161,8 @@ while True:
     if msg.name is not 'MLAGENT_STATE':
         if msg.name is 'PARAM_REQUEST_LIST':
             # If an attempt to get parameters is made, return a PARAM_VALUE message indicating no parameters
-            master.mav.param_value_send("",0,mavutil.mavlink.MAV_PARAM_TYPE_UINT8,0,0)
+            # master.mav.param_value_send("",0,mavutil.mavlink.MAV_PARAM_TYPE_UINT8,0,0)
+            pass
         if msg.name == 'STATUSTEXT':
             if 'enabled' in str(msg.text): # Detected expr mode entry
                 print('Experiment enabled, resetting transform')
@@ -185,16 +186,14 @@ while True:
    
     print("r_ekf: {}, r_a: {}".format( str(real_state[:,0:3]), str(transformed_state[:,0:3]) ) )
 
-   
-    # Get optimal action
-    if not done:
+    if emit_action:
+         # Pass action on to autopilot
+         if not done:
+        # Get optimal action
         action, _states = model.predict(obs, deterministic=True)
         obs, rewards, done, info = env.step(action)
-    
-    # Get rates from bixler model
+        # Get rates from bixler model
         sweep_rate = env.bixler.sweep_rate
         elev_rate = env.bixler.elev_rate
 
-    if emit_action:
-         # Pass action on to autopilot
         master.mav.mlagent_action_send(1,1,sweep_rate, elev_rate)
