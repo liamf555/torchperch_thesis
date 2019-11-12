@@ -30,6 +30,16 @@ parser.add_argument('--noise', type = float)
 parser.add_argument('--no_var_start', action = 'store_false', dest = 'var_start', default = True)
 args = parser.parse_args()
 
+def process_msg(msg):
+    # Process incoming message
+    # Convert state into required format for agent
+    return np.array([[msg.x,     msg.y,        msg.z,
+                      msg.phi,   msg.theta,    msg.psi,
+                      msg.u,     msg.v,        msg.w,
+                      msg.p,     msg.q,        msg.r,
+                      msg.sweep, msg.elevator
+	                  ]])
+
 def check_heartbeat(master):
     if time.time() - check_heartbeat.last_heartbeat_time >= 1.0:
         master.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_ONBOARD_CONTROLLER, mavutil.mavlink.MAV_AUTOPILOT_INVALID,0,0,0)
@@ -37,7 +47,7 @@ def check_heartbeat(master):
         print('Sent heartbeat')
 
 def parse_kwargs(filename, args):
-
+    # parse latency
     if args.latency is None:
         if "nolat" in filename:
             latency = 0.0
@@ -45,16 +55,14 @@ def parse_kwargs(filename, args):
             latency = 0.023
     else:
         latency = args.latency
-
+    #parse variable start conditions
     if args.var_start and "var" not in filename:
-        var_start = False
-        print('goat') 
+        var_start = False 
     elif (args.var_start == False):
         var_start = False
     else:
         var_start = args.var_start
-        print('wiggy') 
-
+    #parse noise
     if args.noise is None:
         digits = [int(s) for s in filename.split('_') if s.isdigit()]
         if len(digits) > 2:
@@ -68,6 +76,49 @@ def parse_kwargs(filename, args):
           'noise': noise,
           'var_start': var_start 
           }
+
+class Transform():
+
+    def __init__(self):
+        self.o_agent_ekf = np.zeros((3,1))
+        self.rotation = np.identity(3)
+        self.offset_vector = np.array([[40], [0], [2]])
+
+    def setup(self, state):
+
+        position_ekf = np.transpose(state[:,0:3])
+        yaw = state[0,5]
+
+        cy = np.cos(yaw)
+        sy = np.sin(yaw)
+
+        rot = np.array([
+            [cy, -sy, 0],
+            [sy, cy, 0],
+            [0, 0, 1]
+            ])
+
+        offset_vector_rot = np.matmul(rot, self.offset_vector)
+
+        position = np.transpose(state[:,0:3])
+
+        self.o_agent_ekf = position_ekf + offset_vector_rot
+
+        self.rotation = np.transpose(rot)
+
+    def apply(self, state):
+
+        position_ekf = np.transpose(state[:,0:3])
+
+        rel_pos_ekf = position_ekf - self.o_agent_ekf
+
+        pos_agent = np.matmul(self.rotation, rel_pos_ekf)
+
+        pos_agent[1] = 0
+
+        state[:,0:3] = np.transpose(pos_agent)
+
+        return state
 
 # Setup the model for inference
 
@@ -123,7 +174,7 @@ while True:
 
     # Extract state from message
     real_state = process_msg(msg)
-    
+
     # calculate obs first time round and each time switch activated
    
     print("r_ekf: {}, r_a: {}".format( str(real_state[:,0:3]), str(transformed_state[:,0:3]) ) )
@@ -139,6 +190,6 @@ while True:
         sweep_rate = env.bixler.sweep_rate
         elev_rate = env.bixler.elev_rate
 
-    # if emit_action:
+    if emit_action:
     #     # Pass action on to autopilot
         master.mav.mlagent_action_send(1,1,sweep_rate, elev_rate)
