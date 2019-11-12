@@ -183,7 +183,6 @@ while True:
     # Get optimal action
     if not done:
         action, _states = model.predict(obs, deterministic=True)
-
         obs, rewards, done, info = env.step(action)
     
     # Get rates from bixler model
@@ -191,5 +190,5 @@ while True:
         elev_rate = env.bixler.elev_rate
 
     if emit_action:
-    #     # Pass action on to autopilot
+         # Pass action on to autopilot
         master.mav.mlagent_action_send(1,1,sweep_rate, elev_rate)
