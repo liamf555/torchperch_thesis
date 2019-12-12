@@ -112,14 +112,15 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.state = self.bixler.get_state()
         state_list = self.state[0].tolist()
         state_list.insert(0, self.time)
+        state_list.append(self.bixler.alpha)
         self.state_array.append(state_list)
         
     def close(self):
 
-        if self.render_flag == True:
+        if self.render_flag:
             Rendermixin.save_data(self)
         
-        if self.plot_flag == True:
+        if self.plot_flag:
             Rendermixin.plot_data(self)
 
 
