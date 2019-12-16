@@ -74,13 +74,23 @@ def wrap_class(BixlerClass, options, noise, latency, var_start):
                     initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype="float64")
                     if self.var_start:
                         # Add noise to starting velocity
-                        start_shift_u =  np.random.uniform(-1.0, 1.0)
-                        start_shift_w = np.random.uniform(-1.0, 1.0)
-                        start_shift_theta = np.random.uniform(-0.061, 0.061) #shift +-3.5degs in theta
+                        # start_shift_u =  np.random.uniform(-1.0, 1.0)
+                        # start_shift_w = np.random.uniform(-1.0, 1.0)
+                        # start_shift_theta = np.random.uniform(-0.061, 0.061) #shift +-3.5degs in theta
+
+                        start_shift_u =  self.np_random.uniform(-1.0, 1.0)
+                        start_shift_w = self.np_random.uniform(-1.0, 1.0)
+                        start_shift_theta = self.np_random.uniform(-0.061, 0.061) #shift +-3.5degs in theta
+
                         # Scale for +- 1m/s
                         initial_state[:,6] += start_shift_u
                         initial_state[:,8] += start_shift_w
                         initial_state[:,4] += start_shift_theta
+
+                        st0 = self.np_random.get_state()
+
+                        print(st0)
+
 
                     self.set_state(initial_state)
 

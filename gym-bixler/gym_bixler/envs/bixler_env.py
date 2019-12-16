@@ -4,7 +4,7 @@ performing a perched landing manoeuvre.
 """
 import gym
 import numpy as np 
-
+from gym.utils import seeding
 import controllers
 import scenarios
 
@@ -64,6 +64,7 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         self.render_flag = False
         self.plot_flag = False
+
         
     def step(self, action):
         # peform action
@@ -105,7 +106,15 @@ class BixlerEnv(Rendermixin, gym.Env):
             self.plot_flag = True
             self.create_array()
 
-    
+    def seed(self, seed=None):
+        print(f'Seed: {seed}')
+        self.np_random, seed = seeding.np_random(seed)
+
+        self.bixler.seed(seed)
+
+        return [seed]
+
+
     def create_array(self):
 
         self.time += 0.1

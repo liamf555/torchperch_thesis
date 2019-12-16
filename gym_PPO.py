@@ -16,9 +16,8 @@ import gym_bixler
 import stable_baselines
 
 from stable_baselines.common.policies import MlpPolicy
-from stable_baselines.common.vec_env import SubprocVecEnv
+from stable_baselines.common.vec_env import SubprocVecEnv, DummyvecEnv
 
-from stable_baselines import DQN
 from stable_baselines import PPO2
 
 import argparse
@@ -44,13 +43,11 @@ kwargs = {'latency': args.latency,
           'var_start': args.var_start 
           }
 
+
 env = gym.make('Bixler-v0', **kwargs)
 
-env.seed(1995)
+env = DummyVecEnv([lambda: env])  # The algorithms require a vectorized environment to run
 
 ModelType = args.algorithm
 model = ModelType('MlpPolicy', env, verbose = 1, tensorboard_log=args.logfile)
-
 model.learn(total_timesteps = 1000)
-
-model.save(args.model_file)

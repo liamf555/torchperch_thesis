@@ -59,6 +59,15 @@ class Bixler(object):
         
         self.update_air_data()
 
+        self.np_random = None
+        self.seed()
+
+    def seed(self, seed=None):
+        print(f'Seed: {seed}')
+        self.np_random = np.random.RandomState(seed)
+
+        print(self.np_random)
+        
     def _interpolate(self, x_target, x_data, y_data):
         if x_target < x_data[0]:
             m = (y_data[0] - y_data[1])/(x_data[0] - x_data[1])
@@ -126,6 +135,8 @@ class Bixler(object):
         
         # Update alpha and beta for next step
         self.update_air_data()
+
+    
 
     def _update_dcm_earth2body(self):
         roll  = self.orientation_e[0,0]
@@ -223,7 +234,9 @@ class Bixler(object):
         #self.acceleration_b = self.acceleration_b - np.cross(self.omega_b, self.velocity_b, axis=0)
         self.acceleration_b = self.acceleration_b - self._cross(self.omega_b, self.velocity_b)
         # Generate noise
-        noise = np.random.rand(3,1) * self.noiselevel
+        # noise = np.random.rand(3,1) * self.noiselevel
+
+        noise = self.np_random.rand(3,1)
 
         # Add noise to acceleration
         self.acceleration_b = self.acceleration_b + noise
