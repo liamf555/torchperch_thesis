@@ -10,6 +10,7 @@
 
 #SBATCH -o ./output/%j.out
 
+
 CODE_ROOT=${HOME}/torchperch
 
 # Change to workdir and print

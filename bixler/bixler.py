@@ -63,10 +63,8 @@ class Bixler(object):
         self.seed()
 
     def seed(self, seed=None):
-        print(f'Seed: {seed}')
         self.np_random = np.random.RandomState(seed)
 
-        print(self.np_random)
         
     def _interpolate(self, x_target, x_data, y_data):
         if x_target < x_data[0]:

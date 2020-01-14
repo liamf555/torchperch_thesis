@@ -16,7 +16,7 @@ import gym_bixler
 import stable_baselines
 
 from stable_baselines.common.policies import MlpPolicy
-from stable_baselines.common.vec_env import SubprocVecEnv
+from stable_baselines.common.vec_env import SubprocVecEnv, DummyvecEnv
 
 from stable_baselines import DQN
 from stable_baselines import PPO2

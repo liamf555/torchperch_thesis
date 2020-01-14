@@ -87,11 +87,6 @@ def wrap_class(BixlerClass, options, noise, latency, var_start):
                         initial_state[:,8] += start_shift_w
                         initial_state[:,4] += start_shift_theta
 
-                        st0 = self.np_random.get_state()
-
-                        print(st0)
-
-
                     self.set_state(initial_state)
 
 
