@@ -7,9 +7,11 @@ class Rendermixin(object):
 
     def save_data(self):
 
-        self.df = pd.DataFrame(self.state_array,columns = ['time', 'x','y', 'z', 'roll', 'pitch', 'yaw', 'u', 'v', 'w', 'p', 'q', 'r', 'sweep', 'elev', 'alpha'])
+        self.df = pd.DataFrame(self.state_array,columns = ['time', 'x','y', 'z', 'roll', 'pitch', 'yaw', 'u', 'v', 'w', 'p', 'q', 'r', 'sweep', 'elev', 'vn', 've', 'vd', 'alpha'])
 
+        self.df['roll'] = np.rad2deg(self.df['roll'])
         self.df['pitch'] = np.rad2deg(self.df['pitch'])
+        self.df['yaw'] = np.rad2deg(self.df['yaw'])
         self.df['q'] = np.rad2deg(self.df['q'])
         self.df['altitude'] = (self.df['z']*-1)
         

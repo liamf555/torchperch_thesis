@@ -1,5 +1,7 @@
 import numpy as np
 
+from wind.wind_sim import Wind
+
 # Force numpy to raise FloatingPointError for overflow
 np.seterr(all='raise')
 
@@ -33,6 +35,7 @@ class Bixler(object):
         # State
         self.position_e = np.zeros((3,1))
         self.velocity_b = np.array([[14],[0],[0]])
+        self.velocity_e = np.array([[0],[0],[0]])
         self.acceleration_b = np.zeros((3,1))
         
         self.orientation_e = np.zeros((3,1)) # (rad)
@@ -52,6 +55,7 @@ class Bixler(object):
         self.alpha    = 0.0 # (deg)
         self.beta     = 0.0 # (deg)
         self.airspeed = 0.0 # (m/s)
+        self.wind_sim = Wind()
         
         # Control surface limits
         self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
@@ -127,9 +131,13 @@ class Bixler(object):
         
         self.wrap_orientation()
         
-        velocity_e = np.matmul(self.dcm_earth2body.T, self.velocity_b)
+        self.velocity_e = np.matmul(self.dcm_earth2body.T, self.velocity_b)
         
-        self.position_e = self.position_e + velocity_e * steptime
+        self.position_e = self.position_e + self.velocity_e * steptime
+
+        # print(self.velocity_b[1,0])
+
+        # print(self.position_e[0,0])
         
         # Update alpha and beta for next step
         self.update_air_data()
@@ -234,7 +242,7 @@ class Bixler(object):
         # Generate noise
         # noise = np.random.rand(3,1) * self.noiselevel
 
-        noise = self.np_random.rand(3,1)
+        noise = self.np_random.rand(3,1) * self.noiselevel
 
         # Add noise to acceleration
         self.acceleration_b = self.acceleration_b + noise
@@ -254,14 +262,24 @@ class Bixler(object):
 
     def update_air_data(self):
         # TODO: wind model...
+
+        wind = self.wind_sim.get_steady_state()
+
+        wind_b = np.matmul(self.dcm_earth2body, wind) # + gusts
+
+        vr = self.velocity_b - wind_b
+
+        # print(vr)
         
-        uSqd = self.velocity_b[0,0]**2
-        vSqd = self.velocity_b[1,0]**2
-        wSqd = self.velocity_b[2,0]**2
+        uSqd = vr[0,0]**2
+        vSqd = vr[1,0]**2
+        wSqd = vr[2,0]**2
         
         self.airspeed = np.sqrt( uSqd + vSqd + wSqd )
+
+        # print(self.airspeed)
         
-        self.alpha = np.rad2deg(np.arctan2(self.velocity_b[2,0],self.velocity_b[0,0]))
+        self.alpha = np.rad2deg(np.arctan2(vr[2,0],vr[0,0]))
         
         if self.airspeed == 0:
             self.beta = 0
@@ -272,7 +290,7 @@ class Bixler(object):
             if cosBeta < -1.0: cosBeta = -1.0
             elif cosBeta > 1.0: cosBeta = 1.0
             # Apply sign convention
-            self.beta = np.rad2deg(np.copysign(np.arccos(cosBeta), self.velocity_b[1,0]))
+            self.beta = np.rad2deg(np.copysign(np.arccos(cosBeta), vr[1,0]))
     
     def wrap_orientation(self):
         self.orientation_e = (self.orientation_e + np.pi*2) % (np.pi*2);
@@ -295,7 +313,7 @@ class Bixler(object):
 
         # Sideslip
         # TODO: Fix definition of v, should be relative to airmass i.e. calculate using airdata
-        v = self.velocity_b[1,0]
+        # v = self.velocity_b[1,0]
 
         # Drag
         C_D = C_D0 + C_Dalpha * self.alpha

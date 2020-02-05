@@ -100,7 +100,7 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.render_flag = True
 
         if mode == 'save_file':
-            self.create_array
+            self.create_array()
 
         if mode == 'plot':
             self.plot_flag = True
@@ -118,10 +118,14 @@ class BixlerEnv(Rendermixin, gym.Env):
     def create_array(self):
 
         self.time += 0.1
+
         self.state = self.bixler.get_state()
+        self.state = np.concatenate((self.state, self.bixler.velocity_e.T), axis = 1)
         state_list = self.state[0].tolist()
         state_list.insert(0, self.time)
         state_list.append(self.bixler.alpha)
+
+        print(state_list)
         self.state_array.append(state_list)
         
     def close(self):
