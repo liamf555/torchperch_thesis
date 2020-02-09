@@ -16,32 +16,44 @@ import gym_bixler
 import stable_baselines
 
 from stable_baselines.common.policies import MlpPolicy
-from stable_baselines.common.vec_env import SubprocVecEnv, DummyvecEnv
+from stable_baselines.common.vec_env import SubprocVecEnv, DummyVecEnv
 
 from stable_baselines import DQN
 from stable_baselines import PPO2
 
-import argparse
+# import argparse
 
-def check_algorithm(algorithm_name):
-	if hasattr(stable_baselines,algorithm_name):
-		return getattr(stable_baselines,algorithm_name)
-	else:
-		msg = "Could not find algorithm: {}".format(algorithm_name)
-		raise argparse.ArgumentTypeError(msg)
+import json
 
-parser = argparse.ArgumentParser(description='RL for Bixler UAV')
-parser.add_argument('--model_file', type=str, default='../output/DQN')
-parser.add_argument('--algorithm', '-a', type=check_algorithm, required=True)
-parser.add_argument('--logfile', type = str, default='../output/logs')
-parser.add_argument('--latency', type = float, default = 0.0)
-parser.add_argument('--noise', type = float, default = 0.0)
-parser.add_argument('--var_start', type = bool, default = True)
-args = parser.parse_args()
+# def check_algorithm(algorithm_name):
+# 	if hasattr(stable_baselines,algorithm_name):
+# 		return getattr(stable_baselines,algorithm_name)
+# 	else:
+# 		msg = "Could not find algorithm: {}".format(algorithm_name)
+# 		raise argparse.ArgumentTypeError(msg)
 
-kwargs = {'latency': args.latency, 
-          'noise': args.noise,
-          'var_start': args.var_start 
+# parser = argparse.ArgumentParser(description='RL for Bixler UAV')
+# parser.add_argument('--model_file', type=str, default='../output/DQN')
+# parser.add_argument('--algorithm', '-a', type=check_algorithm, required=True)
+# parser.add_argument('--logfile', type = str, default='../output/logs')
+# parser.add_argument('--latency', type = float, default = 0.0)
+# parser.add_argument('--noise', type = float, default = 0.0)
+# parser.add_argument('--no_var_start', action = 'store_false', dest = 'var_start', default = True)
+# parser.add_argument('--wind', type =  )
+
+# args = parser.parse_args()
+
+# kwargs = {'latency': args.latency, 
+#           'noise': args.noise,
+#           'var_start': args.var_start 
+        #   }
+
+with open("sim_params.json") as json_file:
+    params = json.load(json_file)
+
+kwargs = {'latency': params.latency, 
+          'noise': params.noise,
+          'var_start': params.variable_start 
           }
 
 env = gym.make('Bixler-v0', **kwargs)

@@ -55,7 +55,7 @@ class Bixler(object):
         self.alpha    = 0.0 # (deg)
         self.beta     = 0.0 # (deg)
         self.airspeed = 0.0 # (m/s)
-        self.wind_sim = Wind()
+        self.wind_sim = Wind(steady_state=[5,0,0])
         
         # Control surface limits
         self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
@@ -98,6 +98,7 @@ class Bixler(object):
             np.array([
                 [self.sweep],
                 [self.elev],
+                [self.airspeed],
                 [self.tip_port]
                 ])
             ), axis=0)
@@ -204,7 +205,7 @@ class Bixler(object):
         st = np.sin(theta)
         ct = np.cos(theta)
         tt = np.tan(theta)
-
+        # eqn 3.3
         self.jacobian = np.array([
             [ 1, sp*tt, cp*tt ],
             [ 0,   cp ,  -sp  ],
@@ -263,23 +264,30 @@ class Bixler(object):
     def update_air_data(self):
         # TODO: wind model...
 
-        wind = self.wind_sim.get_steady_state()
+        wind = self.wind_sim.update()
+
+        print(f"Wind: {wind}")
 
         wind_b = np.matmul(self.dcm_earth2body, wind) # + gusts
 
-        vr = self.velocity_b - wind_b
+        print(f"Wind_b: {wind_b}")
 
-        # print(vr)
+        Vr = self.velocity_b[:,0] - wind_b
+
+        print(f"velocity_b: {self.velocity_b}")
+
+        print(f"Vr: {Vr}")
+
         
-        uSqd = vr[0,0]**2
-        vSqd = vr[1,0]**2
-        wSqd = vr[2,0]**2
+        uSqd = Vr[0]**2
+        vSqd = Vr[1]**2
+        wSqd = Vr[2]**2
         
         self.airspeed = np.sqrt( uSqd + vSqd + wSqd )
 
-        # print(self.airspeed)
+        print(f"airspeed {self.airspeed}")
         
-        self.alpha = np.rad2deg(np.arctan2(vr[2,0],vr[0,0]))
+        self.alpha = np.rad2deg(np.arctan2(Vr[2],Vr[0]))
         
         if self.airspeed == 0:
             self.beta = 0
@@ -290,10 +298,10 @@ class Bixler(object):
             if cosBeta < -1.0: cosBeta = -1.0
             elif cosBeta > 1.0: cosBeta = 1.0
             # Apply sign convention
-            self.beta = np.rad2deg(np.copysign(np.arccos(cosBeta), vr[1,0]))
+            self.beta = np.rad2deg(np.copysign(np.arccos(cosBeta), Vr[1]))
     
     def wrap_orientation(self):
-        self.orientation_e = (self.orientation_e + np.pi*2) % (np.pi*2);
+        self.orientation_e = (self.orientation_e + np.pi*2) % (np.pi*2)
         self.orientation_e = self.orientation_e - (self.orientation_e > np.pi) * np.pi*2
     
     def get_forces_and_moments(self):

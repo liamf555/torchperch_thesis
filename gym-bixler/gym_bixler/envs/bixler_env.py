@@ -50,15 +50,14 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         self.action_space = gym.spaces.Discrete(self.scenario.actions)
 
-        self.observation_space = gym.spaces.Box(low=0, high = 1, shape = (1, self.scenario.state_dims))
-
-        self.reward_range = (0.0,1.0)
+        self.observation_space = gym.spaces.Box(low=0, high = 1, shape = (1, self.scenario.state_dims), dtype = np.float32)
 
         self.bixler.reset_scenario()
         self.state = self.bixler.get_state()
         
         state_list = self.state[0].tolist()
         state_list.insert(0, 0)
+
         self.state_array = []
         self.state_array.append(state_list)
 

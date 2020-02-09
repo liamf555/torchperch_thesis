@@ -18,6 +18,7 @@ from gym_bixler.envs.bixler_env import BixlerEnv
 
 import argparse
 
+
 import stable_baselines
 
 from stable_baselines.common.vec_env import DummyVecEnv
@@ -50,6 +51,9 @@ kwargs = {'latency': args.latency,
           'noise': args.noise,
           'var_start': args.var_start 
           }
+
+
+
 
 env = gym.make('Bixler-v0', **kwargs)
 
