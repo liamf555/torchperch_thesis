@@ -50,3 +50,4 @@ class Bixler_SweepElevator(common.BixlerController):
         self.tip_stbd = 0.0
         self.washout = 0.0
         self.throttle = 0.0
+        
