@@ -1,29 +1,22 @@
 import numpy as np
-#import torch
-import argparse
 
 # Perching scenario
-
-parser = argparse.ArgumentParser(prog='Perching Scenario', usage='--scenario-opts "[options]"')
-parser.add_argument('--height-limit', type=float, default=10)
-
 
 state_dims = 15
 actions = 49
 failReward = -1.0
+h_min = -10
 
-def wrap_class(BixlerClass, options, noise, latency, var_start):
+def wrap_class(BixlerClass, parameters):
     class PerchingBixler(BixlerClass):
-                def __init__(self):         
-                    super(PerchingBixler,self).__init__(noise, latency)
-                    self.var_start = var_start
+                def __init__(self):
 
-                    print(f'Latency: {self.latency}')
-                    print(f'Noise: {self.noiselevel}')
+                    super(PerchingBixler,self).__init__(parameters)
+                    self.var_start = parameters.get("variable_start")
+
                     print(f'Variable start: {self.var_start}')
                     
                 def is_out_of_bounds(self):
-                    h_min = -options.height_limit
                     def is_in_range(x,lower,upper):
                         return lower < x and x < upper
                     # Prevent flipping over
@@ -47,7 +40,7 @@ def wrap_class(BixlerClass, options, noise, latency, var_start):
                     if self.is_terminal():
                         if self.is_out_of_bounds():
                             return failReward
-                        cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0, 0 ])
+                        cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0, 0])
                         cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector ) / 2500
                         return  ((1.0 - cost) * 2.0) - 1.0
                     return 0.0
@@ -65,13 +58,12 @@ def wrap_class(BixlerClass, options, noise, latency, var_start):
                     if state is None:
                         state=self.get_state()
                     pb2 = np.pi/2
-                    h_min = -options.height_limit
                     mins = np.array([ -50, -2, h_min, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2, self.sweep_limits[0], self.elev_limits[0], 0])
                     maxs = np.array([  10,  2,     1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2, self.sweep_limits[1], self.elev_limits[1], 20])
                     return (state-mins)/(maxs-mins)
                 
                 def reset_scenario(self):
-                    initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0, 0]], dtype="float64")
+                    initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0,0]], dtype="float64")
                     if self.var_start:
                         # Add noise to starting velocity
                         # start_shift_u =  np.random.uniform(-1.0, 1.0)

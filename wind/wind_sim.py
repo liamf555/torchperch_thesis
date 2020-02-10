@@ -49,18 +49,6 @@ class Wind(object):
 
     def update_wind(self):
 
-
-
-           
-
-
-
-
-
-
-
-
-
         return self.steady_state
 
     

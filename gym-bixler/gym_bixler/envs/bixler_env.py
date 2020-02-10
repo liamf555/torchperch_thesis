@@ -3,6 +3,7 @@ Custom OpenAI Gym Enviornment for the Bixler2
 performing a perched landing manoeuvre.
 """
 import gym
+import json
 import numpy as np 
 from gym.utils import seeding
 import controllers
@@ -27,26 +28,23 @@ def check_scenario(scenario_name):
 class BixlerEnv(Rendermixin, gym.Env):
     metadata = {'render.modes': ['save_file', 'plot', 'none']}
 
-    def __init__(self, controller='sweep_elevator',
-			scenario='perching',
-			scenario_opts='',
-            latency = 0.0,
-            noise = 0.0,
-            var_start = True):
-
-        self.scenario = check_scenario(scenario)
-        self.controller = check_controller(controller)
-
-        scenario_args = None
-        if len(scenario_opts) is not 0:
-            scenario_args = self.scenario.parser.parse_args(args.scenario_opts[0].split(' '))
-        else:
-            scenario_args = self.scenario.parser.parse_args([])
+    def __init__(self, parameters):
 
 
-        self.bixler = self.scenario.wrap_class(self.controller, scenario_args, noise, latency, var_start)()
+        self.scenario = check_scenario(parameters.get("scenario"))
+        self.controller = check_controller(parameters.get("controller"))
 
-        self.bixler.var_start = var_start
+        print(parameters)
+
+        # scenario_args = None
+        # if len(scenario_opts) is not 0:
+        #     scenario_args = self.scenario.parser.parse_args(args.scenario_opts[0].split(' '))
+        # else:
+        #     scenario_args = self.scenario.parser.parse_args([])
+
+        self.bixler = self.scenario.wrap_class(self.controller, parameters)()
+
+        print(self.bixler)
 
         self.action_space = gym.spaces.Discrete(self.scenario.actions)
 

@@ -5,8 +5,8 @@ import time
 # Bixler wrapper to set what control surfaces are utilised by the NN
 class Bixler_SweepElevator(common.BixlerController):
     
-    def __init__(self, noise = 0.0,  latency = 0.0):
-        super(Bixler_SweepElevator, self).__init__(noise, latency)
+    def __init__(self, parameters):
+        super(Bixler_SweepElevator, self).__init__(parameters)
         
         # Control surface rates for each action
         self.elev_rates = [-60, -10, -5, 0, 5, 10, 60]
@@ -15,7 +15,8 @@ class Bixler_SweepElevator(common.BixlerController):
         # Control surface rates
         self.sweep_rate = 0 # (deg/s)
         self.elev_rate = 0  # (deg/s)
-        self.latency = latency # (sec)
+        self.latency = parameters.get("latency") # (sec)
+        print(self.latency)
         self.next_sweep_rate = 0
         self.next_elev_rate = 0
         self.time_since_action = 0
@@ -49,5 +50,3 @@ class Bixler_SweepElevator(common.BixlerController):
         self.tip_stbd = 0.0
         self.washout = 0.0
         self.throttle = 0.0
-
-

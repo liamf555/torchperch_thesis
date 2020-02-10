@@ -9,9 +9,9 @@ accel_gravity = 9.81 # m.s^-2
 
 class Bixler(object):
     
-    def __init__(self,noise=0.0, latency = 0.0, var_start = True):
+    def __init__(self, parameters):
         # Model parameters
-        self.noiselevel = noise
+        self.noiselevel = parameters.get("noise")
 
         # Physical parameters
         self.mass = 1.385 # kg (+100 for Pi, BEC etc)
@@ -266,17 +266,17 @@ class Bixler(object):
 
         wind = self.wind_sim.update()
 
-        print(f"Wind: {wind}")
+        # print(f"Wind: {wind}")
 
         wind_b = np.matmul(self.dcm_earth2body, wind) # + gusts
 
-        print(f"Wind_b: {wind_b}")
+        # print(f"Wind_b: {wind_b}")
 
         Vr = self.velocity_b[:,0] - wind_b
 
-        print(f"velocity_b: {self.velocity_b}")
+        # print(f"velocity_b: {self.velocity_b}")
 
-        print(f"Vr: {Vr}")
+        # print(f"Vr: {Vr}")
 
         
         uSqd = Vr[0]**2
@@ -285,7 +285,7 @@ class Bixler(object):
         
         self.airspeed = np.sqrt( uSqd + vSqd + wSqd )
 
-        print(f"airspeed {self.airspeed}")
+        # print(f"airspeed {self.airspeed}")
         
         self.alpha = np.rad2deg(np.arctan2(Vr[2],Vr[0]))
         

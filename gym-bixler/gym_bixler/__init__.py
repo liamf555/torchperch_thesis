@@ -6,7 +6,7 @@ from gym.envs.registration import register
 register(
     id='Bixler-v0',
     entry_point='gym_bixler.envs:BixlerEnv',
-    kwargs = {'noise': 0.0,'latency': 0.0, 'var_start': True},
+    # kwargs = {'noise': 0.0,'latency': 0.0, 'var_start': True},
 )
 
 register(
