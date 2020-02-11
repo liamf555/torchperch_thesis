@@ -14,8 +14,6 @@ def wrap_class(BixlerClass, parameters):
                     super(PerchingBixler,self).__init__(parameters)
                     self.var_start = parameters.get("variable_start")
 
-                    print(f'Variable start: {self.var_start}')
-                    
                 def is_out_of_bounds(self):
                     def is_in_range(x,lower,upper):
                         return lower < x and x < upper

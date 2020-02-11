@@ -30,16 +30,10 @@ class BixlerEnv(Rendermixin, gym.Env):
 
     def __init__(self, parameters):
 
-
         self.scenario = check_scenario(parameters.get("scenario"))
         self.controller = check_controller(parameters.get("controller"))
 
-
-    
-
         self.bixler = self.scenario.wrap_class(self.controller, parameters)()
-
-        print(self.bixler)
 
         self.action_space = gym.spaces.Discrete(self.scenario.actions)
 
@@ -117,7 +111,6 @@ class BixlerEnv(Rendermixin, gym.Env):
         state_list.insert(0, self.time)
         state_list.append(self.bixler.alpha)
 
-        print(state_list)
         self.state_array.append(state_list)
         
     def close(self):
