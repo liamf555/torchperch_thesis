@@ -34,13 +34,8 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.scenario = check_scenario(parameters.get("scenario"))
         self.controller = check_controller(parameters.get("controller"))
 
-        print(parameters)
 
-        # scenario_args = None
-        # if len(scenario_opts) is not 0:
-        #     scenario_args = self.scenario.parser.parse_args(args.scenario_opts[0].split(' '))
-        # else:
-        #     scenario_args = self.scenario.parser.parse_args([])
+    
 
         self.bixler = self.scenario.wrap_class(self.controller, parameters)()
 

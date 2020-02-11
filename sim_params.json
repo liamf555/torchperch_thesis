@@ -3,7 +3,7 @@
     "scenario": "perching",
     "model_file": "../output/DQN",
     "algorithm": "DQN",
-    "latency": 0.023,
+    "latency": 0.0,
     "noise": 0.0,
     "variable_start": false,
     "steady_vector": [0, 0, 0],
