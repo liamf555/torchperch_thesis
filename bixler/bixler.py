@@ -55,7 +55,7 @@ class Bixler(object):
         self.alpha    = 0.0 # (deg)
         self.beta     = 0.0 # (deg)
         self.airspeed = 0.0 # (m/s)
-        self.wind_sim = Wind(steady_state=[5,0,0])
+        self.wind_sim = Wind(steady_state=parameters.get("steady_vector"))
         
         # Control surface limits
         self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
@@ -285,7 +285,7 @@ class Bixler(object):
         
         self.airspeed = np.sqrt( uSqd + vSqd + wSqd )
 
-        # print(f"airspeed {self.airspeed}")
+        # sprint(f"airspeed {self.airspeed}")
         
         self.alpha = np.rad2deg(np.arctan2(Vr[2],Vr[0]))
         

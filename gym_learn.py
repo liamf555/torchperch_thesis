@@ -41,6 +41,6 @@ env = gym.envs.make("Bixler-v0", parameters=params)
 ModelType = check_algorithm(params.get("algorithm"))
 model = ModelType('MlpPolicy', env, verbose = 1, tensorboard_log=params.get("log_file"))
 
-model.learn(total_timesteps = 1000)
+model.learn(total_timesteps = 100000)
 
 model.save(params.get("model_file"))
