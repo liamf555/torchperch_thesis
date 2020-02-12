@@ -21,17 +21,12 @@ from stable_baselines.common.vec_env import SubprocVecEnv, DummyVecEnv
 from stable_baselines import DQN
 from stable_baselines import PPO2
 
-# import argparse
 
 import json
 
 def check_algorithm(algorithm_name):
 	if hasattr(stable_baselines,algorithm_name):
 		return getattr(stable_baselines,algorithm_name)
-	else:
-		msg = "Could not find algorithm: {}".format(algorithm_name)
-		raise argparse.ArgumentTypeError(msg)
-
 
 with open("sim_params.json") as json_file:
             params = json.load(json_file)
