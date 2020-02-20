@@ -52,12 +52,14 @@ def wrap_class(BixlerClass, parameters):
                 def get_state(self):
                     return super(PerchingBixler,self).get_state()[0:15].T
 
+
                 def get_normalized_state(self, state=None):
                     if state is None:
                         state=self.get_state()
+
                     pb2 = np.pi/2
                     mins = np.array([ -50, -2, h_min, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2, self.sweep_limits[0], self.elev_limits[0], 0])
-                    maxs = np.array([  10,  2,     1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2, self.sweep_limits[1], self.elev_limits[1], 20])
+                    maxs = np.array([  10,  2,     1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2, self.sweep_limits[1], self.elev_limits[1], 25])
                     return (state-mins)/(maxs-mins)
                 
                 def reset_scenario(self):

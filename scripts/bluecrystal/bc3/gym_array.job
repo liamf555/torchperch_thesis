@@ -1,0 +1,52 @@
+#!/bin/bash
+
+## Set job name
+#PBS -N bixler_perching
+
+## Send abort, begin, end mail
+#PBS -m abe
+#PBS -M liam.fletcher@bristol.ac.uk
+
+## Run with one node and 4 cores per job
+#PBS -l nodes=1:ppn=16
+
+## Run with a maximum of 6h walltime
+#PBS -l walltime=35:00:00
+
+## The -t option specifies how many jobs are in the array.
+## For example -t 1-4 specifies 4 jobs. The IDs will be in the range [1,4] with a stride of 1.
+## Other examples include:
+## -t 1,5,7-9
+## in this case IDs 1 and 5 and 7,8 and 9 will be used.
+## -t 1-50%5
+## in this case IDs 1 to 50 will be used and only 5 jobs can run concurrently.
+#PBS -t 1-7
+
+
+# Change to workdir and print
+cd $PBS_O_WORKDIR
+echo "Current working_directory: $PWD"
+
+# Setup the environment for running training and notify
+source environs/bluecrystal_p3_gym
+conda activate gym
+echo "Activated environment"
+
+SCENARIO="${SCENARIO-perching}"
+CONTROLLER="${CONTROLLER-sweep_elevator}"
+
+# Echo some meta information
+echo "Scenario: $SCENARIO"
+echo "Controller: $CONTROLLER"
+echo "Commit: $(git rev-parse HEAD)"
+echo "JobID $PBS_ARRAYID"
+
+echo "Beginning training"
+
+JOB_NID=${PBS_JOBID%%[.\[]*}${PBS_ARRAYID:+-$PBS_ARRAYID}
+mkdir ../output/$JOB_NID
+
+export OMP_NUM_THREADS=16
+export KMP_AFFINITY=granularity=fine,compact,1,0
+
+exec python gym_learn.py --logfile ../output/$JOB_NID \ --steady_vector ${PBS_ARRAYID}

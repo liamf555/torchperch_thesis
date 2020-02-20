@@ -136,10 +136,6 @@ class Bixler(object):
         
         self.position_e = self.position_e + self.velocity_e * steptime
 
-        # print(self.velocity_b[1,0])
-
-        # print(self.position_e[0,0])
-        
         # Update alpha and beta for next step
         self.update_air_data()
 
@@ -266,17 +262,17 @@ class Bixler(object):
 
         wind = self.wind_sim.update()
 
-        # print(f"Wind: {wind}")
+        print(f"Wind: {wind}")
 
         wind_b = np.matmul(self.dcm_earth2body, wind) # + gusts
 
-        # print(f"Wind_b: {wind_b}")
+        print(f"Wind_b: {wind_b}")
 
         Vr = self.velocity_b[:,0] - wind_b
 
-        # print(f"velocity_b: {self.velocity_b}")
+        print(f"velocity_b: {self.velocity_b}")
 
-        # print(f"Vr: {Vr}")
+        print(f"Vr: {Vr}")
 
         
         uSqd = Vr[0]**2
@@ -285,7 +281,7 @@ class Bixler(object):
         
         self.airspeed = np.sqrt( uSqd + vSqd + wSqd )
 
-        # sprint(f"airspeed {self.airspeed}")
+        print(f"airspeed {self.airspeed}")
         
         self.alpha = np.rad2deg(np.arctan2(Vr[2],Vr[0]))
         
@@ -474,7 +470,7 @@ class Bixler(object):
         C_lp = -0.4950 # Eye average from Stanford student projects. Units? Probably per radian...
     
         if (self.alpha + self.tip_port) >= 15:
-            C_ldTipPort = 0.0;
+            C_ldTipPort = 0.0
         else:
             CMXportwingtipM10 = self._interpolate(self.alpha,alpha_sample_wingtip,CMXportwingtip_m10sweep)
             CMXportwingtip0 = self._interpolate(self.alpha,alpha_sample_wingtip,CMXportwingtip_0sweep)
@@ -486,7 +482,7 @@ class Bixler(object):
             C_ldTipPort = self._interpolate(self.sweep,sweep_sample_wingtip,CMXportwingtip_sweeps)
     
         if (self.alpha + self.tip_stbd) >= 15:
-            C_ldTipStbd = 0;
+            C_ldTipStbd = 0
         else:
             CMXstarboardwingtipM10 = self._interpolate(self.alpha,alpha_sample_wingtip,CMXstarboardwingtip_m10sweep)
             CMXstarboardwingtip0 = self._interpolate(self.alpha,alpha_sample_wingtip,CMXstarboardwingtip_0sweep)

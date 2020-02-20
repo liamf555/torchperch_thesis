@@ -31,18 +31,6 @@ class Wind(object):
 
 
 
-
-
-
-
-
-        
-
-        
-
-
-
-
     def seed(self, np_random):
 
         self.np_random = np_random 

@@ -1,12 +1,16 @@
 {
-    "controller": "sweep_elevator",
-    "scenario": "perching",
-    "model_file": "../output/DQN",
-    "algorithm": "DQN",
-    "latency": 0.0,
-    "noise": 0.0,
-    "variable_start": false,
-    "steady_vector": [0, 0, 0],
-    "turbulence": false,
-    "log_file": "../output/logs"  
+  "controller": "sweep_elevator",
+  "scenario": "perching",
+  "model_file": "../output/",
+  "algorithm": "DQN",
+  "latency": 0.0,
+  "noise": 0.0,
+  "variable_start": false,
+  "steady_vector": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "turbulence": false,
+  "log_file": "../output/"
 }
