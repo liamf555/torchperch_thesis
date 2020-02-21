@@ -48,7 +48,7 @@ class JsonMod:
                         wind_north = float(args.steady_vector)
                         self.data[key] = [wind_north, 0.0, 0.0]
                     else:
-                        self.data[key] = key 
+                        self.data[key] = value 
         
 
 
@@ -61,8 +61,9 @@ class JsonMod:
 
         if self.args.algorithm == None:
                 algorithm_name = self.data["algorithm"]
+        else:
+            algorithm_name = self.args.algorithm
 
-        print(self.name)
 
         model_name = '/' + algorithm_name + '_' + self.name 
 

@@ -61,7 +61,7 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.bixler.step(0.1)
      	
 		#get observation
-        obs = self.bixler.get_normalized_state()
+        obs = self.bixler.get_normalized_obs()
 
         #get reward
         self.reward = self.bixler.get_reward()
@@ -78,7 +78,7 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.bixler.reset_scenario()
         self.time = 0
 
-        return self.bixler.get_normalized_state()
+        return self.bixler.get_normalized_obs()
 
      
     def render(self, mode):
