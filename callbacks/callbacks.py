@@ -5,6 +5,7 @@ from stable_baselines.results_plotter import load_results, ts2xy
 
 import numpy as np
 import matplotlib.pyplot as plt
+import wandb
 from shutil import copyfile
 
 
@@ -39,19 +40,19 @@ class Callbacks(object):
         callback_vars = self.get_callback_vars(_locals["self"], n_steps=0, best_mean_reward=-np.inf) 
 
         # skip every 20 steps
-        if callback_vars["n_steps"] % 500 == 0:
+        if callback_vars["n_steps"] % 50 == 0:
             # Evaluate policy training performance
             x, y = ts2xy(load_results(self.log_dir), 'timesteps')
             if len(x) > 0:
                 mean_reward = np.mean(y[-100:])
-                copyfile((self.log_dir+'/monitor.csv'), (self.log_dir + '/monitor_'+ str(x[-1]) +'.csv'))
-
+                wandb.log({"mean_reward": mean_reward })
+                
                 # New best model, you could save the agent here
                 if mean_reward > callback_vars["best_mean_reward"]:
                     callback_vars["best_mean_reward"] = mean_reward
                     # Example for saving best model
-                    print("Saving new best model at {} timesteps".format(x[-1]))
-                    _locals['self'].save(self.log_dir + '/' +  'best_model_' + str(x[-1]))
+                    wandb.log({"best_model_step": x[-1]})
+                    _locals['self'].save(self.log_dir + '/' +  'best_model')
                     
 
         callback_vars["n_steps"] += 1

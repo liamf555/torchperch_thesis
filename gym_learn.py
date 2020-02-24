@@ -2,6 +2,8 @@
 import os
 import argparse
 import json
+import wandb
+import inspect
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 import warnings
@@ -23,12 +25,13 @@ from stable_baselines.bench import Monitor
 from stable_baselines.common.evaluation import evaluate_policy
 from callbacks.callbacks import Callbacks
 
-from stable_baselines import DQN
-
+from stable_baselines import DQN, PPO2
 
 parser = argparse.ArgumentParser(description='Parse param file location')
 parser.add_argument("--param_file", type =str, default="sim_params.json")
 args = parser.parse_args()
+
+wandb.init(project="disco", sync_tensorboard=True)
 
 def check_algorithm(algorithm_name):
 	if hasattr(stable_baselines,algorithm_name):
@@ -39,15 +42,26 @@ with open(args.param_file) as json_file:
 
 log_dir = params.get("log_file")
 
+wandb.config.update(params)
+wandb.config.timesteps=100000
+
 save_cal = Callbacks(log_dir)
 
-env = gym.envs.make("Bixler-v0", parameters=params)
+env = gym.envs.make(params.get("env"), parameters=params)
 env = Monitor(env, log_dir, allow_early_resets=True)
 
 ModelType = check_algorithm(params.get("algorithm"))
+model = ModelType(MlpPolicy, env, verbose = 1, tensorboard_log=log_dir)
+wandb.config.update({"policy": model.policy.__name__})
 
-model = ModelType(MlpPolicy, env, verbose = 1)
+for key, value in vars(model).items():
+	if type(value) == float or type(value) == str or type(value) == int:
+		wandb.config.update({key: value})
 
-model.learn(total_timesteps = 1000000, callback = save_cal.auto_save_callback)
+
+model.learn(total_timesteps = wandb.config.timesteps , callback = save_cal.auto_save_callback)
 
 model.save(params.get("model_file"))
+wandb.save(params.get("model_file") + ".zip")
+wandb.save(log_dir +"/best_model.zip")
+wandb.save(log_dir + "/monitor.csv")

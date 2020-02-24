@@ -1,4 +1,5 @@
 {
+  "env": "Bixler-v0",
   "controller": "sweep_elevator",
   "scenario": "perching",
   "model_file": "../output/",

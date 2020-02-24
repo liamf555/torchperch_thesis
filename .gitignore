@@ -3,3 +3,5 @@
 *.pyo
 *.pkl
 *.csv
+/wandb/*
+/.vscode/*

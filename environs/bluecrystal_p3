@@ -3,6 +3,8 @@
 # Load the conda module
 module add languages/python-anaconda-5.0.1-2.7
 
+WANDB_API_KEY=$ea17412f95c94dfcc41410f554ef62a1aff388ab
+
 # Something conda related...
 source /cm/shared/languages/anaconda2-5.0.1/etc/profile.d/conda.sh
 
