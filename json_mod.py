@@ -86,7 +86,7 @@ if __name__ == "__main__":
     parser.add_argument('--noise', type = float)
     parser.add_argument('--steady_vector', type = str)
     parser.add_argument('--variable_start', type =str)
-    parser.add_argument('--array_flag', action = 'store_false', dest = 'array', default = False)
+    parser.add_argument('--array_flag', action = 'store_true', dest = 'array')
     args = parser.parse_args()
 
     amend = JsonMod(args)

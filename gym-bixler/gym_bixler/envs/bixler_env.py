@@ -93,7 +93,6 @@ class BixlerEnv(Rendermixin, gym.Env):
             self.create_array()
 
     def seed(self, seed=None):
-        print(f'Seed: {seed}')
         self.np_random, seed = seeding.np_random(seed)
 
         self.bixler.seed(seed)
