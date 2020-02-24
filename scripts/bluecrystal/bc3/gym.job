@@ -39,8 +39,6 @@ mkdir ../output/$JOB_NID
 export OMP_NUM_THREADS=16
 export KMP_AFFINITY=granularity=fine,compact,1,0
 
-exec python gym_learn.py --model_file ../output/$JOB_NID/PPO_lat_0_3_var \
-	--algo PPO \
-	--logfile ../output/$JOB_NID \
-	--latency 0.023 \
-	--noise 0.3
+exec python gym_learn.py --param_file ../output/$JOB_NID/sim_params.json 
+
+
