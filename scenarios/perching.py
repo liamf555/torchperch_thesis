@@ -38,7 +38,7 @@ def wrap_class(BixlerClass, parameters):
                     if self.is_terminal():
                         if self.is_out_of_bounds():
                             return failReward
-                        cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0, 0])
+                        cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0])
                         cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector ) / 2500
                         return  ((1.0 - cost) * 2.0) - 1.0
                     return 0.0
@@ -50,14 +50,14 @@ def wrap_class(BixlerClass, parameters):
                     return self.is_out_of_bounds()
 
                 def get_state(self):
-                    return super(PerchingBixler,self).get_state()[0:15].T
+                    return super(PerchingBixler,self).get_state()[0:14].T
 
 
                 def get_normalized_obs(self, state=None):
                     if state is None:
                         state=self.get_state()
 
-                    obs = np.float64(np.delete(state, [1, 3, 5, 6, 7, 8, 9, 11, 14], axis=1))
+                    obs = np.float64(np.delete(state, [1, 3, 5, 6, 7, 8, 9, 11], axis=1))
 
 
                     obs = np.float64(np.concatenate((obs, [[self.airspeed, self.alpha]]), axis = 1))

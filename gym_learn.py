@@ -20,7 +20,7 @@ import gym_bixler
 import stable_baselines
 
 from stable_baselines.deepq.policies import MlpPolicy, LnMlpPolicy
-from stable_baselines.common.policies import MlpPolicy
+# from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.bench import Monitor
 from stable_baselines.common.evaluation import evaluate_policy
 from callbacks.callbacks import Callbacks
@@ -30,6 +30,8 @@ from stable_baselines import DQN, PPO2
 parser = argparse.ArgumentParser(description='Parse param file location')
 parser.add_argument("--param_file", type =str, default="sim_params.json")
 args = parser.parse_args()
+
+os.environ["WANDB_API_KEY"] = "ea17412f95c94dfcc41410f554ef62a1aff388ab"
 
 wandb.init(project="disco", sync_tensorboard=True)
 
@@ -43,7 +45,7 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=100000
+wandb.config.timesteps=1000000
 
 save_cal = Callbacks(log_dir)
 
