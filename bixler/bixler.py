@@ -138,7 +138,6 @@ class Bixler(object):
         # Update alpha and beta for next step
         self.update_air_data()
 
-    
 
     def _update_dcm_earth2body(self):
         roll  = self.orientation_e[0,0]

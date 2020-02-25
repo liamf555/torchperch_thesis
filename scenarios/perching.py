@@ -38,7 +38,7 @@ def wrap_class(BixlerClass, parameters):
                     if self.is_terminal():
                         if self.is_out_of_bounds():
                             return failReward
-                        cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0, 0])
+                        cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0])
                         cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector ) / 2500
                         return  ((1.0 - cost) * 2.0) - 1.0
                     return 0.0
@@ -50,7 +50,7 @@ def wrap_class(BixlerClass, parameters):
                     return self.is_out_of_bounds()
 
                 def get_state(self):
-                    return super(PerchingBixler,self).get_state()[0:15].T
+                    return super(PerchingBixler,self).get_state()[0:14].T
 
 
                 def get_normalized_obs(self, state=None):
@@ -71,6 +71,8 @@ def wrap_class(BixlerClass, parameters):
                 
                 def reset_scenario(self):
                     initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype="float64")
+
+                    print(initial_state)
                     if self.var_start:
                         # Add noise to starting velocity
                         # start_shift_u =  np.random.uniform(-1.0, 1.0)
