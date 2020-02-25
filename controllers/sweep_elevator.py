@@ -16,7 +16,6 @@ class Bixler_SweepElevator(common.BixlerController):
         self.sweep_rate = 0 # (deg/s)
         self.elev_rate = 0  # (deg/s)
         self.latency = parameters.get("latency") # (sec)
-        print(self.latency)
         self.next_sweep_rate = 0
         self.next_elev_rate = 0
         self.time_since_action = 0

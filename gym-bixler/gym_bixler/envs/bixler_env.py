@@ -37,7 +37,7 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         self.action_space = gym.spaces.Discrete(self.scenario.actions)
 
-        self.observation_space = gym.spaces.Box(low=0, high = 1, shape = (1, self.scenario.state_dims), dtype = np.float32)
+        self.observation_space = gym.spaces.Box(low=0, high = 1, shape = (1, self.scenario.state_dims), dtype = np.float64)
 
         self.bixler.reset_scenario()
         self.state = self.bixler.get_state()
