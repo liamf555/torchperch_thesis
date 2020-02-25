@@ -57,7 +57,7 @@ def wrap_class(BixlerClass, parameters):
                     if state is None:
                         state=self.get_state()
 
-                    obs = np.float64(np.delete(state, [1, 3, 5, 6, 7, 8, 9, 11, 14], axis=1))
+                    obs = np.float64(np.delete(state, [1, 3, 5, 6, 7, 8, 9, 11], axis=1))
 
 
                     obs = np.float64(np.concatenate((obs, [[self.airspeed, self.alpha]]), axis = 1))

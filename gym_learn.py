@@ -31,6 +31,8 @@ parser = argparse.ArgumentParser(description='Parse param file location')
 parser.add_argument("--param_file", type =str, default="sim_params.json")
 args = parser.parse_args()
 
+os.environ["WANDB_API_KEY"] = "ea17412f95c94dfcc41410f554ef62a1aff388ab"
+
 wandb.init(project="disco", sync_tensorboard=True)
 
 def check_algorithm(algorithm_name):
@@ -43,7 +45,7 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=100000
+wandb.config.timesteps=1000000
 
 save_cal = Callbacks(log_dir)
 
