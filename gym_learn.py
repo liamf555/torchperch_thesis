@@ -20,7 +20,7 @@ import gym_bixler
 import stable_baselines
 
 from stable_baselines.deepq.policies import MlpPolicy, LnMlpPolicy
-# from stable_baselines.common.policies import MlpPolicy
+from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.bench import Monitor
 from stable_baselines.common.evaluation import evaluate_policy
 from callbacks.callbacks import Callbacks
