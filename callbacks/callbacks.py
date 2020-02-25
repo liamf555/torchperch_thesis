@@ -40,7 +40,7 @@ class Callbacks(object):
         callback_vars = self.get_callback_vars(_locals["self"], n_steps=0, best_mean_reward=-np.inf) 
 
         # skip every 20 steps
-        if callback_vars["n_steps"] % 5000 == 0:
+        if callback_vars["n_steps"] % 50 == 0:
             # Evaluate policy training performance
             x, y = ts2xy(load_results(self.log_dir), 'timesteps')
             if len(x) > 0:
