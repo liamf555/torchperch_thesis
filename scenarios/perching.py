@@ -72,7 +72,6 @@ def wrap_class(BixlerClass, parameters):
                 def reset_scenario(self):
                     initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype="float64")
 
-                    print(initial_state)
                     if self.var_start:
                         # Add noise to starting velocity
                         # start_shift_u =  np.random.uniform(-1.0, 1.0)
