@@ -3,17 +3,16 @@ import numpy as np
 
 class Wind(object):
 
-    def __init__(self, steady_var = False, steady_state = [0, 0, 0], dryden_on = False, min_mag = 0, max_mag = 0):
+    def __init__(self, steady_var = False, steady_state = [0, 0, 0], dryden_on = False):
 
         self.dryden_on = dryden_on
-        self.min = min_mag
-        self.max = max_mag
+
+        self.steady_var = steady_var 
 
         if steady_var:
-            # TODO
-            pass
-        else:
-            # TODO make array np array from list
+            self.max = steady_state[0]
+            self.min = - steady_state[0]
+
             self.steady_state = np.array((steady_state))
         
         if dryden_on == True:
@@ -23,25 +22,16 @@ class Wind(object):
     
     def update(self):
 
-        return self.steady_state
+        if self.steady_var:
 
-        # dryden.update()
-
-        # return np.concatenate(self.steady_state, dryden.update(ts))
-
-
+            wind_north = np.random.uniform(self.min, self.max)
+            self.steady_state[0] = wind_north
 
     def seed(self, np_random):
 
         self.np_random = np_random 
 
-    def update_wind(self):
-
-        return self.steady_state
-
-    
-
-    def get_steady_state(self):
+    def get_wind(self):
 
         return self.steady_state
 

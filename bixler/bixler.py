@@ -55,7 +55,7 @@ class Bixler(object):
         self.alpha    = 0.0 # (deg)
         self.beta     = 0.0 # (deg)
         self.airspeed = 0.0 # (m/s)
-        self.wind_sim = Wind(steady_state=parameters.get("steady_vector"))
+        self.wind_sim = Wind(steady_state=parameters.get("steady_vector"), steady_var=parameters.get("steady_var"))
         
         # Control surface limits
         self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
@@ -258,7 +258,7 @@ class Bixler(object):
     def update_air_data(self):
         # TODO: wind model...
 
-        wind = self.wind_sim.update()
+        wind = self.wind_sim.get_wind()
 
         # print(f"Wind: {wind}")
 

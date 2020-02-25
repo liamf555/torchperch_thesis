@@ -42,7 +42,7 @@ class JsonMod:
     def json_single(self):
         for key, value in vars(self.args).items():
             if value is not None:
-                if key is not "log_file" and key is not "array":
+                if key is not "log_file" and key is not "array" and key is not "steady_var":
                     self.name = key + '_' + value
                     if key is "steady_vector":
                         wind_north = float(args.steady_vector)
@@ -68,7 +68,8 @@ class JsonMod:
         model_name = '/' + algorithm_name + '_' + self.name 
 
         self.data["model_file"] = self.args.log_file + model_name
-        self.data["log_file"] = self.args.log_file 
+        self.data["log_file"] = self.args.log_file
+        self.data["steady_var"] = self.args.steady_var 
 
         with open(self.args.log_file + "/sim_params.json", "w") as jsonFile:
             json.dump(self.data, jsonFile, indent=2)
@@ -87,6 +88,7 @@ if __name__ == "__main__":
     parser.add_argument('--steady_vector', type = str)
     parser.add_argument('--variable_start', type =str)
     parser.add_argument('--array_flag', action = 'store_true', dest = 'array')
+    parser.add_argument('--steady_flag', action = 'store_true', dest = 'steady_var')
     args = parser.parse_args()
 
     amend = JsonMod(args)
