@@ -45,7 +45,7 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=1000000
+wandb.config.timesteps=1000
 
 save_cal = Callbacks(log_dir)
 
@@ -67,3 +67,11 @@ model.save(params.get("model_file"))
 wandb.save(params.get("model_file") + ".zip")
 wandb.save(log_dir +"/best_model.zip")
 wandb.save(log_dir + "/monitor.csv")
+
+final_model = ModelType.load(params.get("model_file"))
+best_model = ModelType.load(log_dir +"/best_model.zip")
+final_model_eval = evaluate_policy(final_model, env)
+best_model_eval = evaluate_policy(best_model, env)
+wandb.log({'best_model_eval': best_model_eval})
+wandb.log({'final_model_eval': final_model_eval})
+
