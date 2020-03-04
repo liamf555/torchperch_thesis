@@ -39,7 +39,7 @@ JOB_NID=${PBS_JOBID%%[.\[]*}${PBS_ARRAYID:+-$PBS_ARRAYID}
 export OMP_NUM_THREADS=16
 export KMP_AFFINITY=granularity=fine,compact,1,0
 
-python json_mod.py --log_file ../output/$JOB_NID --algorithm PPO2 --steady_flag --steady_vector 2
+python json_mod.py --log_file ../output/$JOB_NID --algorithm PPO2 --steady_flag --steady_vector 5
 
 python gym_learn.py --param_file ../output/$JOB_NID/sim_params.json
 

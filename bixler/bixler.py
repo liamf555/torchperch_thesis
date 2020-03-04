@@ -338,6 +338,7 @@ class Bixler(object):
         
         # Pitching moment
         C_m = C_m0 + (C_malpha * self.alpha) + (C_melev * self.elev) + (C_msweep * self.sweep) + (C_mwashout * self.washout) + (C_mq * q)
+        # print(f'Q: {Q}, Cm: {C_m}')
         m = Q * self.S * self.c * C_m
         #print("0: {}, a: {}, e: {}, s: {}, w: {}, q: {}".format(C_m0,(C_malpha * self.alpha),(C_melev * self.elev),(C_msweep * self.sweep),(C_mwashout * self.washout),(C_mq * q)))
         #print("{},{},{},{},{},{}".format(C_m0,(C_malpha * self.alpha),(C_melev * self.elev),(C_msweep * self.sweep),(C_mwashout * self.washout),(C_mq * q)))

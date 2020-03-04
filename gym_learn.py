@@ -45,7 +45,7 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=1000
+wandb.config.timesteps=5000000
 
 save_cal = Callbacks(log_dir)
 

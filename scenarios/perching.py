@@ -32,6 +32,9 @@ def wrap_class(BixlerClass, parameters):
                     # Check u remains sensible, > 0
                     if not is_in_range(self.velocity_b[0,0],0,20):
                         return True
+                    # airspeed remains sensible
+                    if self.airspeed > 100:
+                        return True    
                     return False
         
                 def get_reward(self):
