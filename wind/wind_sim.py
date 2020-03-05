@@ -24,7 +24,7 @@ class Wind(object):
 
         if self.steady_var:
 
-            wind_north = np.random.uniform(self.min, self.max)
+            wind_north = np.random.normal(2.58, 1.526)
             self.steady_state[0] = wind_north
 
     def seed(self, np_random):
