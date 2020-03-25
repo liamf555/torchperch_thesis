@@ -22,10 +22,33 @@ import stable_baselines
 from stable_baselines.deepq.policies import MlpPolicy, LnMlpPolicy
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.bench import Monitor
-from stable_baselines.common.evaluation import evaluate_policy
-from callbacks.callbacks import Callbacks
+# from stable_baselines.common.evaluation import evaluate_policy
+from callbacks.callbacks import EvalCallback, evaluate_policy
 
 from stable_baselines import DQN, PPO2
+
+def make_eval_env(params):
+
+	env_params = params
+
+	mean, sd = env_params["wind_params"]
+	wind_north = [mean - (2 * sd), mean, mean + (2 * sd)]
+	eval_envs = []
+
+	for wind in wind_north:
+		
+		eval_params = env_params
+
+		eval_params["wind_mode"] = 'evaluate_normal'   
+		eval_params["wind_params"] = [wind, 0, 0]
+
+		print(eval_params["wind_params"])
+
+		eval_env = gym.make(env_params.get("env"), parameters = env_params)
+
+		eval_envs.append(eval_env)
+
+	return eval_envs
 
 parser = argparse.ArgumentParser(description='Parse param file location')
 parser.add_argument("--param_file", type =str, default="sim_params.json")
@@ -45,14 +68,20 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=5000000
+wandb.config.timesteps=50000
 
-save_cal = Callbacks(log_dir)
+# save_cal = Callbacks(log_dir)
 
-env = gym.envs.make(params.get("env"), parameters=params)
+
+env = gym.make(params.get("env"), parameters=params)
 env = Monitor(env, log_dir, allow_early_resets=True)
 
+eval_envs = make_eval_env(params)
+
+callback = EvalCallback(eval_envs, eval_freq=10000, log_path=log_dir, best_model_save_path=log_dir, n_eval_episodes=3)
+
 ModelType = check_algorithm(params.get("algorithm"))
+
 model = ModelType(MlpPolicy, env, verbose = 1, tensorboard_log=log_dir)
 wandb.config.update({"policy": model.policy.__name__})
 
@@ -60,18 +89,19 @@ for key, value in vars(model).items():
 	if type(value) == float or type(value) == str or type(value) == int:
 		wandb.config.update({key: value})
 
-
-model.learn(total_timesteps = wandb.config.timesteps , callback = save_cal.auto_save_callback)
+model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
 
 model.save(params.get("model_file"))
+
+
 wandb.save(params.get("model_file") + ".zip")
 wandb.save(log_dir +"/best_model.zip")
 wandb.save(log_dir + "/monitor.csv")
 
 final_model = ModelType.load(params.get("model_file"))
 best_model = ModelType.load(log_dir +"/best_model.zip")
-final_model_eval = evaluate_policy(final_model, env)
-best_model_eval = evaluate_policy(best_model, env)
+
+final_model_eval = evaluate_policy(final_model, eval_envs)
+best_model_eval = evaluate_policy(best_model, eval_envs)
 wandb.log({'best_model_eval': best_model_eval})
 wandb.log({'final_model_eval': final_model_eval})
-

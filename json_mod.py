@@ -1,6 +1,6 @@
 import json
 import argparse 
-import os
+from pathlib import Path
 from shutil import copyfile
 
 
@@ -10,23 +10,21 @@ class JsonMod:
 
         self.args = args
 
-        os.mkdir(args.log_file)
+        self.wind_mode = args.wind_mode
+        self.wind_params = args.wind_params
+
+        
+        Path(args.log_file).mkdir(parents=True, exist_ok=True)
         copyfile("./sim_params.json", (args.log_file + "/sim_params.json"))
 
         with open((args.log_file + "/sim_params.json"), "r") as jsonFile:
             self.data = json.load(jsonFile)
 
-
         if self.args.array:
-            print('goat')
             with open("../torchperch/scripts/bluecrystal/arrays.json", "r") as arrayFile:
                 self.arrays = json.load(arrayFile)
 
-        self.name = None
-
-
     def json_array(self):
-        print('goat')
         for key, value in vars(self.args).items():
             if value is not None: 
                 if str(key) is not "log_file" and key is not "array":
@@ -39,18 +37,24 @@ class JsonMod:
                         self.data[key] = self.arrays[key][value]
                 
 
+    # def json_single(self):
+    #     for key, value in vars(self.args).items():
+    #         if value is not None:
+    #             if key is not "log_file" and key is not "array" and key is not "steady_var":
+    #                 self.name = key + '_' + value
+    #                 if key is "wind_mode":
+    #                     wind_north = float(args.steady_vector)
+    #                     self.data[key] = [wind_north, 0.0, 0.0]
+    #                 else:
+    #                     self.data[key] = value 
+
     def json_single(self):
         for key, value in vars(self.args).items():
             if value is not None:
-                if key is not "log_file" and key is not "array" and key is not "steady_var":
-                    self.name = key + '_' + value
-                    if key is "steady_vector":
-                        wind_north = float(args.steady_vector)
-                        self.data[key] = [wind_north, 0.0, 0.0]
-                    else:
+                if key is not "log_file" and key is not "array" and key is not "wind_params":
                         self.data[key] = value 
-        
 
+        
 
     def json_amend(self):
 
@@ -65,15 +69,24 @@ class JsonMod:
             algorithm_name = self.args.algorithm
 
 
-        model_name = '/' + algorithm_name + '_' + self.name 
+        model_name = algorithm_name + '_' + 'final_model' 
 
         self.data["model_file"] = self.args.log_file + model_name
         self.data["log_file"] = self.args.log_file
-        self.data["steady_var"] = self.args.steady_var 
 
+        self.wind_amend()
+    
         with open(self.args.log_file + "/sim_params.json", "w") as jsonFile:
             json.dump(self.data, jsonFile, indent=2)
 
+    def wind_amend(self):
+        wind_parama_args = self.args.wind_params
+
+        if self.wind_mode == 'normal':
+            self.wind_params = (wind_parama_args.split(","))
+            self.wind_params = [float(i) for i in self.wind_params]
+        
+        self.data["wind_params"] = self.wind_params 
 
 if __name__ == "__main__":
 
@@ -83,19 +96,13 @@ if __name__ == "__main__":
     parser.add_argument('--controller', type=str)
     parser.add_argument('--log_file', type = str)
     parser.add_argument('--latency', type = float)
-    parser.add_argument('--turbulence', type = str)
+    parser.add_argument('--wind_mode', type = str)
     parser.add_argument('--noise', type = float)
-    parser.add_argument('--steady_vector', type = str)
+    parser.add_argument('--wind_params', type = str)
     parser.add_argument('--variable_start', type =str)
     parser.add_argument('--array_flag', action = 'store_true', dest = 'array')
-    parser.add_argument('--steady_flag', action = 'store_true', dest = 'steady_var')
     args = parser.parse_args()
 
     amend = JsonMod(args)
 
     amend.json_amend()
-
-    
-
-
-

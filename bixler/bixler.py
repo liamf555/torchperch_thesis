@@ -35,7 +35,8 @@ class Bixler(object):
         # State
         self.position_e = np.zeros((3,1))
         self.velocity_b = np.array([[14],[0],[0]])
-        self.velocity_e = np.array([[0],[0],[0]])
+        self.velocity_e = np.zeros((3,1))
+        self.Vr = np.zeros((3,1))
         self.acceleration_b = np.zeros((3,1))
         
         self.orientation_e = np.zeros((3,1)) # (rad)
@@ -55,7 +56,7 @@ class Bixler(object):
         self.alpha    = 0.0 # (deg)
         self.beta     = 0.0 # (deg)
         self.airspeed = 0.0 # (m/s)
-        self.wind_sim = Wind(steady_state=parameters.get("steady_vector"), steady_var=parameters.get("steady_var"))
+        self.wind_sim = Wind(wind_mode=parameters.get("wind_mode"), wind_params=parameters.get("wind_params"))
         
         # Control surface limits
         self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
@@ -266,22 +267,22 @@ class Bixler(object):
 
         # print(f"Wind_b: {wind_b}")
 
-        Vr = self.velocity_b[:,0] - wind_b
+        self.Vr = self.velocity_b[:,0] - wind_b
 
         # print(f"velocity_b: {self.velocity_b}")
 
         # print(f"Vr: {Vr}")
 
         
-        uSqd = Vr[0]**2
-        vSqd = Vr[1]**2
-        wSqd = Vr[2]**2
+        uSqd = self.Vr[0]**2
+        vSqd = self.Vr[1]**2
+        wSqd = self.Vr[2]**2
         
         self.airspeed = np.sqrt( uSqd + vSqd + wSqd )
 
         # print(f"airspeed {self.airspeed}")
         
-        self.alpha = np.rad2deg(np.arctan2(Vr[2],Vr[0]))
+        self.alpha = np.rad2deg(np.arctan2(self.Vr[2],self.Vr[0]))
         
         if self.airspeed == 0:
             self.beta = 0
@@ -292,7 +293,7 @@ class Bixler(object):
             if cosBeta < -1.0: cosBeta = -1.0
             elif cosBeta > 1.0: cosBeta = 1.0
             # Apply sign convention
-            self.beta = np.rad2deg(np.copysign(np.arccos(cosBeta), Vr[1]))
+            self.beta = np.rad2deg(np.copysign(np.arccos(cosBeta), self.Vr[1]))
     
     def wrap_orientation(self):
         self.orientation_e = (self.orientation_e + np.pi*2) % (np.pi*2)
