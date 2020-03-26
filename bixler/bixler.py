@@ -56,6 +56,7 @@ class Bixler(object):
         self.alpha    = 0.0 # (deg)
         self.beta     = 0.0 # (deg)
         self.airspeed = 0.0 # (m/s)
+        self.wind = np.zeros((3,1))
         self.wind_sim = Wind(wind_mode=parameters.get("wind_mode"), wind_params=parameters.get("wind_params"))
         
         # Control surface limits
@@ -259,11 +260,11 @@ class Bixler(object):
     def update_air_data(self):
         # TODO: wind model...
 
-        wind = self.wind_sim.get_wind()
+        self.wind = self.wind_sim.get_wind()
 
         # print(f"Wind: {wind}")
 
-        wind_b = np.matmul(self.dcm_earth2body, wind) # + gusts
+        wind_b = np.matmul(self.dcm_earth2body, self.wind) # + gusts
 
         # print(f"Wind_b: {wind_b}")
 
