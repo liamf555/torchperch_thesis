@@ -42,8 +42,6 @@ def make_eval_env(params):
 		eval_params["wind_mode"] = 'evaluate_normal'   
 		eval_params["wind_params"] = [wind, 0, 0]
 
-		print(eval_params["wind_params"])
-
 		eval_env = gym.make(env_params.get("env"), parameters = env_params)
 
 		eval_envs.append(eval_env)
@@ -68,7 +66,7 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=50000
+wandb.config.timesteps=5000000
 
 # save_cal = Callbacks(log_dir)
 
