@@ -68,9 +68,6 @@ log_dir = params.get("log_file")
 wandb.config.update(params)
 wandb.config.timesteps=5000000
 
-# save_cal = Callbacks(log_dir)
-
-
 env = gym.make(params.get("env"), parameters=params)
 env = Monitor(env, log_dir, allow_early_resets=True)
 
@@ -80,7 +77,7 @@ callback = EvalCallback(eval_envs, eval_freq=10000, log_path=log_dir, best_model
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-model = ModelType(MlpPolicy, env, verbose = 1, tensorboard_log=log_dir)
+model = ModelType(MlpPolicy, env, verbose = 0, tensorboard_log=log_dir)
 wandb.config.update({"policy": model.policy.__name__})
 
 for key, value in vars(model).items():
@@ -90,7 +87,6 @@ for key, value in vars(model).items():
 model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
 
 model.save(params.get("model_file"))
-
 
 wandb.save(params.get("model_file") + ".zip")
 wandb.save(log_dir +"/best_model.zip")

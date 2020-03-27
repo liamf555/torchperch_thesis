@@ -63,6 +63,9 @@ class BixlerEnv(Rendermixin, gym.Env):
 		#get observation
         obs = self.bixler.get_normalized_obs()
 
+        if any(i > 1.0 or i < 0.0 for i in obs[0]):
+            print(f"Obs: {obs}")
+
         #get reward
         self.reward = self.bixler.get_reward()
 		
@@ -79,6 +82,8 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.time = 0
 
         return self.bixler.get_normalized_obs()
+
+
 
      
     def render(self, mode):
