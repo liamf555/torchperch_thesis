@@ -35,7 +35,12 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         self.bixler = self.scenario.wrap_class(self.controller, parameters)()
 
-        self.action_space = gym.spaces.Discrete(self.scenario.actions)
+        if parameters.get("controller") == "sweep_elevator":
+            self.action_space = gym.spaces.Discrete(self.scenario.actions)
+
+        if parameters.get("controller") == "sweep_elevator_cont_rate": 
+            self.action_space = gym.spaces.Box(low = np.array([-1, -1]),
+                                            high = np.array([1, 1]), dtype = np.float16)
 
         self.observation_space = gym.spaces.Box(low=0, high = 1, shape = (1, self.scenario.state_dims), dtype = np.float64)
 
@@ -63,9 +68,7 @@ class BixlerEnv(Rendermixin, gym.Env):
 		#get observation
         obs = self.bixler.get_normalized_obs()
 
-        if any(i > 1.0 or i < 0.0 for i in obs[0]):
-            print(f"Obs: {obs}")
-
+       
         #get reward
         self.reward = self.bixler.get_reward()
 		

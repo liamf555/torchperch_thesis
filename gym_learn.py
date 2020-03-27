@@ -19,13 +19,16 @@ import gym
 import gym_bixler
 import stable_baselines
 
-from stable_baselines.deepq.policies import MlpPolicy, LnMlpPolicy
+from stable_baselines.deepq.policies import MlpPolicy
+from stable_baselines.sac.policies import MlpPolicy
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.bench import Monitor
 # from stable_baselines.common.evaluation import evaluate_policy
 from callbacks.callbacks import EvalCallback, evaluate_policy
 
-from stable_baselines import DQN, PPO2
+from stable_baselines.common.cmd_util import make_vec_env
+
+from stable_baselines import DQN, PPO2, SAC
 
 def make_eval_env(params):
 
@@ -69,6 +72,9 @@ wandb.config.update(params)
 wandb.config.timesteps=5000000
 
 env = gym.make(params.get("env"), parameters=params)
+
+# env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
+
 env = Monitor(env, log_dir, allow_early_resets=True)
 
 eval_envs = make_eval_env(params)
@@ -77,7 +83,7 @@ callback = EvalCallback(eval_envs, eval_freq=10000, log_path=log_dir, best_model
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-model = ModelType(MlpPolicy, env, verbose = 0, tensorboard_log=log_dir)
+model = ModelType("MlpPolicy", env, verbose = 1, tensorboard_log=log_dir)
 wandb.config.update({"policy": model.policy.__name__})
 
 for key, value in vars(model).items():
