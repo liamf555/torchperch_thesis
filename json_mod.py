@@ -82,8 +82,8 @@ class JsonMod:
     def wind_amend(self):
         wind_parama_args = self.args.wind_params
 
-        if self.wind_mode == 'normal':
-            self.wind_params = (wind_parama_args.split(","))
+        if self.wind_mode == 'normal' or "steady":
+            # self.wind_params = (wind_parama_args.split(" "))
             self.wind_params = [float(i) for i in self.wind_params]
         
         self.data["wind_params"] = self.wind_params 
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     parser.add_argument('--latency', type = float)
     parser.add_argument('--wind_mode', type = str)
     parser.add_argument('--noise', type = float)
-    parser.add_argument('--wind_params', type = str)
+    parser.add_argument('--wind_params', type = str, nargs='*')
     parser.add_argument('--variable_start', type =str)
     parser.add_argument('--array_flag', action = 'store_true', dest = 'array')
     args = parser.parse_args()

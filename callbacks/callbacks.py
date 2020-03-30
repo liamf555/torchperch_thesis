@@ -25,6 +25,8 @@ def evaluate_policy(model, envs, n_eval_episodes=10, deterministic=True,
     rewards = []
 
     for env in envs:
+
+
         """
         Runs policy for `n_eval_episodes` episodes and returns average reward.
         This is made to work only with one env.

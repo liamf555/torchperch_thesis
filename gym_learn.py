@@ -32,20 +32,26 @@ from stable_baselines import DQN, PPO2, SAC
 
 def make_eval_env(params):
 
-	env_params = params
+	if params.get("wind_mode") == 'normal':
 
-	mean, sd = env_params["wind_params"]
-	wind_north = [mean - (2 * sd), mean, mean + (2 * sd)]
+		mean, sd = params["wind_params"]
+		wind_north = [mean - (2 * sd), mean, mean + (2 * sd)]
+
+	if params.get("wind_mode") == "steady":
+		wind_north = [params["wind_params"][0]]
+
 	eval_envs = []
 
 	for wind in wind_north:
+
+		print(wind)
 		
-		eval_params = env_params
+		eval_params = params
 
 		eval_params["wind_mode"] = 'evaluate_normal'   
 		eval_params["wind_params"] = [wind, 0, 0]
 
-		eval_env = gym.make(env_params.get("env"), parameters = env_params)
+		eval_env = gym.make(params.get("env"), parameters = eval_params)
 
 		eval_envs.append(eval_env)
 
@@ -83,7 +89,7 @@ callback = EvalCallback(eval_envs, eval_freq=10000, log_path=log_dir, best_model
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-model = ModelType("MlpPolicy", env, verbose = 1, tensorboard_log=log_dir)
+model = ModelType("MlpPolicy", env, verbose = 0, tensorboard_log=log_dir)
 wandb.config.update({"policy": model.policy.__name__})
 
 for key, value in vars(model).items():

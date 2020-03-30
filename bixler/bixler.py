@@ -262,7 +262,7 @@ class Bixler(object):
 
         self.wind = self.wind_sim.get_wind()
 
-        # print(f"Wind: {wind}")
+        # print(f"Wind: {self.wind}")
 
         wind_b = np.matmul(self.dcm_earth2body, self.wind) # + gusts
 
@@ -272,9 +272,9 @@ class Bixler(object):
 
         # print(f"velocity_b: {self.velocity_b}")
 
-        # print(f"Vr: {Vr}")
+        # print(f"Vr: {self.Vr}")
+# 
 
-        
         uSqd = self.Vr[0]**2
         vSqd = self.Vr[1]**2
         wSqd = self.Vr[2]**2

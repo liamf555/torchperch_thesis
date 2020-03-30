@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--param_file", "../output/wind_test_3/sim_params.json"]
+            "args": ["--param_file", "../output/wind_test_4/sim_params.json"]
         }
     ]
 }

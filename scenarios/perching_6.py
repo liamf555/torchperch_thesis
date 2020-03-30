@@ -72,11 +72,18 @@ def wrap_class(BixlerClass, parameters):
 
                     return (obs-mins)/(maxs-mins)
                 
+
                 def reset_scenario(self):
-                    initial_state = np.array([[-40,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0]], dtype="float64")
+
+                    self.wind_sim.update()
+                    wind = self.wind_sim.get_wind()
+
+                    target_airspeed = 13 # m/s
+                    u = target_airspeed + wind[0]
+
+                    initial_state = np.array([[-40,0,-2, 0,0,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
 
                     if self.var_start:
-                        # Add noise to starting velocity
                         # start_shift_u =  np.random.uniform(-1.0, 1.0)
                         # start_shift_w = np.random.uniform(-1.0, 1.0)
                         # start_shift_theta = np.random.uniform(-0.061, 0.061) #shift +-3.5degs in theta
@@ -91,8 +98,6 @@ def wrap_class(BixlerClass, parameters):
                         initial_state[:,4] += start_shift_theta
 
                     self.set_state(initial_state)
-
-                    self.wind_sim.update()
 
 
     return PerchingBixler

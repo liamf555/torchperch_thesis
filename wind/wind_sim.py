@@ -11,11 +11,6 @@ class Wind(object):
         self.wind_params = wind_params
         self.wind_vector = [0, 0, 0]
 
-
-
-
-        
-        
     
     def update(self):
 
@@ -27,6 +22,9 @@ class Wind(object):
         if self.wind_mode == 'evaluate_normal':
             self.wind_vector = self.wind_params
             # print(self.wind_vector)
+
+        if self.wind_mode == 'steady':
+            self.wind_vector = self.wind_params 
         
         wandb.log({"wind_speed": self.wind_vector[0]})
         
@@ -38,8 +36,8 @@ class Wind(object):
 
     def get_wind(self):
 
-        # if self.wind_mode == 'evaluate_normal':
-        #     print(self.wind_vector)
+        if self.wind_mode == 'evaluate_normal':
+            print(self.wind_vector)
 
         return self.wind_vector
 

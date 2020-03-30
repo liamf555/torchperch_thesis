@@ -4,4 +4,4 @@
 *.pkl
 *.csv
 /wandb/*
-/.vscode/*
+.vscode/
