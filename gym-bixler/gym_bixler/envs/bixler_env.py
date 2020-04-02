@@ -99,6 +99,7 @@ class BixlerEnv(Rendermixin, gym.Env):
         if mode == 'plot':
             self.plot_flag = True
             self.create_array()
+            print('goat')
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)

@@ -20,9 +20,10 @@ import gym
 
 def evaluate_policy(model, envs, n_eval_episodes=10, deterministic=True,
                     render=False, callback=None, reward_threshold=None,
-                    return_episode_rewards=False):
+                    return_episode_rewards=False, render_mode=None):
 
     rewards = []
+    wind_speeds = []
 
     for env in envs:
 
@@ -63,7 +64,7 @@ def evaluate_policy(model, envs, n_eval_episodes=10, deterministic=True,
                     callback(locals(), globals())
                 episode_length += 1
                 if render:
-                    env.render()
+                    env.render(render)
             episode_rewards.append(episode_reward)
             episode_lengths.append(episode_length)
 
@@ -78,7 +79,9 @@ def evaluate_policy(model, envs, n_eval_episodes=10, deterministic=True,
         # return mean_reward, std_reward
 
         rewards.append(mean_reward)
-    return rewards
+        wind_speeds.append(env.bixler.wind[0])
+    
+    return rewards, wind_speeds
       
 class EvalCallback(EventCallback):
 
@@ -150,7 +153,7 @@ class EvalCallback(EventCallback):
             # Sync training and eval env if there is VecNormalize
             sync_envs_normalization(self.training_env, self.eval_env)
 
-            episode_rewards = evaluate_policy(self.model, self.eval_env,
+            episode_rewards, wind_speeds = evaluate_policy(self.model, self.eval_env,
                                                                n_eval_episodes=self.n_eval_episodes,
                                                                render=self.render,
                                                                deterministic=self.deterministic,
@@ -177,7 +180,7 @@ class EvalCallback(EventCallback):
                 print("Eval num_timesteps={}, "
                     "episode_rewards={}".format(self.num_timesteps, mean_reward))
                 # print("Episode length: {:.2f} +/- {:.2f}".format(mean_ep_length, std_ep_length))
-                wandb.log({"eval_reward_-2sd": mean_reward[0], "eval_reward_mean": mean_reward[1], "eval_reward_+2sd": mean_reward[2]}),
+                wandb.log({"eval_reward_"+str(wind_speeds[0]): mean_reward[0], "eval_reward_"+str(wind_speeds[1]): mean_reward[1], "eval_reward_"+str(wind_speeds[2]): mean_reward[2]})
 
             if all([mean > best for mean, best in zip(mean_reward, self.best_mean_reward)]):
                 if self.verbose > 0:

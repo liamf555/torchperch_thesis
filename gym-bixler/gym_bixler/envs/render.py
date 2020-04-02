@@ -17,7 +17,7 @@ class Rendermixin(object):
         
         self.df['airspeed'] = np.sqrt((self.df['u']**2)+(self.df['v']**2)+(self.df['w']**2))
 
-        print(f'Reward: {self.reward}')
+        # print(f'Reward: {self.reward}')
 
         self.df.to_pickle('../data/output.pkl')
         self.df.to_csv('../data/output.csv', index=False)

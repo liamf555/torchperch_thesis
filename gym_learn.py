@@ -19,39 +19,37 @@ import gym
 import gym_bixler
 import stable_baselines
 
-from stable_baselines.deepq.policies import MlpPolicy
-from stable_baselines.sac.policies import MlpPolicy
-from stable_baselines.common.policies import MlpPolicy
-from stable_baselines.bench import Monitor
+# from stable_baselines.deepq.policies import MlpPolicy
+# from stable_baselines.sac.policies import MlpPolicy
+# from stable_baselines.common.policies import MlpPolicy
+# from stable_baselines.bench import Monitor
 # from stable_baselines.common.evaluation import evaluate_policy
 from callbacks.callbacks import EvalCallback, evaluate_policy
+from wind.wind_sim import make_eval_wind
 
-from stable_baselines.common.cmd_util import make_vec_env
+# from stable_baselines.common.cmd_util import make_vec_env
 
-from stable_baselines import DQN, PPO2, SAC
+# from stable_baselines import DQN, PPO2, SAC
 
 def make_eval_env(params):
 
 	if params.get("wind_mode") == 'normal':
-
-		mean, sd = params["wind_params"]
-		wind_north = [mean - (2 * sd), mean, mean + (2 * sd)]
+		params["wind_mode"] = 'normal_eval'   
+		wind_north = make_eval_wind("normal_eval", params["wind_params"])
 
 	if params.get("wind_mode") == "steady":
-		wind_north = [params["wind_params"][0]]
+		params["wind_mode"] = 'steady_eval'   
+		wind_north = make_eval_wind("steady_eval", params["wind_params"])
 
 	eval_envs = []
 
 	for wind in wind_north:
-
-		print(wind)
 		
-		eval_params = params
+		params["wind_params"] = [wind, 0, 0]
 
-		eval_params["wind_mode"] = 'evaluate_normal'   
-		eval_params["wind_params"] = [wind, 0, 0]
+		print(params)
 
-		eval_env = gym.make(params.get("env"), parameters = eval_params)
+		eval_env = gym.make(params.get("env"), parameters = params)
 
 		eval_envs.append(eval_env)
 
@@ -75,13 +73,13 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=5000000
+wandb.config.timesteps=100000
 
 env = gym.make(params.get("env"), parameters=params)
 
-# env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
+print('env made')
 
-env = Monitor(env, log_dir, allow_early_resets=True)
+# env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
 
 eval_envs = make_eval_env(params)
 
