@@ -34,8 +34,7 @@ class Bixler(object):
 
         # State
         self.position_e = np.zeros((3,1))
-        self.velocity_b = np.array([[14],[0],[0]])
-        self.velocity_e = np.zeros((3,1))
+        self.velocity_b = np.array([[13.0],[0],[0]])
         self.Vr = np.zeros((3,1))
         self.acceleration_b = np.zeros((3,1))
         
@@ -64,6 +63,8 @@ class Bixler(object):
         self.elev_limits = np.rad2deg([-0.3491, 0.3491]) # changed from +- 10 to 20
         
         self.update_air_data()
+        self.velocity_e = self.velocity_b
+        self.velocity_e[0] += parameters.get("wind_params")[0]
 
         self.np_random = None
         self.seed()

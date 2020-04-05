@@ -26,7 +26,7 @@ def check_scenario(scenario_name):
 		raise ValueError(msg)
 
 class BixlerEnv(Rendermixin, gym.Env):
-    metadata = {'render.modes': ['save_file', 'plot', 'none']}
+    metadata = {'render.modes': ['save', 'plot', 'none']}
 
     def __init__(self, parameters):
 
@@ -45,11 +45,13 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.observation_space = gym.spaces.Box(low=0, high = 1, shape = (1, self.scenario.state_dims), dtype = np.float64)
 
         self.bixler.reset_scenario()
+
         self.state = self.bixler.get_state()
-        
+        self.state = np.concatenate((self.state, self.bixler.velocity_e.T), axis = 1)
         state_list = self.state[0].tolist()
         state_list.insert(0, 0)
-
+        state_list.append(self.bixler.alpha)
+        state_list.append(self.bixler.airspeed)
         self.state_array = []
         self.state_array.append(state_list)
 
@@ -63,18 +65,21 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.bixler.set_action(action)
 
         #bixler step function with timestep 0.1
-        self.bixler.step(0.1)
-     	
-		#get observation
-        obs = self.bixler.get_normalized_obs()
+        try:
+            self.bixler.step(0.1)
+        except FloatingPointError:
+            done = True
+        else:
+		    #get observation
+            obs = self.bixler.get_normalized_obs()
 
-       
-        #get reward
-        self.reward = self.bixler.get_reward()
-		
-        done = self.bixler.is_terminal()
+        
+            #get reward
+            self.reward = self.bixler.get_reward()
+            
+            done = self.bixler.is_terminal()
 
-        info = {}
+            info = {}
 
         return obs, self.reward, done, info
         
@@ -93,13 +98,12 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         self.render_flag = True
 
-        if mode == 'save_file':
+        if mode == 'save':
             self.create_array()
 
         if mode == 'plot':
             self.plot_flag = True
             self.create_array()
-            print('goat')
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -112,22 +116,20 @@ class BixlerEnv(Rendermixin, gym.Env):
     def create_array(self):
 
         self.time += 0.1
-
         self.state = self.bixler.get_state()
         self.state = np.concatenate((self.state, self.bixler.velocity_e.T), axis = 1)
         state_list = self.state[0].tolist()
         state_list.insert(0, self.time)
         state_list.append(self.bixler.alpha)
-
+        state_list.append(self.bixler.airspeed)
         self.state_array.append(state_list)
         
-    def close(self):
-
-        if self.render_flag:
-            Rendermixin.save_data(self)
         
-        if self.plot_flag:
-            Rendermixin.plot_data(self)
+    def close(self, path, reward):
+        if self.render_flag:
+            Rendermixin.save_data(self, path, reward)
+
+            
 
 
 

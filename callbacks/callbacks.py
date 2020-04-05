@@ -20,7 +20,7 @@ import gym
 
 def evaluate_policy(model, envs, n_eval_episodes=10, deterministic=True,
                     render=False, callback=None, reward_threshold=None,
-                    return_episode_rewards=False, render_mode=None):
+                    return_episode_rewards=False, path=None):
 
     rewards = []
     wind_speeds = []
@@ -65,6 +65,7 @@ def evaluate_policy(model, envs, n_eval_episodes=10, deterministic=True,
                 episode_length += 1
                 if render:
                     env.render(render)
+            env.close(str(path)+ '_' +str(env.bixler.wind[0]), episode_reward)
             episode_rewards.append(episode_reward)
             episode_lengths.append(episode_length)
 

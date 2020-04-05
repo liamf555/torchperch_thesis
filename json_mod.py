@@ -15,6 +15,10 @@ class JsonMod:
 
         
         Path(args.log_file).mkdir(parents=True, exist_ok=True)
+
+        eval_dir = Path(args.log_file) / 'eval'
+        eval_dir.mkdir(parents=True, exist_ok=True)
+
         copyfile("./sim_params.json", (args.log_file + "/sim_params.json"))
 
         with open((args.log_file + "/sim_params.json"), "r") as jsonFile:

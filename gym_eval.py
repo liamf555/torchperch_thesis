@@ -43,8 +43,6 @@ def make_eval_envs(params, wind_args=None):
 
         params["wind_params"] = [wind, 0, 0]
 
-        print(params)
-
         eval_env = gym.make(params.get("env"), parameters = params)
         eval_envs.append(eval_env)
 
@@ -52,7 +50,7 @@ def make_eval_envs(params, wind_args=None):
 
 parser = argparse.ArgumentParser(description='Load trained model and plot results')
 parser.add_argument('--dir_path', type=Path)
-parser.add_argument('--render_mode', type = str)
+parser.add_argument('--render_mode', type = str, default=None)
 parser.add_argument('--latency', type = float)
 parser.add_argument('--noise', type = float)
 parser.add_argument('--wind_mode', type = str)
@@ -89,9 +87,16 @@ best_model_path = dir_path / 'best_model.zip'
 final_model = ModelType.load(final_model_path)
 best_model = ModelType.load(best_model_path)
 
-final_rewards, final_wind_speeds = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='plot')
+eval_dir = dir_path / 'eval'
 
-best_rewards, _ = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True)
+eval_dir.mkdir(parents=True, exist_ok=True)
+
+final_model_data_path = eval_dir / 'final_model'
+best_model_data_path =  eval_dir / 'best_model'
+
+final_rewards, final_wind_speeds = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = final_model_data_path )
+
+best_rewards, _ = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = best_model_data_path)
 
 
 for i, wind in enumerate(final_wind_speeds):
