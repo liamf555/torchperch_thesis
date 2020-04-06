@@ -2,7 +2,7 @@ import numpy as np
 
 # Perching scenario
 
-state_dims = 12
+state_dims = 11
 actions = 49
 failReward = -1.0
 h_min = -10
@@ -63,12 +63,12 @@ def wrap_class(BixlerClass, parameters):
                     obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
 
                     
-                    obs = np.float64(np.concatenate((obs, [[self.wind[0], self.airspeed, self.velocity_e[0], self.velocity_e[2]]]), axis = 1))
+                    obs = np.float64(np.concatenate((obs, [[self.airspeed, self.velocity_e[0], self.velocity_e[2]]]), axis = 1))
 
                     pb2 = 2*np.pi
 
-                    mins = np.array([ -50,  h_min,  -pb2, -10, -10, -pb2,  self.sweep_limits[0], self.elev_limits[0], -10,   -10,   -10,  -10])
-                    maxs = np.array([  10,    1,     pb2, 20, 10, pb2,  self.sweep_limits[1], self.elev_limits[1],     10,   25,    20, 20])
+                    mins = np.array([ -50,  h_min,  -pb2, -10, -10, -pb2,  self.sweep_limits[0], self.elev_limits[0], -10,  -10,  -10])
+                    maxs = np.array([  10,    1,     pb2, 20, 10, pb2,  self.sweep_limits[1], self.elev_limits[1],    25,     20, 20])
 
                     return (obs-mins)/(maxs-mins)
                 

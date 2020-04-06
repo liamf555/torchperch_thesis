@@ -337,11 +337,7 @@ class Bixler(object):
 
         # Rolling moment
         C_l = C_l0 + (C_ldTipPort * self.tip_port) + (C_ldTipStbd * self.tip_stbd) + (C_lp * np.deg2rad(p))
-        try:
-            l = Q * self.S * self.c * C_l
-        except:
-            self.
-        
+        l = Q * self.S * self.c * C_l
         # Pitching moment
         C_m = C_m0 + (C_malpha * self.alpha) + (C_melev * self.elev) + (C_msweep * self.sweep) + (C_mwashout * self.washout) + (C_mq * q)
         # print(f'Q: {Q}, Cm: {C_m}')

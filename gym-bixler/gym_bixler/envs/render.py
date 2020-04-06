@@ -40,7 +40,7 @@ class Rendermixin(object):
         else:
             fig_title = re.sub(r'.*b', 'b', path)
 
-        fig_title = fig_title + f': Reward = {reward:.3f}'
+        fig_title = fig_title + f': Reward = {reward:.4f}'
 
         fig.suptitle(f'{fig_title}', fontsize=16)
 
@@ -107,8 +107,6 @@ class Rendermixin(object):
         
         wandb.log({fig_title: plt})
         
-
-
         if self.plot_flag:
             plt.show()
 

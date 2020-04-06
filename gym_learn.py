@@ -71,7 +71,7 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=10000
+wandb.config.timesteps=100000
 
 env = gym.make(params.get("env"), parameters=params)
 
@@ -79,7 +79,7 @@ env = gym.make(params.get("env"), parameters=params)
 
 eval_envs = make_eval_env(params)
 
-callback = EvalCallback(eval_envs, eval_freq=1000, log_path=log_dir, best_model_save_path=log_dir, n_eval_episodes=3)
+callback = EvalCallback(eval_envs, eval_freq=10000, log_path=log_dir, best_model_save_path=log_dir, n_eval_episodes=3)
 
 ModelType = check_algorithm(params.get("algorithm"))
 
@@ -94,11 +94,11 @@ model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
 
 model.save(params.get("model_file"))
 wandb.save(params.get("model_file") + ".zip")
-wandb.save(log_dir +"/best_model.zip")
-wandb.save(log_dir + "/monitor.csv")
+wandb.save(log_dir +"best_model.zip")
+wandb.save(log_dir + "monitor.csv")
 
 final_model = ModelType.load(params.get("model_file"))
-best_model = ModelType.load(log_dir +"/best_model.zip")
+best_model = ModelType.load(log_dir +"best_model.zip")
 
 final_model_eval = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
 best_model_eval = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/best_model'))

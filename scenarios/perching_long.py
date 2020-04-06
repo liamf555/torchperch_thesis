@@ -2,7 +2,7 @@ import numpy as np
 
 # Perching scenario
 
-state_dims = 12
+state_dims = 8
 actions = 49
 failReward = -1.0
 h_min = -10
@@ -62,19 +62,15 @@ def wrap_class(BixlerClass, parameters):
 
                     obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
 
-                    
-                    obs = np.float64(np.concatenate((obs, [[self.wind[0], self.airspeed, self.velocity_e[0], self.velocity_e[2]]]), axis = 1))
+                    pb2 = np.pi*2
 
-                    pb2 = 2*np.pi
-
-                    mins = np.array([ -50,  h_min,  -pb2, -10, -10, -pb2,  self.sweep_limits[0], self.elev_limits[0], -10,   -10,   -10,  -10])
-                    maxs = np.array([  10,    1,     pb2, 20, 10, pb2,  self.sweep_limits[1], self.elev_limits[1],     10,   25,    20, 20])
+                    mins = np.array([ -50,  h_min,  -pb2, -10, -10,  -pb2,  self.sweep_limits[0], self.elev_limits[0]])
+                    maxs = np.array([  10,       1,  pb2, 20,   10,   pb2,  self.sweep_limits[1], self.elev_limits[1]])
 
                     return (obs-mins)/(maxs-mins)
                 
-
                 def reset_scenario(self):
-
+                    
                     self.wind_sim.update()
                     wind = self.wind_sim.get_wind()
 
@@ -84,6 +80,7 @@ def wrap_class(BixlerClass, parameters):
                     initial_state = np.array([[-40,0,-2, 0,0,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
 
                     if self.var_start:
+                        # Add noise to starting velocity
                         # start_shift_u =  np.random.uniform(-1.0, 1.0)
                         # start_shift_w = np.random.uniform(-1.0, 1.0)
                         # start_shift_theta = np.random.uniform(-0.061, 0.061) #shift +-3.5degs in theta
@@ -98,6 +95,8 @@ def wrap_class(BixlerClass, parameters):
                         initial_state[:,4] += start_shift_theta
 
                     self.set_state(initial_state)
+
+                    self.wind_sim.update()
 
 
     return PerchingBixler
