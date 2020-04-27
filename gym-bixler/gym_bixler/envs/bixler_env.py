@@ -69,7 +69,10 @@ class BixlerEnv(Rendermixin, gym.Env):
             self.bixler.step(0.1)
         except FloatingPointError:
             done = True
-        else:
+            obs = self.bixler.get_normalized_obs()
+            self.reward = -1
+            info = {}
+       	else:
 		    #get observation
             obs = self.bixler.get_normalized_obs()
 

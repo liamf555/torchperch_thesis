@@ -8,7 +8,7 @@
 #PBS -M liam.fletcher@bristol.ac.uk
 
 ## Run with one node and 4 cores per job
-#PBS -l nodes=1:ppn=8
+#PBS -l nodes=1:ppn=16
 
 ## Run with a maximum of 6h walltime
 #PBS -l walltime=20:00:00
@@ -42,4 +42,3 @@ export KMP_AFFINITY=granularity=fine,compact,1,0
 python json_mod.py --log_file ../output/$JOB_NID/ --algorithm PPO2 --wind_mode normal --wind_params -2.58 1.29 --scenario perching_6 --controller sweep_elevator
 
 python gym_learn.py --param_file ../output/$JOB_NID/sim_params.json
-
