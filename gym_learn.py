@@ -31,6 +31,8 @@ from wind.wind_sim import make_eval_wind
 
 # from stable_baselines import DQN, PPO2, SAC
 
+from stable_baselines.common.cmd_util import make_vec_env
+
 def make_eval_env(params):
 
 	if params.get("wind_mode") == 'normal':
@@ -73,9 +75,11 @@ log_dir = params.get("log_file")
 wandb.config.update(params)
 wandb.config.timesteps=5000000
 
-env = gym.make(params.get("env"), parameters=params)
+# env = gym.make(params.get("env"), parameters=params)
 
 # env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
+
+env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
 
 eval_envs = make_eval_env(params)
 

@@ -1,19 +1,15 @@
 import numpy as np
-import torch
-import argparse
 
 # Height gain scenario
 
-parser = argparse.ArgumentParser(prog='Height gain scenario', usage='--scenario-opts "[options]"')
-
 state_dims = 12
 actions = 49
-failReward = -1
+failReward = -1.0
 
-def wrap_class(BixlerClass,options):
+def wrap_class(BixlerClass,paramters):
     class HeightGainBixler(BixlerClass):
-        def __init__(self,noise=0.0):
-            super().__init__(noise)
+        def __init__(self):
+            super().__init__(paramters)
         
         def is_out_of_bounds(self):
             def is_in_range(x,lower,upper):
@@ -35,9 +31,9 @@ def wrap_class(BixlerClass,options):
         def get_state(self):
             return super().get_state()[0:12].T
 
-        def get_normalized_state(self, state=None):
+        def get_normalized_obs(self, state=None):
             if state is None:
-                state=self.get_state().T
+                state=self.get_state()
             pb2 = np.pi/2
             mins = np.array([ -50, -2, -10, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2 ])
             maxs = np.array([  10,  2,   1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2 ])
@@ -48,8 +44,8 @@ def wrap_class(BixlerClass,options):
                 if self.is_out_of_bounds():
                     return failReward
                 # Aiming for same as initial state, translated in x and z
-                target_state = np.array([0,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0], dtype='float64')
-                cost_vector = np.array([1,0,0, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
+                target_state = np.array([0,0,-2, 0,0,0, 13,0,0, 0,0,0], dtype='float64')
+                cost_vector = np.array([1,0,0, 0,100,0, 10,0,10, 0,0,0])
                 # Penalise deviation from target state
                 cost = np.dot( (np.squeeze(self.get_state()) - target_state) ** 2, cost_vector ) / 250
                 # Add reward for end of episode height

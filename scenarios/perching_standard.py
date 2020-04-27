@@ -94,7 +94,5 @@ def wrap_class(BixlerClass, parameters):
 
                     self.set_state(initial_state)
                     
-                    
-
 
     return PerchingBixler
