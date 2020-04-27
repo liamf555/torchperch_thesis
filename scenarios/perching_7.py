@@ -62,7 +62,7 @@ def wrap_class(BixlerClass, parameters):
 
                     obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
 
-                    
+                    # reduced long + airspeed, ground speed
                     obs = np.float64(np.concatenate((obs, [[self.airspeed, self.velocity_e[0], self.velocity_e[2]]]), axis = 1))
 
                     pb2 = 2*np.pi

@@ -43,6 +43,12 @@ def wrap_class(BixlerClass, parameters):
                             return failReward
                         cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0])
                         cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector ) / 2500
+                        product_list = [a*b for a,b in zip((np.squeeze(self.get_state()) ** 2), cost_vector)]
+                        product_list = [a/2500 for a in product_list]
+                        mask = [0,2,4,6,8]
+                        product_list = [product_list[i] for i in mask]
+                        product_list = [1/(sum(product_list)/a) for a in product_list]
+                        print(product_list)
                         return  ((1.0 - cost) * 2.0) - 1.0
                     return 0.0
         

@@ -43,6 +43,12 @@ def wrap_class(BixlerClass, parameters):
                             return failReward
                         cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0])
                         cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector ) / 2500
+                        product_list = [a*b for a,b in zip((np.squeeze(self.get_state()) ** 2), cost_vector)]
+                        product_list = [a/2500 for a in product_list]
+                        mask = [0,2,4,6,8]
+                        product_list = [product_list[i] for i in mask]
+                        product_list = [1/(sum(product_list)/a) for a in product_list]
+                        print(product_list)
                         return  ((1.0 - cost) * 2.0) - 1.0
                     return 0.0
         
@@ -66,7 +72,7 @@ def wrap_class(BixlerClass, parameters):
                     obs = np.float64(np.concatenate((obs, [[self.wind[0], self.airspeed, self.velocity_e[0], self.velocity_e[2]]]), axis = 1))
 
                     pb2 = 2*np.pi
-
+                     # reduced long + airspeed, ground velocity, + wind(N)
                     mins = np.array([ -50,  h_min,  -pb2, -10, -10, -pb2,  self.sweep_limits[0], self.elev_limits[0], -10,   -10,   -10,  -10])
                     maxs = np.array([  10,    1,     pb2, 20, 10, pb2,  self.sweep_limits[1], self.elev_limits[1],     10,   25,    20, 20])
 

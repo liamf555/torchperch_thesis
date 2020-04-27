@@ -46,16 +46,16 @@ def wrap_class(BixlerClass,options):
         def get_reward(self):
             if self.is_terminal():
                 if self.is_out_of_bounds():
-                    return torch.Tensor([failReward])
+                    return failReward
                 # Aiming for same as initial state, translated in x and z
                 target_state = np.array([0,0,-2, 0,0,0, 13,0,0, 0,0,0, 0,0,0], dtype='float64')
                 cost_vector = np.array([1,0,0, 0,100,0, 10,0,10, 0,0,0, 0,0,0])
                 # Penalise deviation from target state
                 cost = np.dot( (np.squeeze(self.get_state()) - target_state) ** 2, cost_vector ) / 250
                 # Add reward for end of episode height
-                height_reward = (-2 - self.position_e[2,0])/8.0
-                return torch.Tensor([ ((1 - cost) * 2) - 1 + height_reward ])
-            return torch.Tensor([0])
+                height_reward = (-2 - self.position_e[2,0])
+                return  ((1 - cost) * 2) - 1 + height_reward
+            return 0.0
 
         def is_terminal(self):
             # Terminal point is reaching x=0 wall

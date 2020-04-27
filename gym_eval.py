@@ -94,11 +94,20 @@ eval_dir.mkdir(parents=True, exist_ok=True)
 final_model_data_path = eval_dir / 'final_model'
 best_model_data_path =  eval_dir / 'best_model'
 
-final_rewards, final_wind_speeds = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = final_model_data_path )
+# final_rewards, final_wind_speeds = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = final_model_data_path )
 
-best_rewards, _ = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = best_model_data_path)
+# best_rewards, _ = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = best_model_data_path)
+
+# final_rewards, final_wind_speeds = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True)
+
+best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True)
 
 
-for i, wind in enumerate(final_wind_speeds):
+
+# for i, wind in enumerate(final_wind_speeds):
+#     print(
+#         f"""Wind(N)(m/s): {wind} -> Final model reward: {final_rewards[i]:.3f}""")
+
+for i, wind in enumerate(best_reward_speeds):
     print(
-        f"""Wind(N)(m/s): {wind} -> Final model reward: {final_rewards[i]:.3f}, Best model reward: {best_rewards[i]:.3f}""")
+        f"""Wind(N)(m/s): {wind} -> Best model reward: {best_rewards[i]:.3f}""")
