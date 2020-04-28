@@ -10,7 +10,7 @@ class Rendermixin(object):
 
         pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-        self.df = pd.DataFrame(self.state_array,columns = ['t', 'x','y', 'z', 'phi', 'theta', 'psi', 'u', 'v', 'w', 'p', 'q', 'r', 'vn', 've', 'vd', 'alpha', 'airspeed'])
+        self.df = pd.DataFrame(self.state_array,columns = ['t', 'x','y', 'z', 'phi', 'theta', 'psi', 'u', 'v', 'w', 'p', 'q', 'r', 'sweep', 'elev', 'vn', 've', 'vd', 'alpha', 'airspeed'])
 
         self.state_array = []
 
@@ -62,19 +62,19 @@ class Rendermixin(object):
         ax2.set_ylabel(r'q (deg/sec)', fontsize=12)
         ax2.grid()
 
-        # ax3 = fig.add_subplot(3,2,3)
-        # #Sweep
-        # self.df.plot(x = 't', y = 'elev', color = 'k',  ax = ax3, legend=False)
-        # ax3.set_xlabel("Time(s)", fontsize=12)
-        # ax3.set_ylabel(r'elev (deg)', fontsize=12)
-        # ax3.grid()
+        ax3 = fig.add_subplot(3,2,3)
+        #Sweep
+        self.df.plot(x = 't', y = 'sweep', color = 'k',  ax = ax3, legend=False)
+        ax3.set_xlabel("Time(s)", fontsize=12)
+        ax3.set_ylabel(r'Sweep (deg)', fontsize=12)
+        ax3.grid()
 
-        # ax4 = fig.add_subplot(3,2,4)
-        # #elev
-        # self.df.plot(x = 't', y = 'elev', color = 'k',  ax = ax4, legend=False)
-        # ax4.set_xlabel("Time(s)", fontsize=12)
-        # ax4.set_ylabel(r'Elevator (deg)', fontsize=12)
-        # ax4.grid()
+        ax4 = fig.add_subplot(3,2,4)
+        #elev
+        self.df.plot(x = 't', y = 'elev', color = 'k',  ax = ax4, legend=False)
+        ax4.set_xlabel("Time(s)", fontsize=12)
+        ax4.set_ylabel(r'Elevator (deg)', fontsize=12)
+        ax4.grid()
         
 
         ax5 = fig.add_subplot(3,2,5)
@@ -105,14 +105,7 @@ class Rendermixin(object):
         ax6.grid()
         plt.savefig(path+'.png')
         
-        # wandb.log({fig_title: plt})
+        wandb.log({fig_title: plt})
         
         if self.plot_flag:
             plt.show()
-
-
-
-
-
-
-

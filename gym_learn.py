@@ -77,8 +77,6 @@ wandb.config.timesteps=5000000
 
 # env = gym.make(params.get("env"), parameters=params)
 
-# env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
-
 env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
 
 eval_envs = make_eval_env(params)
@@ -106,7 +104,7 @@ best_model = ModelType.load(log_dir +"best_model.zip")
 
 final_model_eval = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
 best_model_eval = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/best_model'))
-# wandb.log({'best_model_eval': best_model_eval})
-# wandb.log({'final_model_eval': final_model_eval})
-# wandb.save(log_dir+'eval/*')
+wandb.log({'best_model_eval': best_model_eval})
+wandb.log({'final_model_eval': final_model_eval})
+wandb.save(log_dir+'eval/*')
 # wand.log({"test_image": wandb.})

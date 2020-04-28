@@ -9,5 +9,6 @@ from . import perching_6
 from . import perching_7
 from . import perching_long
 from . import height_gain
+from . import perching_long_test_1
 #from . import level_flight
 #from . import constant_airspeed
