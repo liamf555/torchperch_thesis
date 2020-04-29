@@ -81,7 +81,7 @@ env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_env
 
 eval_envs = make_eval_env(params)
 
-callback = EvalCallback(eval_envs, eval_freq=10000, log_path=log_dir, best_model_save_path=log_dir, n_eval_episodes=3)
+callback = EvalCallback(eval_envs, eval_freq=1250, log_path=log_dir, best_model_save_path=log_dir, n_eval_episodes=3)
 
 ModelType = check_algorithm(params.get("algorithm"))
 
@@ -99,12 +99,12 @@ wandb.save(params.get("model_file") + ".zip")
 wandb.save(log_dir +"best_model.zip")
 wandb.save(log_dir + "monitor.csv")
 
-final_model = ModelType.load(params.get("model_file"))
+# final_model = ModelType.load(params.get("model_file"))
 best_model = ModelType.load(log_dir +"best_model.zip")
 
-final_model_eval = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
+# final_model_eval = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
 best_model_eval = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/best_model'))
 wandb.log({'best_model_eval': best_model_eval})
-wandb.log({'final_model_eval': final_model_eval})
+# wandb.log({'final_model_eval': final_model_eval})
 wandb.save(log_dir+'eval/*')
 # wand.log({"test_image": wandb.})
