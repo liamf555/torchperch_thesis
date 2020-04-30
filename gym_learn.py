@@ -73,7 +73,7 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=5000000
+wandb.config.timesteps=5000
 
 # env = gym.make(params.get("env"), parameters=params)
 
@@ -104,6 +104,7 @@ best_model = ModelType.load(log_dir +"best_model.zip")
 
 # final_model_eval = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
 best_model_eval = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/best_model'))
+best_model_eval = [round(value, 4) for i in best_model_eval for value in i]
 wandb.log({'best_model_eval': best_model_eval})
 # wandb.log({'final_model_eval': final_model_eval})
 wandb.save(log_dir+'eval/*')
