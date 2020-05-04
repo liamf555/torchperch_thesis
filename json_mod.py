@@ -98,6 +98,7 @@ if __name__ == "__main__":
     parser.add_argument('--algorithm', '-a', type=str)
     parser.add_argument('--scenario', type=str)
     parser.add_argument('--controller', type=str)
+    parser.add_argument('--env', type = str)
     parser.add_argument('--log_file', type = str)
     parser.add_argument('--latency', type = float)
     parser.add_argument('--wind_mode', type = str)

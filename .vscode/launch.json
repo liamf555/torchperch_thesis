@@ -8,9 +8,10 @@
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
+            "justMyCode": false,
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--param_file", "../output/wind_test_eval/sim_params.json"]
+            "args": ["--param_file", "../output/reward_test/sim_params.json"]
         }
     ]
 }

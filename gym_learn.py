@@ -32,6 +32,7 @@ from wind.wind_sim import make_eval_wind
 # from stable_baselines import DQN, PPO2, SAC
 
 from stable_baselines.common.cmd_util import make_vec_env
+from stable_baselines.common.vec_env import VecNormalize
 
 def make_eval_env(params):
 
@@ -77,7 +78,9 @@ wandb.config.timesteps=5000000
 
 # env = gym.make(params.get("env"), parameters=params)
 
-env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
+env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=1, seed=0, monitor_dir=log_dir)
+
+env = VecNormalize(env, norm_reward=False)
 
 eval_envs = make_eval_env(params)
 
@@ -85,14 +88,15 @@ callback = EvalCallback(eval_envs, eval_freq=1250, log_path=log_dir, best_model_
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-model = ModelType("MlpPolicy", env, verbose = 0, tensorboard_log=log_dir)
+model = ModelType("MlpPolicy", env, verbose = 1, tensorboard_log=log_dir)
 wandb.config.update({"policy": model.policy.__name__})
 
 for key, value in vars(model).items():
 	if type(value) == float or type(value) == str or type(value) == int:
 		wandb.config.update({key: value})
 
-model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
+# model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
+model.learn(total_timesteps = wandb.config.timesteps)
 
 model.save(params.get("model_file"))
 wandb.save(params.get("model_file") + ".zip")
