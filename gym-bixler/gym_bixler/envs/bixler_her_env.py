@@ -88,7 +88,7 @@ class BixlerHEREnv(GoalEnv, Rendermixin):
             obs = self._get_obs()
 
             #get reward
-            self.reward = self._compute_reward(obs['achieved_goal'], obs['desired_goal'], None)
+            self.reward = self.compute_reward(obs['achieved_goal'], obs['desired_goal'], None)
             
             done = self.bixler.is_terminal()
 
@@ -144,9 +144,7 @@ class BixlerHEREnv(GoalEnv, Rendermixin):
         if self.render_flag:
             Rendermixin.save_data(self, path, reward)
 
-    def _compute_reward(self, achieved_goal, desired_goal, _info):
-
-        print(desired_goal)
+    def compute_reward(self, achieved_goal, desired_goal, _info):
 
         # Deceptive reward: it is positive only when the goal is achieved
         target_state = np.array([10, 0.1, 0.35, 8, 5], dtype='float32')
