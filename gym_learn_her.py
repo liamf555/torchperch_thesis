@@ -95,7 +95,7 @@ ModelType = check_algorithm(params.get("algorithm"))
 
 goal_selection_strategy = 'future' # equivalent to GoalSelectionStrategy.FUTURE
 
-model_class = DQN
+model_class = DDPG
 
 # Wrap the model
 model = HER('MlpPolicy', env, model_class,verbose=1, tensorboard_log=log_dir)
