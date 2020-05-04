@@ -39,6 +39,6 @@ JOB_NID=${PBS_JOBID%%[.\[]*}${PBS_ARRAYID:+-$PBS_ARRAYID}
 export OMP_NUM_THREADS=16
 export KMP_AFFINITY=granularity=fine,compact,1,0
  
-python json_mod.py --log_file ../output/$JOB_NID/ --algorithm PPO2 --wind_mode steady --wind_params 1.0 0.0 0.0 --scenario perching_7_test_2 --controller sweep_elevator
+python json_mod.py --log_file ../output/$JOB_NID/ --algorithm DQN --wind_mode steady --wind_params 0.0 0.0 0.0 --scenario perching_long --controller sweep_elevator --env Bixler-v3
 
-python gym_learn.py --param_file ../output/$JOB_NID/sim_params.json
+python gym_learn_her.py --param_file ../output/$JOB_NID/sim_params.json

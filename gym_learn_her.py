@@ -77,7 +77,7 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=10000
+wandb.config.timesteps=1000000
 
 env = gym.make(params.get("env"), parameters=params)
 
