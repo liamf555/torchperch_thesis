@@ -6,9 +6,11 @@ import gym
 import json
 import numpy as np 
 from gym.utils import seeding
+from gym import GoalEnv, spaces
 import controllers
 import scenarios
 import wandb
+import pprint as pp
 
 from gym_bixler.envs.render import Rendermixin
 
@@ -26,10 +28,10 @@ def check_scenario(scenario_name):
 		msg = "Could not find scenario {}".format(scenario_name)
 		raise ValueError(msg)
 
-class BixlerEnv(Rendermixin, gym.Env):
-    metadata = {'render.modes': ['save', 'plot', 'none']}
+class BixlerHEREnv(GoalEnv, Rendermixin):
 
     def __init__(self, parameters):
+        
 
         self.scenario = check_scenario(parameters.get("scenario"))
         self.controller = check_controller(parameters.get("controller"))
@@ -43,10 +45,17 @@ class BixlerEnv(Rendermixin, gym.Env):
         else:
             self.action_space = gym.spaces.Discrete(self.scenario.actions)
 
-                                            
-        self.observation_space = gym.spaces.Box(low=0, high = 1, shape = (1, self.scenario.state_dims), dtype = np.float64)
+        self.desired_goal = np.array([0, 0, 0, 0, 0])
 
-        self.bixler.reset_scenario()
+        obs = self._get_obs()
+
+        self.observation_space = spaces.Dict(dict(
+            desired_goal =spaces.Box(-np.inf, np.inf, shape=obs['desired_goal'].shape, dtype='float32'),
+            achieved_goal = spaces.Box(-np.inf, np.inf, shape=obs['achieved_goal'].shape, dtype='float32'),
+            observation = spaces.Box(-np.inf, np.inf, shape = obs['observation'].shape , dtype = 'float32'),
+        ))
+
+        self.reset()
 
         self.state = self.bixler.get_state()
         self.state = np.concatenate((self.state, self.bixler.velocity_e.T), axis = 1)
@@ -71,21 +80,21 @@ class BixlerEnv(Rendermixin, gym.Env):
             self.bixler.step(0.1)
         except FloatingPointError:
             done = True
-            obs = self.bixler.get_normalized_obs()
+            obs = self._get_obs()
             self.reward = -1
             info = {}
        	else:
 		    #get observation
-            obs = self.bixler.get_normalized_obs()
-            wandb.log({"x_obs": obs[0][0]})
+            obs = self._get_obs()
 
-        
             #get reward
-            self.reward = self.bixler.get_reward()
+            self.reward = self.compute_reward(obs['achieved_goal'], obs['desired_goal'], None)
             
             done = self.bixler.is_terminal()
 
-            info = {}
+            info = {
+            'is_success': self._is_success(obs['achieved_goal'], obs['desired_goal']),
+        }
 
         return obs, self.reward, done, info
         
@@ -95,7 +104,7 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.bixler.reset_scenario()
         self.time = 0
 
-        return self.bixler.get_normalized_obs()
+        return self._get_obs()
 
 
 
@@ -135,8 +144,33 @@ class BixlerEnv(Rendermixin, gym.Env):
         if self.render_flag:
             Rendermixin.save_data(self, path, reward)
 
-            
+    def compute_reward(self, achieved_goal, desired_goal, _info):
+        # Deceptive reward: it is positive only when the goal is achieved
+        target_state = np.array([20, 0.1, 0.35, 10, 10], dtype='float32')
 
+        d = np.abs(achieved_goal - desired_goal)
+        return -(all(d > target_state))
 
+    def _get_obs(self):
 
+        obs = np.squeeze(self.bixler.get_normalized_obs())
         
+        achieved_goal = np.float64(np.squeeze(np.delete(self.bixler.get_state(), [1, 3, 5, 7, 9, 10, 11, 12, 13], axis=1)))
+
+        desired_goal = self.desired_goal
+
+      
+
+        return {
+            'observation': obs.copy(),
+            'achieved_goal': achieved_goal.copy(),
+            'desired_goal': desired_goal.copy(),
+        }
+
+    def _is_success(self, achieved_goal, desired_goal):
+        target_state = np.array([20, 0.1, 0.35, 10, 10], dtype='float32')
+        d = np.abs(achieved_goal - desired_goal)
+
+        wandb.log({'delta': d})
+
+        return np.array(all(d < target_state)).astype(np.float32)

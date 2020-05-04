@@ -10,6 +10,12 @@ register(
 )
 
 register(
+    id='Bixler-v3',
+    entry_point='gym_bixler.envs:BixlerHEREnv',
+    # kwargs = {'noise': 0.0,'latency': 0.0, 'var_start': True},
+)
+
+register(
     id='Bixler-v2',
     entry_point='gym_bixler.envs:BixlerEnvContRate',
 )
