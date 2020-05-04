@@ -41,12 +41,11 @@ def wrap_class(BixlerClass, parameters):
                     if self.is_terminal():
                         if self.is_out_of_bounds():
                             return failReward
-                        obs =  np.float64(np.squeeze(np.delete(self.get_state(), [1, 3, 5, 7, 9, 10, 11, 12, 13], axis=1)))
-                        cost_vector = np.array([100,1,10,10,10])
-                        scaling = np.array([40,  10, 1.57,  20, 20])
-                        cost = np.dot(((obs**2)/scaling), cost_vector)
-                        norm = np.dot(scaling, cost_vector)
-                        cost = cost / norm
+                        cost_vector = np.array([10,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0])
+                        scaling = np.array([40, 0,10, 0, np.pi / 2, 0, 20, 0, 10, 0,0,0, 0,0 ])
+                        norm = np.dot(scaling**2, cost_vector)
+                        cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector) / norm
+                    
                         return  ((1.0 - cost) * 2.0) - 1.0
                     return 0.0
 
@@ -64,20 +63,17 @@ def wrap_class(BixlerClass, parameters):
                     if state is None:
                         state=self.get_state()
 
-
                     obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
 
                     # reduced long + airspeed, ground speed
                     obs = np.float64(np.concatenate((obs, [[self.airspeed, self.velocity_e[0], self.velocity_e[2]]]), axis = 1))
 
-                    # print(obs)
+                    pb2 = 2*np.pi
 
-                    # pb2 = 2*np.pi
+                    mins = np.array([ -50,  h_min,  -pb2, -10, -10, -pb2,  self.sweep_limits[0], self.elev_limits[0], -10,  -10,  -10])
+                    maxs = np.array([  10,    1,     pb2, 20, 10, pb2,  self.sweep_limits[1], self.elev_limits[1],    25,     20, 20])
 
-                    # mins = np.array([ -50,  h_min,  -pb2, -10, -10, -pb2,  self.sweep_limits[0], self.elev_limits[0], -10,  -10,  -10])
-                    # maxs = np.array([  10,    1,     pb2, 20, 10, pb2,  self.sweep_limits[1], self.elev_limits[1],    25,     20, 20])
-
-                    # return (obs-mins)/(maxs-mins)
+                    return (obs-mins)/(maxs-mins)
 
                     return obs
                 
