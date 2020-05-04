@@ -88,7 +88,7 @@ class BixlerHEREnv(GoalEnv, Rendermixin):
             obs = self._get_obs()
 
             #get reward
-            self.reward = self.compute_reward(obs['achieved_goal'], obs['desired_goal'], None)
+            self.reward = self._compute_reward(obs['achieved_goal'], obs['desired_goal'], None)
             
             done = self.bixler.is_terminal()
 
@@ -144,12 +144,17 @@ class BixlerHEREnv(GoalEnv, Rendermixin):
         if self.render_flag:
             Rendermixin.save_data(self, path, reward)
 
-    def compute_reward(self, achieved_goal, desired_goal, _info):
+    def _compute_reward(self, achieved_goal, desired_goal, _info):
+
+        print(desired_goal)
+
         # Deceptive reward: it is positive only when the goal is achieved
-        target_state = np.array([20, 0.1, 0.35, 10, 10], dtype='float32')
+        target_state = np.array([10, 0.1, 0.35, 8, 5], dtype='float32')
 
         d = np.abs(achieved_goal - desired_goal)
-        return -(all(d > target_state))
+
+        if (achieved_goal != target_state).all():
+            return 0 if (d < target_state).all() else -1 
 
     def _get_obs(self):
 
@@ -157,20 +162,17 @@ class BixlerHEREnv(GoalEnv, Rendermixin):
         
         achieved_goal = np.float64(np.squeeze(np.delete(self.bixler.get_state(), [1, 3, 5, 7, 9, 10, 11, 12, 13], axis=1)))
 
-        desired_goal = self.desired_goal
-
-      
 
         return {
-            'observation': obs.copy(),
-            'achieved_goal': achieved_goal.copy(),
-            'desired_goal': desired_goal.copy(),
+            'observation': obs,
+            'achieved_goal': achieved_goal,
+            'desired_goal': self.desired_goal,
         }
 
     def _is_success(self, achieved_goal, desired_goal):
-        target_state = np.array([20, 0.1, 0.35, 10, 10], dtype='float32')
+        target_state = np.array([10, 0.1, 0.35, 10, 10], dtype='float32')
         d = np.abs(achieved_goal - desired_goal)
 
         wandb.log({'delta': d})
 
-        return np.array(all(d < target_state)).astype(np.float32)
+        return (d < target_state).all()
