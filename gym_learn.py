@@ -80,7 +80,7 @@ wandb.config.timesteps=1000000
 
 env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
 
-env = VecNormalize(env, norm_reward=False)
+# env = VecNormalize(env, norm_reward=False)
 
 eval_envs = make_eval_env(params)
 
@@ -95,8 +95,8 @@ for key, value in vars(model).items():
 	if type(value) == float or type(value) == str or type(value) == int:
 		wandb.config.update({key: value})
 
-# model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
-model.learn(total_timesteps = wandb.config.timesteps)
+model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
+# model.learn(total_timesteps = wandb.config.timesteps)
 
 model.save(params.get("model_file"))
 wandb.save(params.get("model_file") + ".zip")
