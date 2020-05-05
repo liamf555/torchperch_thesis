@@ -77,8 +77,6 @@ class BixlerEnv(Rendermixin, gym.Env):
        	else:
 		    #get observation
             obs = self.bixler.get_normalized_obs()
-            wandb.log({"x_obs": obs[0][0]})
-
         
             #get reward
             self.reward = self.bixler.get_reward()
@@ -97,9 +95,6 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         return self.bixler.get_normalized_obs()
 
-
-
-     
     def render(self, mode):
 
         self.render_flag = True
