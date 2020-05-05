@@ -74,7 +74,7 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=5000000
+wandb.config.timesteps=100000
 
 # env = gym.make(params.get("env"), parameters=params)
 
@@ -88,7 +88,7 @@ callback = EvalCallback(eval_envs, eval_freq=1250, log_path=log_dir, best_model_
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-model = ModelType("MlpPolicy", env, verbose = 1, tensorboard_log=log_dir,  policy_kwargs=dict(layers=[256, 256, 256]))
+model = ModelType("MlpPolicy", env, verbose = 1, tensorboard_log=log_dir)
 wandb.config.update({"policy": model.policy.__name__})
 
 for key, value in vars(model).items():
