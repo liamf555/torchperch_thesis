@@ -75,7 +75,6 @@ def wrap_class(BixlerClass, parameters):
 
                     return (obs-mins)/(maxs-mins)
 
-                    return obs
                 
 
                 def reset_scenario(self):

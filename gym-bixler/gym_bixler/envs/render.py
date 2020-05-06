@@ -76,7 +76,6 @@ class Rendermixin(object):
         ax4.set_ylabel(r'Elevator (deg)', fontsize=12)
         ax4.grid()
 
-        print('here')
         
         ax5 = fig.add_subplot(3,2,5)
         #x vs y

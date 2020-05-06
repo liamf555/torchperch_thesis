@@ -40,7 +40,7 @@ def wrap_class(BixlerClass, parameters):
                         if self.is_out_of_bounds():
                             return failReward
                         target_state = np.array([0,0,0, 0, 0 ,0, (1.1 * stall_speed), 0, 0, 0,0,0, 0, 0], dtype='float64')
-                        cost_vector = np.array([0,0,0, 0,10,0, 10,0,1, 0,0,0, 0,0])
+                        cost_vector = np.array([0,0,0, 0,100,0, 10,0,1, 0,0,0, 0,0])
                         scaling = np.array([0, 0,0, 0, np.pi / 2, 0, 20, 0, 10, 0,0,0, 0,0 ])
                         norm = np.dot(scaling**2, cost_vector)
                         cost = np.dot( np.squeeze((self.get_state()) - target_state)** 2, cost_vector) / norm
