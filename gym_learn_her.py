@@ -77,7 +77,7 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=10000
+wandb.config.timesteps=1000000
 
 env = gym.make(params.get("env"), parameters=params)
 
@@ -95,7 +95,7 @@ ModelType = check_algorithm(params.get("algorithm"))
 
 goal_selection_strategy = 'future' # equivalent to GoalSelectionStrategy.FUTURE
 
-model_class = DDPG
+model_class = DQN
 
 # Wrap the model
 model = HER('MlpPolicy', env, model_class,verbose=1, tensorboard_log=log_dir)
