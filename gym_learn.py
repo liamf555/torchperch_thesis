@@ -50,7 +50,8 @@ def make_eval_env(params):
 		
 		params["wind_params"] = [wind, 0, 0]
 
-		eval_env = gym.make(params.get("env"), parameters = params)
+		# eval_env = gym.make(params.get("env"), parameters = params)
+		eval_env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=1, seed=0)
 
 		eval_envs.append(eval_env)
 
@@ -74,17 +75,22 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=500000
+wandb.config.timesteps=100000
 
 # env = gym.make(params.get("env"), parameters=params)
 
 env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
 
-# env = VecNormalize(env, norm_reward=False)
+env = VecNormalize(env, norm_reward=False)
 
-eval_envs = make_eval_env(params)
 
-callback = EvalCallback(eval_envs, eval_freq=1250, log_path=log_dir, best_model_save_path=log_dir, n_eval_episodes=3)
+    
+
+# eval_envs = make_eval_env(params)
+
+eval_env = gym.make(params.get("env"), parameters=params)
+
+# callback = EvalCallback(eval_envs, eval_freq=1250, log_path=log_dir, best_model_save_path=log_dir, n_eval_episodes=3)
 
 ModelType = check_algorithm(params.get("algorithm"))
 
@@ -95,21 +101,25 @@ for key, value in vars(model).items():
 	if type(value) == float or type(value) == str or type(value) == int:
 		wandb.config.update({key: value})
 
-model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
-# model.learn(total_timesteps = wandb.config.timesteps)
+# model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
+model.learn(total_timesteps = wandb.config.timesteps)
 
 model.save(params.get("model_file"))
 wandb.save(params.get("model_file") + ".zip")
 wandb.save(log_dir +"best_model.zip")
 wandb.save(log_dir + "monitor.csv")
 
-# final_model = ModelType.load(params.get("model_file"))
-best_model = ModelType.load(log_dir +"best_model.zip")
+final_model = ModelType.load(params.get("model_file"))
+# best_model = ModelType.load(log_dir +"best_model.zip")
 
-# final_model_eval = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
-best_model_eval = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/best_model'))
-best_model_eval = [round(value, 4) for i in best_model_eval for value in i]
-wandb.log({'best_model_eval': best_model_eval})
-# wandb.log({'final_model_eval': final_model_eval})
-wandb.save(log_dir+'eval/*')
-# wand.log({"test_image": wandb.})
+# final_model_eval = evaluate_policy(final_model, env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
+final_model_eval = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
+# best_model_eval = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/best_model'))
+
+final_model_eval = round(final_model_eval[0], 4)
+
+# best_model_eval = [round(value, 4) for i in final_model_eval for value in i]
+# wandb.log({'best_model_eval': best_model_eval})
+# # wandb.log({'final_model_eval': final_model_eval})
+# wandb.save(log_dir+'eval/*')
+# # wand.log({"test_image": wandb.})

@@ -65,12 +65,14 @@ def wrap_class(BixlerClass, parameters):
                     
                     obs = np.float64(np.concatenate((obs, [[self.airspeed]]), axis = 1))
 
-                    pb2 = np.pi*2
+                    # pb2 = np.pi*2
 
-                    mins = np.array([ -50,  h_min,  -pb2, -5, -5, -pb2,  self.sweep_limits[0], self.elev_limits[0], -10])
-                    maxs = np.array([  10,    1,     pb2, 20, 10, pb2,  self.sweep_limits[1], self.elev_limits[1], 25])
+                    # mins = np.array([ -50,  h_min,  -pb2, -5, -5, -pb2,  self.sweep_limits[0], self.elev_limits[0], -10])
+                    # maxs = np.array([  10,    1,     pb2, 20, 10, pb2,  self.sweep_limits[1], self.elev_limits[1], 25])
 
-                    return (obs-mins)/(maxs-mins)
+                    return obs
+
+                    # return (obs-mins)/(maxs-mins)
                 
                 def reset_scenario(self):
 
@@ -80,7 +82,7 @@ def wrap_class(BixlerClass, parameters):
                     target_airspeed = 13 # m/s
                     u = target_airspeed + wind[0]
 
-                    initial_state = np.array([[-40,0,-2, 0,0,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
+                    initial_state = np.array([[-40,0,-5, 0,0,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
 
 
                    

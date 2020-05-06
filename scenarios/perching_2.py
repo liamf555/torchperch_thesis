@@ -62,7 +62,6 @@ def wrap_class(BixlerClass, parameters):
 
                     obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
 
-                    
                     obs = np.float64(np.concatenate((obs, [[self.Vr[0], self.Vr[2]]]), axis = 1))
 
                     pb2 = np.pi*2
