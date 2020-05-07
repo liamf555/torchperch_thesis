@@ -50,7 +50,7 @@ def wrap_class(BixlerClass, parameters):
         
                 def is_terminal(self):
                     # Terminal point is floor
-                    if self.position_e[0, 0] > 30:
+                    if self.position_e[0, 0] > 50:
                         return True
                     if self.velocity_b[0, 0] < (1.1 * stall_speed):
                         return True
@@ -64,14 +64,16 @@ def wrap_class(BixlerClass, parameters):
                     if state is None:
                         state=self.get_state()
 
-                    obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11, 12], axis=1))
+                    # obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11, 12], axis=1))
 
-                    pb2 = np.pi*2
+                    # pb2 = np.pi*2
 
-                    mins = np.array([ -20,  h_min,  -pb2, -10, -10,  -pb2, self.elev_limits[0]])
-                    maxs = np.array([  20,       1,  pb2, 20,   10,   pb2, self.elev_limits[1]])
+                    # mins = np.array([ -20,  h_min,  -pb2, -10, -10,  -pb2, self.elev_limits[0]])
+                    # maxs = np.array([  20,       1,  pb2, 20,   10,   pb2, self.elev_limits[1]])
 
-                    return (obs-mins)/(maxs-mins)
+                    return state
+
+                    # return (obs-mins)/(maxs-mins)
                 
                 def reset_scenario(self):
                     
@@ -101,8 +103,4 @@ def wrap_class(BixlerClass, parameters):
                         initial_state[:,4] += start_shift_theta
 
                     self.set_state(initial_state)
-
-                    self.wind_sim.update()
-
-
     return PerchingBixler

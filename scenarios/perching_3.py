@@ -103,8 +103,4 @@ def wrap_class(BixlerClass, parameters):
                         initial_state[:,4] += start_shift_theta
 
                     self.set_state(initial_state)
-
-                    self.wind_sim.update()
-
-
     return PerchingBixler
