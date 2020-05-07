@@ -75,7 +75,10 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-wandb.config.timesteps=100000
+
+wandb.config.timesteps=1000000
+
+# env = gym.make(params.get("env"), parameters=params)
 
 env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
 env = VecNormalize(env, norm_reward=False)
