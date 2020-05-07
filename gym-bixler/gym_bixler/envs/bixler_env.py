@@ -126,9 +126,16 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.state_array.append(state_list)
         
         
-    def close(self, path, reward):
+    # def close(self, path, reward):
+    #     print('goat')
+    #     if self.render_flag:
+    #         Rendermixin.save_data(self, path, reward)
+
+    def save_plots(self, path, reward):
         if self.render_flag:
             Rendermixin.save_data(self, path, reward)
+        
+
 
             
 

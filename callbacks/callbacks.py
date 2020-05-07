@@ -3,7 +3,7 @@
 from stable_baselines.common.vec_env import DummyVecEnv, VecEnv, sync_envs_normalization
 # from stable_baselines.results_plotter import load_results, ts2xy
 from stable_baselines.common.callbacks import BaseCallback, EventCallback
-from stable_baselines.common.evaluation import evaluate_policy
+# from stable_baselines.common.evaluation import evaluate_policy
 
 import os
 import warnings
@@ -27,7 +27,6 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
 
     # for env in envs:
 
-
     """
     Runs policy for `n_eval_episodes` episodes and returns average reward.
     This is made to work only with one env.
@@ -46,7 +45,7 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
         will be returned instead of the mean.
     :return: (float, float) Mean reward per episode, std of reward per episode
         returns ([float], [int]) when `return_episode_rewards` is True
-    """
+    # """
     if isinstance(env, VecEnv):
         assert env.num_envs == 1, "You must pass only one environment when using this function"
 
@@ -65,7 +64,8 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
             episode_length += 1
             if render:
                 env.render(render)
-        env.close(str(path)+ '_' +str(env.bixler.wind[0]), episode_reward)
+        env.env_method('save_plots', path = path, reward = episode_reward[0])
+        env.close()
         episode_rewards.append(episode_reward)
         episode_lengths.append(episode_length)
 
@@ -83,9 +83,9 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
     # wind_speeds.append(env.bixler.wind[0])
 
     rewards = mean_reward
-    wind_speeds = env.bixler.wind[0]
+    # wind_speeds = env.bixler.wind[0]
     
-    return rewards, wind_speeds
+    return rewards
       
 class EvalCallback(EventCallback):
 

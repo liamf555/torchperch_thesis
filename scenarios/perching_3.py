@@ -5,7 +5,7 @@ import numpy as np
 state_dims = 9
 actions = 49
 failReward = -1.0
-h_min = -10
+h_min = -15
 
 def wrap_class(BixlerClass, parameters):
     class PerchingBixler(BixlerClass):
