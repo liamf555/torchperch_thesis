@@ -2,9 +2,9 @@ import numpy as np
 
 # Perching scenario
 
-state_dims = 9
+state_dims = 14
 actions = 49
-failReward = 0.0
+failReward = -1.0
 h_min = -15
 
 def wrap_class(BixlerClass, parameters):
@@ -32,48 +32,20 @@ def wrap_class(BixlerClass, parameters):
                     # Check u remains sensible, > 0
                     if not is_in_range(self.velocity_b[0,0],0,20):
                         return True
-                    # airspeed remains sensible
                     if self.airspeed > 100:
-                        return True    
+                        return True
                     return False
         
-                # def get_reward(self):
-                #     if self.is_terminal():
-                #         if self.is_out_of_bounds():
-                #             return failReward
-                #         cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0])
-                #         cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector ) / 2500
-                #         return  ((1.0 - cost) * 2.0) - 1.0
-                #     return 0.0
-
                 def get_reward(self):
-                    if self.is_terminal():
-                        if self.is_out_of_bounds():
-                             return failReward
-                        def gaussian(x, sig = 0.4, mu = 0):   
-                            return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2)/2)
-                        obs = np.array([self.position_e[0,0], self.position_e[2,0], self.orientation_e[1,0], self.velocity_b[0,0], self.velocity_b[2,0]])
-                        target_state = np.array([0.0, 0.0, 0.0, 0.0, 0.0], dtype='float64')
-                        bound = np.array([15, 5, np.deg2rad(20),10,10])
-                        cost = (target_state - obs)/bound
-                        cost = list(map(gaussian, cost))
-                        reward = np.prod(cost)
-                        # print(reward)
-                        return reward
-                    return 0.0
+                    if self.is_out_of_bounds():
+                        return failReward
+                    obs =  np.float64(np.squeeze(np.delete(self.get_state(), [1, 3, 5, 7, 9, 10, 11, 12, 13], axis=1)))
+                    target = np.array([0, 0, 0, 0, 0])
+                    # weight = np.array( [0.3,0.1, 0.2, 0.2,  0.2])
+                    scaling = np.array([40,  15, (np.pi/2),20,10])
+                    cost = np.dot((np.abs(target-obs)), (1/scaling))/5
+                    return  np.clip((((1.0 - cost) * 2.0) - 1.0), -1, 1)
 
-
-                # def get_reward(self):
-                #     if self.is_terminal():
-                #         if self.is_out_of_bounds():
-                #             return failReward
-                #         cost_vector = np.array([10,0,1, 0,10,0, 10,0,10, 0,0,0, 0,0])
-                #         scaling = np.array([40, 0,10, 0, np.pi / 2, 0, 20, 0, 10, 0,0,0, 0,0 ])
-                #         norm = np.dot(scaling**2, cost_vector)
-                #         cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector) / norm
-                #         return  ((1.0 - cost) * 2.0) - 1.0
-                #     return 0.0
-        
                 def is_terminal(self):
                     # Terminal point is floor
                     if self.position_e[2,0] > 0:
@@ -88,17 +60,14 @@ def wrap_class(BixlerClass, parameters):
                     if state is None:
                         state=self.get_state()
 
-                    obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
-                    obs = np.float64(np.concatenate((obs, [[self.airspeed]]), axis = 1))
+                    # pb2 = np.pi/2
 
-                    # pb2 = np.pi*2
+                    # mins = np.array([ -50, -2, h_min, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2, self.sweep_limits[0], self.elev_limits[0]])
+                    # maxs = np.array([  10,  2,     1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2, self.sweep_limits[1], self.elev_limits[1]])
 
-                    # mins = np.array([ -50,  h_min,  -pb2, -5, -5, -pb2,  self.sweep_limits[0], self.elev_limits[0], -10])
-                    # maxs = np.array([  10,    1,     pb2, 20, 10, pb2,  self.sweep_limits[1], self.elev_limits[1], 25])
+                    return state
 
-                    return obs
-
-                    # return (obs-mins)/(maxs-mins)
+                    # return (state-mins)/(maxs-mins)
                 
                 def reset_scenario(self):
 
@@ -108,9 +77,8 @@ def wrap_class(BixlerClass, parameters):
                     target_airspeed = 13 # m/s
                     u = target_airspeed + wind[0]
 
-                    # u = 13
 
-                    initial_state = np.array([[-40,0,-5, 0,0,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
+                    initial_state = np.array([[-40,0,-5, 0,0,0, u, 0,0, 0,0,0, 0,0,0]], dtype="float64")
 
                     if self.var_start:
                         # Add noise to starting velocity
@@ -128,4 +96,6 @@ def wrap_class(BixlerClass, parameters):
                         initial_state[:,4] += start_shift_theta
 
                     self.set_state(initial_state)
+                    
+
     return PerchingBixler

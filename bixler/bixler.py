@@ -60,8 +60,9 @@ class Bixler(object):
         
         # Control surface limits
         self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
-        self.elev_limits = np.rad2deg([-0.436, 0.436]) # changed from +- 10 to 20
-        
+        # self.elev_limits = np.rad2deg([-0.872665, 0.872665]) # changed from +- 10 to 20
+        self.elev_limits = np.rad2deg([-0.436332, 0.436332]) # changed from +- 10 to 20
+
         self.update_air_data()
         self.velocity_e = self.velocity_b
         self.velocity_e[0] += parameters.get("wind_params")[0]

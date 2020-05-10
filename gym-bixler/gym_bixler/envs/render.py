@@ -26,9 +26,10 @@ class Rendermixin(object):
 
         self.df.astype('float32').dtypes
 
+        self.df.drop(self.df.tail(1).index,inplace=True)
         self.df_vis = self.df[['t', 'phi', 'theta', 'psi', 'vn', 've', 'vd', 'x','y','z']]
         self.df_vis.columns = ['Time(s)', 'Roll(deg)', 'Pitch(deg)', 'Yaw(deg)', 'VN(m/s)', 'VE(m/s)', 'VD(m/s)', 'PN(m)','PE(m)', 'PD(m)']
-        self.df.drop(self.df.tail(1).index,inplace=True)
+        
     
         # self.df.to_pickle(path+'.pkl')
         self.df.to_csv(path +'.csv', index=False, float_format='%.5f')

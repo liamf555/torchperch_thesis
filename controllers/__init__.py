@@ -4,4 +4,5 @@ from .throttle_elevator import Bixler_ThrottleElevator as throttle_elevator
 from .sweep_elevator_cont import Bixler_SweepElevatorCont as sweep_elevator_cont
 from .sweep_elevator_cont_rate import Bixler_SweepElevatorContRate as sweep_elevator_cont_rate
 from .elevator import Bixler_Elevator as elevator
+from .elevator_cont import Bixler_ElevatorCont as elevator_cont
 from .common import BixlerController as common

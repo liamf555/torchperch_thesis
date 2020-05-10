@@ -22,7 +22,7 @@ def wrap_class(BixlerClass, parameters):
                     if self.orientation_e[1,0] > np.pi:
                         return True
                     # Check x remains sensible
-                    if not is_in_range(self.position_e[0,0],-10, 30 ):
+                    if not is_in_range(self.position_e[0,0],-10, 50 ):
                         return True
                     # Check y remains sensible
                     if not is_in_range(self.position_e[1,0],-2,2):

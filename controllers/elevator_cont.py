@@ -2,21 +2,20 @@ import numpy as np
 import controllers.common as common
 
 # Bixler wrapper to set what control surfaces are utilised by the NN
-class Bixler_Elevator(common.BixlerController):
+class Bixler_ElevatorCont(common.BixlerController):
     
     def __init__(self,parameters):
-        super(Bixler_Elevator, self).__init__(parameters)
+        super(Bixler_ElevatorCont, self).__init__(parameters)
         
         # Control surface rate  per action
-        self.elev_rates = [-120, -10, -5, 0, 5, 10, 120]
+        self.elev_rate_lim = 120
         
         # Control surface rates (internal state)
         self.elev_rate = 0 # (deg/s)
 
-    def set_action(self,action_index):
-        elev_rate_idx = int(action_index) % 7
-
-        self.elev_rate = self.elev_rates[elev_rate_idx]
+    def set_action(self,action):
+        
+        self.elev_rate =  action[0] * self.elev_rate_lim
    
     def update_control_surfaces(self,steptime):
         self.elev = np.clip(self.elev + self.elev_rate * steptime, self.elev_limits[0], self.elev_limits[1])
