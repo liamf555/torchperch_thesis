@@ -4,7 +4,7 @@ import numpy as np
 
 state_dims = 8
 actions = 49
-failReward = -1.0
+failReward = 0.0
 h_min = -10
 
 def wrap_class(BixlerClass, parameters):
@@ -37,19 +37,37 @@ def wrap_class(BixlerClass, parameters):
                         return True    
                     return False
         
+                # def get_reward(self):
+                #     if self.is_terminal():
+                #         if self.is_out_of_bounds():
+                #             return failReward
+                #         cost_vector = np.array([10,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0])
+                #         cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector ) / 2500
+                #         # product_list = [a*b for a,b in zip((np.squeeze(self.get_state()) ** 2), cost_vector)]
+                #         # product_list = [a/2500 for a in product_list]
+                #         # mask = [0,2,4,6,8]
+                #         # product_list = [product_list[i] for i in mask]
+                #         # product_list = [1/(sum(product_list)/a) for a in product_list]
+                #         # print(product_list)
+                #         return  ((1.0 - cost) * 2.0) - 1.0
+                #     return 0.0
+
+                 #     return 0.0
+                @staticmethod
+                def gaussian(x, sig = 0.4, mu = 0):   
+                           return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2)/2)
+                
                 def get_reward(self):
                     if self.is_terminal():
                         if self.is_out_of_bounds():
                             return failReward
-                        cost_vector = np.array([10,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0])
-                        cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector ) / 2500
-                        # product_list = [a*b for a,b in zip((np.squeeze(self.get_state()) ** 2), cost_vector)]
-                        # product_list = [a/2500 for a in product_list]
-                        # mask = [0,2,4,6,8]
-                        # product_list = [product_list[i] for i in mask]
-                        # product_list = [1/(sum(product_list)/a) for a in product_list]
-                        # print(product_list)
-                        return  ((1.0 - cost) * 2.0) - 1.0
+                        obs = np.array([self.position_e[0,0], self.position_e[2,0], self.orientation_e[1,0], self.velocity_b[0,0], self.velocity_b[2,0]])
+                        target_state = np.array([0.0, 0.0, 0.0, 0.0, 0.0], dtype='float64')
+                        bound = np.array([15, 5, np.deg2rad(20),10,10])
+                        cost = (target_state - obs)/bound
+                        cost = list(map(self.gaussian, cost))
+                        reward = np.prod(cost)
+                        return reward
                     return 0.0
         
                 def is_terminal(self):
