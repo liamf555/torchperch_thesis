@@ -27,7 +27,7 @@ class Wind(object):
         if self.wind_mode == 'steady':
             self.wind_vector = self.wind_params
 
-            # wandb.log({"wind_speed": self.wind_vector[0]}) 
+            wandb.log({"wind_speed": self.wind_vector[0]}) 
 
         
 
