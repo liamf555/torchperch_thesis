@@ -131,7 +131,5 @@ def wrap_class(BixlerClass, parameters):
 
                     self.set_state(initial_state)
 
-                    self.wind_sim.update()
-
 
     return PerchingBixler
