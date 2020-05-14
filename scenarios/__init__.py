@@ -15,5 +15,6 @@ from . import perching_7_test_2
 from . import bleed_1
 from . import bleed_2
 from . import perching_standard_cont
+from . import half_loop
 #from . import level_flight
 #from . import constant_airspeed

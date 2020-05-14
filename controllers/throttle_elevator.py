@@ -18,8 +18,11 @@ class Bixler_ThrottleElevator(common.BixlerController):
         elev_rate_idx = int(action_index) % 7
         throttle_idx = int(action_index) // 7
 
+        # print(elev_rate_idx)
+
         self.elev_rate = self.elev_rates[elev_rate_idx]
         self.throttle = self.throttles[throttle_idx]
+        # print(self.throttle)
 
     def update_control_surfaces(self,steptime):
         self.elev = np.clip(self.elev + self.elev_rate * steptime, self.elev_limits[0], self.elev_limits[1])

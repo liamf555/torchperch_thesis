@@ -5,7 +5,7 @@ import numpy as np
 state_dims = 12
 actions = 49
 failReward = 0.0
-h_min = -10
+h_min = -15
 
 def wrap_class(BixlerClass, parameters):
     class PerchingBixler(BixlerClass):
@@ -114,7 +114,7 @@ def wrap_class(BixlerClass, parameters):
                     target_airspeed = 13 # m/s
                     u = target_airspeed + wind[0]
 
-                    initial_state = np.array([[-40,0,-2, 0,0,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
+                    initial_state = np.array([[-40,0,-5, 0,0,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
 
                     if self.var_start:
                         # start_shift_u =  np.random.uniform(-1.0, 1.0)

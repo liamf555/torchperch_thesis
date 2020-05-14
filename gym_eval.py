@@ -19,6 +19,7 @@ import stable_baselines
 
 from wind.wind_sim import make_eval_wind
 from callbacks.callbacks import evaluate_policy
+from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv
 
 
 def check_algorithm(algorithm_name):
@@ -65,15 +66,15 @@ json_path = args.dir_path / "sim_params.json"
 with open(json_path) as json_file:
             params = json.load(json_file)
 
-for key, value in vars(args).items():
-    if value is not None: 
-        if key is not "dir_path":
-            if key is not "wind_params":
-                params[key] = value
-            else:        
-                eval_envs = make_eval_envs(params, wind_args=value)
-    if key is "wind_params" and value is None:
-        eval_envs = make_eval_envs(params)
+# for key, value in vars(args).items():
+#     if value is not None: 
+#         if key is not "dir_path":
+#             if key is not "wind_params":
+#                 params[key] = value
+#             else:        
+#                 eval_envs = make_eval_envs(params, wind_args=value)
+#     if key is "wind_params" and value is None:
+#         eval_envs = make_eval_envs(params)
 
 
 algorithm = params.get("algorithm")
@@ -84,8 +85,21 @@ final_model_path = dir_path / final_model_path
 
 best_model_path = dir_path / 'best_model.zip'
 
-final_model = ModelType.load(final_model_path)
+# final_model = ModelType.load(final_model_path)
 # best_model = ModelType.load(best_model_path)
+
+print(params)
+
+env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
+eval_env = VecNormalize.load((dir_path / "vec_normalize.pkl"), env0)
+eval_env.training = False
+
+final_model = ModelType.load(final_model_path)
+# best_model = ModelType.load(log_dir +"best_model.zip")
+
+final_model.set_env(eval_env)
+
+# final_model_eval = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
 
 eval_dir = dir_path / 'eval'
 
@@ -94,7 +108,7 @@ eval_dir.mkdir(parents=True, exist_ok=True)
 final_model_data_path = eval_dir / 'final_model'
 best_model_data_path =  eval_dir / 'best_model'
 
-final_rewards, final_wind_speeds = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = final_model_data_path )
+final_rewards, final_wind_speeds = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = str(final_model_data_path))
 
 # best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = best_model_data_path)
 
