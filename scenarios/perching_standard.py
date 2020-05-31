@@ -103,6 +103,7 @@ def wrap_class(BixlerClass, parameters):
                     target_airspeed = 13 # m/s
                     u = target_airspeed + wind[0]
 
+                    # self.noiselevel = np.random.uniform(self.noiselevel_params[0], self.noiselevel_params[1])
 
                     initial_state = np.array([[-40,0,-5, 0,0,0, u, 0,0, 0,0,0, 0,0,0]], dtype="float64")
 
@@ -122,6 +123,7 @@ def wrap_class(BixlerClass, parameters):
                         initial_state[:,4] += start_shift_theta
 
                     self.set_state(initial_state)
+                    # print('new ep')
                     
 
     return PerchingBixler

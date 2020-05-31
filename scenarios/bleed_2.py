@@ -2,9 +2,9 @@ import numpy as np
 
 # Perching scenario
 
-state_dims = 7
-actions = 7
-failReward = -1.0
+state_dims = 14
+actions = 49
+failReward = 0.0
 h_min = -30
 stall_speed = 9
 
@@ -22,7 +22,7 @@ def wrap_class(BixlerClass, parameters):
                     if self.orientation_e[1,0] > np.pi:
                         return True
                     # Check x remains sensible
-                    if not is_in_range(self.position_e[0,0],-10, 50 ):
+                    if not is_in_range(self.position_e[0,0],-10, 100 ):
                         return True
                     # Check y remains sensible
                     if not is_in_range(self.position_e[1,0],-2,2):
@@ -31,28 +31,42 @@ def wrap_class(BixlerClass, parameters):
                     if not is_in_range(self.position_e[2,0],h_min,1):
                         return True
                     # Check u remains sensible, > 0
-                    if not is_in_range(self.velocity_b[0,0],(0.5 * stall_speed), 2 * stall_speed):
+                    if not is_in_range(self.velocity_b[0,0],(0.5 * stall_speed), 3 * stall_speed):
                         return True
                     return False
         
+                # def get_reward(self):
+                #     if self.is_terminal():
+                #         if self.is_out_of_bounds():
+                #             return failReward
+                #         target_state = np.array([0,0,0, 0, np.pi/2 ,0, (1.1 * stall_speed), 0, 0, 0,0,0, 0, 0], dtype='float64')
+                #         cost_vector = np.array([0,0,0, 0,10,0, 10,0,1, 0,0,0, 0,0])
+                #         scaling = np.array([0, 0,0, 0, np.pi / 2, 0, 20, 0, 10, 0,0,0, 0,0 ])
+                #         norm = np.dot(scaling**2, cost_vector)
+                #         cost = np.dot( np.squeeze((self.get_state()) - target_state)** 2, cost_vector) / norm
+                #         height_reward = (-10 - self.position_e[2,0]) / 10
+                #         return  ((1 - cost) * 2) - 1 + height_reward
+                #     return 0.0
+
                 def get_reward(self):
                     if self.is_terminal():
                         if self.is_out_of_bounds():
                             return failReward
-                        target_state = np.array([0,0,0, 0, np.pi/2 ,0, (1.1 * stall_speed), 0, 0, 0,0,0, 0, 0], dtype='float64')
-                        cost_vector = np.array([0,0,0, 0,10,0, 10,0,1, 0,0,0, 0,0])
-                        scaling = np.array([0, 0,0, 0, np.pi / 2, 0, 20, 0, 10, 0,0,0, 0,0 ])
-                        norm = np.dot(scaling**2, cost_vector)
-                        cost = np.dot( np.squeeze((self.get_state()) - target_state)** 2, cost_vector) / norm
-                        height_reward = (-10 - self.position_e[2,0]) / 10
-                        return  ((1 - cost) * 2) - 1 + height_reward
+                        def gaussian(x, sig = 0.4, mu = 0):   
+                            return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2)/2)
+                        obs = np.array([self.position_e[2,0], self.velocity_b[0,0], self.velocity_b[2,0]])
+                        target_state = np.array([-15.77437, 2*stall_speed, 0], dtype='float64')
+                        bound = np.array([2,3,3])
+                        cost = (target_state - obs)/bound
+                        cost = list(map(gaussian, cost))
+                        reward = np.prod(cost)
+                        return reward
                     return 0.0
         
                 def is_terminal(self):
-                    # Terminal point is floor
                     if self.position_e[0, 0] > 50:
                         return True
-                    if self.velocity_b[0, 0] < (1.1 * stall_speed):
+                    if self.velocity_b[0, 0] > (2 * stall_speed):
                         return True
                     return self.is_out_of_bounds()
 
@@ -83,9 +97,9 @@ def wrap_class(BixlerClass, parameters):
                     # target_airspeed = 13 # m/s
                     # u = target_airspeed + wind[0]
 
-                    initial_speed = stall_speed * 1.7
+                    # initial_speed = stall_speed * 1.7
 
-                    initial_state = np.array([[0,0,-10, 0,0,0, initial_speed,0,0, 0,0,0, 0,0,0]], dtype="float64")
+                    initial_state = np.array([[24.05827,0,-15.77437,0,0.062071762,0,10.00033,0,-0.23294,0,-0.4332265,0, 0, 8.46464,0]], dtype="float64")
 
                     if self.var_start:
                         # Add noise to starting velocity

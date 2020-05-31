@@ -41,13 +41,13 @@ def wrap_class(BixlerClass, parameters):
                     if self.is_terminal():
                         if self.is_out_of_bounds():
                             return failReward
-                        cost_vector = np.array([10,0,1, 0,10,0, 10,0,10, 0,0,0, 0,0])
-                        scaling = np.array([40, 0,10, 0, np.pi / 2, 0, 20, 0, 10, 0,0,0, 0,0 ])
-                        norm = np.dot(scaling**2, cost_vector)
-                        cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector) / norm
+                    cost_vector = np.array([1, 1, 100])
+                    scaling = np.array([40, 0,10, 0, np.pi / 2, 0, 20, 0, 10, 0,0,0, 0,0 ])
+                    norm = np.dot(scaling**2, cost_vector)
+                    cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector) / norm
                     
-                        return  ((1.0 - cost) * 2.0) - 1.0
-                    return 0.0
+                    return  ((1.0 - cost) * 2.0) - 1.0
+                    # return 0.0
 
                 def is_terminal(self):
                     # Terminal point is floor

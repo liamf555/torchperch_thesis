@@ -76,11 +76,11 @@ log_dir = params.get("log_file")
 
 wandb.config.update(params)
 
-wandb.config.timesteps=100000
+wandb.config.timesteps=200000
 
 # env = gym.make(params.get("env"), parameters=params)
 
-env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
+env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=6, seed=0, monitor_dir=log_dir)
 env = VecNormalize(env, norm_reward=False)
 
 # eval_envs = make_eval_env(params)
@@ -95,7 +95,7 @@ wandb.config.update({"policy": model.policy.__name__})
 for key, value in vars(model).items():
 	if type(value) == float or type(value) == str or type(value) == int:
 		wandb.config.update({key: value})
-
+ 
 # model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
 model.learn(total_timesteps = wandb.config.timesteps)
 

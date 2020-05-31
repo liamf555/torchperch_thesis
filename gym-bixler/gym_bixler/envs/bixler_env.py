@@ -33,13 +33,14 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         self.scenario = check_scenario(parameters.get("scenario"))
         self.controller = check_controller(parameters.get("controller"))
+        self.parameters = parameters
 
-        self.bixler = self.scenario.wrap_class(self.controller, parameters)()
+        self.bixler = self.scenario.wrap_class(self.controller, self.parameters)()
 
-        if parameters.get("controller") == "sweep_elevator_cont_rate":
+        if self.parameters.get("controller") == "sweep_elevator_cont_rate":
             self.action_space = gym.spaces.Box(low = np.array([-1, -1]),
                                             high = np.array([1, 1]), dtype = np.float16)
-        elif parameters.get("controller") == "elevator_cont":
+        elif self.parameters.get("controller") == "elevator_cont":
             self.action_space = gym.spaces.Box(low = np.array([-1]),
                                             high = np.array([1]), dtype = np.float16)
         else:

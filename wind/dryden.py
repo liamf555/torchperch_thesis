@@ -72,10 +72,6 @@ class Dryden(object):
         print(noise)
 
         # noise = [10, 10, 10]
-
-
-
-
         
         # propagate Dryden model (Euler method): x[k+1] = x[k] + Ts*( A x[k] + B w[k] )
         #self._gust_state += self._Ts * (self._A @ self._gust_state + self._B * w)
