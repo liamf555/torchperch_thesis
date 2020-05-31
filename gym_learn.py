@@ -95,7 +95,7 @@ wandb.config.update({"policy": model.policy.__name__})
 for key, value in vars(model).items():
 	if type(value) == float or type(value) == str or type(value) == int:
 		wandb.config.update({key: value})
-
+ 
 # model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
 model.learn(total_timesteps = wandb.config.timesteps)
 

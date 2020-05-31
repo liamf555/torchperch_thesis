@@ -27,7 +27,14 @@ class Wind(object):
         if self.wind_mode == 'steady':
             self.wind_vector = self.wind_params
 
-            wandb.log({"wind_speed": self.wind_vector[0]}) 
+            # wandb.log({"wind_speed": self.wind_vector[0]})
+
+        if self.wind_mode == 'uniform':
+            wind_north = np.random.uniform(self.wind_params[0], self.wind_params[1])
+            self.wind_vector = [wind_north, 0, 0]
+            
+            wandb.log({"wind_speed": self.wind_vector[0]})
+
 
         
 

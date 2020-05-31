@@ -32,6 +32,8 @@ class Bixler(object):
         self.dcm_wind2body = np.eye(3)
         self.jacobian = np.eye(3)
 
+        
+
         # State
         self.position_e = np.zeros((3,1))
         self.velocity_b = np.array([[13.0],[0],[0]])
@@ -239,9 +241,9 @@ class Bixler(object):
         #self.acceleration_b = self.acceleration_b - np.cross(self.omega_b, self.velocity_b, axis=0)
         self.acceleration_b = self.acceleration_b - self._cross(self.omega_b, self.velocity_b)
         # Generate noise
-        # noise = np.random.rand(3,1) * self.noiselevel
+        noise = np.random.rand(3,1) * self.noiselevel
 
-        noise = self.np_random.rand(3,1) * self.noiselevel
+        # noise = self.np_random.rand(3,1) * self.noiselevel
 
         # Add noise to acceleration
         self.acceleration_b = self.acceleration_b + noise

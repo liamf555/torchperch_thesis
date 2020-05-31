@@ -1,31 +1,37 @@
 import numpy as np
+import wandb
 
 # Perching scenario
 
 state_dims = 7
 actions = 49
-failReward = -1.0
+failReward = 0.0
 h_min = -500
 stall_speed = 9
 
 def wrap_class(BixlerClass, parameters):
     class PerchingBixler(BixlerClass):
                 def __init__(self):
-
                     super(PerchingBixler,self).__init__(parameters)
                     self.var_start = parameters.get("variable_start")
-                    self.target_theta = np.pi
+                    self.target = np.array([25, -125, (np.pi/2)])
+                    self.sector_switch = 1
+                    self.done_flag = False
                 
                 @staticmethod
                 def _is_in_range(x,lower,upper):
                         return lower < x and x < upper
 
+                @staticmethod
+                def gaussian(x, sig = 0.4, mu = 0):   
+                    return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2)/2)
+
                 def is_out_of_bounds(self):
                     # Prevent flipping over
-                    # if self.orientation_e[1,0]:
+                    # if self.orientation_e[1,0] < 0:
                     #     return True
                     # Check x remains sensible
-                    if not self._is_in_range(self.position_e[0,0],-50, 200):
+                    if not self._is_in_range(self.position_e[0,0],-50, 100):
                         return True
                     # Check y remains sensible
                     if not self._is_in_range(self.position_e[1,0],-2,2):
@@ -38,18 +44,87 @@ def wrap_class(BixlerClass, parameters):
                         return True
                     return False
         
+                # def get_reward(self):
+                #     if self.is_terminal():
+                #         if self.is_out_of_bounds():
+                #             return failReward
+                #     final_theta = self.orientation_e[1,0]
+                #     # cost = ((self.target_theta - final_theta)**2) / (np.pi **2)
+                #     if final_theta < np.pi:
+                #         self.target_theta = 0
+                #         obs = np.array([self.position_e[2,0], final_theta])
+                #         target_state = np.array([100, self.target_theta], dtype='float64')
+                #         bound = np.array([15, np.deg2rad(20)])
+                #         cost = (target_state - obs)/bound
+                #         reward = np.prod(cost)
+                #         return reward
+                #     else:
+                #     # print(f'final_theta: {np.rad2deg(final_theta)}')
+                #         cost = ((self.target_theta - final_theta)**2) / (np.pi **2)
+                #     # print(cost)
+                #         return  ((1 - cost) * 2) - 1
+                #     # return 0.0
+
                 def get_reward(self):
                     if self.is_terminal():
                         if self.is_out_of_bounds():
                             return failReward
-                    final_theta = self.orientation_e[1,0]
-                    if final_theta > 180:
-                        self.target_theta = 0
-                    # print(f'final_theta: {np.rad2deg(final_theta)}')
-                    cost = ((self.target_theta - final_theta)**2) / (np.pi **2)
-                    # print(cost)
-                    return  ((1 - cost) * 2) - 1
-                    # return 0.0
+                # theta = self.orientation_e[1,0] if self.orientation_e[1,0] > 0 else ((2*np.pi) + self.orientation_e[1,0])
+                        state = np.array([self.position_e[0,0], self.position_e[2,0],self.orientation_e[1,0]])
+                        print(state)
+                        wandb.log({'final state': state})
+                        bound = np.array([20, 20, np.deg2rad(45)])
+                        cost = abs(self.target - state)/bound
+                        cost = 1 - np.tanh(cost)
+                        print(cost)
+                        reward = np.prod(cost)
+                        print(reward)
+                        return reward
+                    return 0.0
+
+                
+
+                    
+
+                # def get_reward(self):
+                #     if self.is_terminal():
+                #         if self.is_out_of_bounds():
+                #             return failReward
+                #     cost_vector = np.array([1, 1])
+                #     scaling = np.array([80, 80])
+                #     norm = np.dot(scaling**2, cost_vector)
+                #     current_state = np.array([self.position_e[0,0], self.position_e[2,0]])
+                #     cost = np.dot((self.target - current_state) ** 2, cost_vector) / norm
+                #     return  ((1.0 - cost) * 2.0) - 1.0
+                
+
+                
+                def _get_target(self):
+                    theta = self.orientation_e[1,0] if self.orientation_e[1,0] > 0 else ((2*np.pi) + self.orientation_e[1,0])
+                    if self.sector_switch == 1:
+                        if (np.pi/2) < theta < np.pi:
+                            self.done_flag = True
+                        # print(self.done_flag)
+                            # self.target = np.array([0, -180, np.pi])
+                            # self.sector_switch = 2
+                    if self.sector_switch == 2:
+                        if np.pi < theta < np.deg2rad(270):
+                    #         self.target = np.array([-40, -140, -np.pi])
+                    #         self.sector_switch = 3
+                            self.done_flag = True
+
+                    # if self.sector_switch == 3:
+                    #     if theta > np.deg2rad(270):
+                    #         self.target = np.array([0, -100, 0])
+                    #         self.sector_switch = 4
+                    # if self.sector_switch == 4:
+                    #     if theta > 0:
+                    #         self.done_flag = True
+
+                            
+                        
+
+
 
                 # def get_reward(self):
                 #     if self.is_terminal():
@@ -73,29 +148,28 @@ def wrap_class(BixlerClass, parameters):
                 #     return 0.0
                     
 
-
-        
                 def is_terminal(self):
-
                     # Terminal point is floor
-                    if self.position_e[2, 0] > 0:
-                        return True
-                    if self.velocity_b[0,0] < stall_speed:
-                        return True
-                    if self.position_e[0, 0] > 50:
-                        return True
-                    # theta = self.orientation_e[1,0] if self.orientation_e[1,0] > 0 else (np.pi - self.orientation_e[1,0])
+                    # if self.position_e[2, 0] > 0:
+                    #     return True
+                    # # if self.position_e[2,0] < -140:
+                    #     return True
+                    # if self.velocity_b[0,0] < stall_speed:
+                        # return True
+                    # if self.position_e[0, 0] > 100:
+                    #     return True
                     # if self.prev_theta > np.pi/2 :
-                    #     if theta > np.pi:
-                    #         return True
+                    self._get_target()
+                    # print(self.done_flag)
+                    if self.done_flag == True:
+                        return True
                     # if self.prev_theta < np.pi/2 :
-                    #     if self.orientation_e[1,0] > 0:
-                    #         return True
-                    self.prev_theta = self.orientation_e[1,0]
+                    # if self.orientation_e[1,0] < 0:
+                    # return True
+                    # self.prev_theta = self.orientation_e[1,0]
 
 
-                    
-
+                
                 def get_state(self):
                     return super(PerchingBixler,self).get_state()[0:14].T
 
@@ -146,6 +220,8 @@ def wrap_class(BixlerClass, parameters):
                     self.set_state(initial_state)
 
                     self.wind_sim.update()
+
+                    self.done_flag = False
 
 
     return PerchingBixler
