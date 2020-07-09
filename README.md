@@ -1,4 +1,11 @@
-# Setup on BCp4
+
+# Torchperch
+
+Torchperch is a numerical model of a custom, variable sweep aircraft used for reinforcment learning research, primarily for agile flight maneovures.
+
+The aerodynamic parameters and equations of motion are contained in the /bixler/bixler.py script. This script is augmented by the scenarios in /scenarios and /controllers to form an OpenAI Gym environment. 
+
+## Setup on BCp4
 
 For BCp4 all you really need to do, once your environment is setup, is to run the `sbatch` command
 with the job script as an argument:
@@ -22,4 +29,3 @@ You will need an environment called "gym" with gym, stable-baselines and tensorf
 The job script will use this environment to run the jobs so test that this is setup correctly first.
 You can also submit jobs to the test queue to avoid using up resources.
 
-Please add anything else I've missed...
