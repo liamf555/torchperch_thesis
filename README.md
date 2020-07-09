@@ -3,7 +3,9 @@
 
 Torchperch is a numerical model of a custom, variable sweep aircraft used for reinforcment learning research, primarily for agile flight maneovures.
 
-The aerodynamic parameters and equations of motion are contained in the /bixler/bixler.py script. This script is augmented by the scenarios in /scenarios and /controllers to form an OpenAI Gym environment. 
+The aerodynamic parameters and equations of motion are contained in [bixler.py](../master/bixler/bixler.py). This script is augmented by the [scenarios](../master/scenarios/) and [controllers](../master/controllers/) to form an [OpenAI Gym environment](../master/gym-bixler/gym_bixler/envs/bixler_env.py). The primary focus is currently the perched landing manoeuvre using the sweep elevator controller. Recent work has looked to model [wind](../master/wind/).
+
+## Installation
 
 ## Setup on BCp4
 
