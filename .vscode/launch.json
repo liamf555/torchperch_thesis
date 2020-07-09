@@ -11,7 +11,7 @@
             "justMyCode": false,
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--param_file", "../output/scitech/sim_params.json"]
+            "args": ["--param_file", "../output/dryden_test/sim_params.json"]
         }
     ]
 }

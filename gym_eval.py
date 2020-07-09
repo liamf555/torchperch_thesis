@@ -88,39 +88,50 @@ best_model_path = dir_path / 'best_model.zip'
 # final_model = ModelType.load(final_model_path)
 # best_model = ModelType.load(best_model_path)
 
-print(params)
+# print(params)
 
-env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
-eval_env = VecNormalize.load((dir_path / "vec_normalize.pkl"), env0)
-eval_env.training = False
+wind_speeds = [-6.0, -4.0, -2.0, 0.0, 2.0, 4.0]
 
-final_model = ModelType.load(final_model_path)
-# best_model = ModelType.load(log_dir +"best_model.zip")
+for wind in wind_speeds:
 
-final_model.set_env(eval_env)
+    params["wind_params"] = [wind, 0.0, 0.0]
+    params["wind_mode"] = "steady"
 
-# final_model_eval = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
+    print(wind)
 
-eval_dir = dir_path / 'eval'
+    env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
+    eval_env = VecNormalize.load((dir_path / "vec_normalize.pkl"), env0)
+    eval_env.training = False
 
-eval_dir.mkdir(parents=True, exist_ok=True)
+    final_model = ModelType.load(final_model_path)
+    # best_model = ModelType.load(log_dir +"best_model.zip")
 
-final_model_data_path = eval_dir / 'final_model'
-best_model_data_path =  eval_dir / 'best_model'
+    final_model.set_env(eval_env)
 
-final_rewards, final_wind_speeds = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = str(final_model_data_path))
+    # final_model_eval = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
 
-# best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = best_model_data_path)
+    eval_dir = dir_path / ('eval_' + str(wind))
 
-# final_rewards, final_wind_speeds = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True)
+    eval_dir.mkdir(parents=True, exist_ok=True)
 
-# best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True )
+    final_model_data_path = eval_dir / 'final_model'
+    # best_model_data_path =  eval_dir / 'best_model'
+
+    final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = str(final_model_data_path))
+
+    # best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = best_model_data_path)
+
+    # final_rewards, final_wind_speeds = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True)
+
+    # best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True )
+
+    print(final_rewards)
 
 
 
-for i, wind in enumerate(final_wind_speeds):
-    print(
-        f"""Wind(N)(m/s): {wind} -> Final model reward: {final_rewards[i]:.3f}""")
+# for i, wind in enumerate(final_wind_speeds):
+#     print(
+#         f"""Wind(N)(m/s): {wind} -> Final model reward: {final_rewards[i]:.3f}""")
 
 # for i, wind in enumerate(best_reward_speeds):
 #     print(

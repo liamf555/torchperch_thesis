@@ -15,7 +15,7 @@ class BixlerController(bixler.Bixler):
             for i in range(int(whole_steps)):
                 self.update_control_surfaces(base_steptime)
                 super().step(base_steptime)
-            self.update_control_surfaces(base_steptime*step_fraction)
-            super().step(base_steptime*step_fraction)
+            # self.update_control_surfaces(base_steptime*step_fraction)
+            # super().step(base_steptime*step_fraction)
         except Exception as e:
             raise

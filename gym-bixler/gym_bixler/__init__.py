@@ -25,7 +25,7 @@ register(
     entry_point='gym_bixler.envs:BixlerEnvCont',
 )
 
-register(
-	id='rBixler-v0',
-	entry_point='gym_bixler.envs:RobsBixlerEnv'
-)
+# register(
+# 	id='rBixler-v0',
+# 	entry_point='gym_bixler.envs:RobsBixlerEnv'
+# )

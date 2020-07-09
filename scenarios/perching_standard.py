@@ -13,6 +13,7 @@ def wrap_class(BixlerClass, parameters):
 
                     super(PerchingBixler,self).__init__(parameters)
                     self.var_start = parameters.get("variable_start")
+                    self.time = 0
 
                 def is_out_of_bounds(self):
                     def is_in_range(x,lower,upper):
@@ -49,6 +50,7 @@ def wrap_class(BixlerClass, parameters):
                            return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2)/2)
 
                 def get_reward(self):
+                    print(self.position_e[0,0])
                     if self.is_terminal():
                         if self.is_out_of_bounds():
                             return failReward
@@ -87,25 +89,29 @@ def wrap_class(BixlerClass, parameters):
                         state=self.get_state()
 
                     # pb2 = np.pi/2
-
                     # mins = np.array([ -50, -2, h_min, -pb2, -pb2, -pb2,  0, -2, -5, -pb2, -pb2, -pb2, self.sweep_limits[0], self.elev_limits[0]])
                     # maxs = np.array([  10,  2,     1,  pb2,  pb2,  pb2, 20,  2,  5,  pb2,  pb2,  pb2, self.sweep_limits[1], self.elev_limits[1]])
 
-                    return state
+                    return state # using SB normalize wrapper
 
                     # return (state-mins)/(maxs-mins)
                 
                 def reset_scenario(self):
 
                     self.wind_sim.update()
-                    wind = self.wind_sim.get_wind()
+                    wind = self.wind_sim.get_wind(13, 0.1)
+
+                    # print(wind)
 
                     target_airspeed = 13 # m/s
-                    u = target_airspeed + wind[0]
+                    u = target_airspeed + wind[0][0]
 
+                    # print(wind[0][0])
+
+                
                     # self.noiselevel = np.random.uniform(self.noiselevel_params[0], self.noiselevel_params[1])
 
-                    initial_state = np.array([[-40,0,-5, 0,0,0, u, 0,0, 0,0,0, 0,0,0]], dtype="float64")
+                    initial_state = np.array([[-40,0,-5, 0,0,0, u[0], 0,0, 0,0,0, 0,0,0]], dtype="float64")
 
                     if self.var_start:
                         # Add noise to starting velocity

@@ -1,5 +1,4 @@
 import numpy as np
-
 from wind.wind_sim import Wind
 
 # Force numpy to raise FloatingPointError for overflow
@@ -14,7 +13,7 @@ class Bixler(object):
         self.noiselevel = parameters.get("noise")
 
         # Physical parameters
-        self.mass = 1.385 # kg (+100 for Pi, BEC etc)
+        self.mass = 1.385 # kg (+100g for Pi, BEC etc)
         self.rho = 1.225  # kg.m^-3
         self.S = 0.26     # m^2
         self.c = 0.2      # m
@@ -32,8 +31,7 @@ class Bixler(object):
         self.dcm_wind2body = np.eye(3)
         self.jacobian = np.eye(3)
 
-        
-
+    
         # State
         self.position_e = np.zeros((3,1))
         self.velocity_b = np.array([[13.0],[0],[0]])
@@ -56,16 +54,16 @@ class Bixler(object):
         # Air data
         self.alpha    = 0.0 # (deg)
         self.beta     = 0.0 # (deg)
-        self.airspeed = 0.0 # (m/s)
+        self.airspeed = 13.0 # (m/s)
         self.wind = np.zeros((3,1))
-        self.wind_sim = Wind(wind_mode=parameters.get("wind_mode"), wind_params=parameters.get("wind_params"))
+        self.wind_sim = Wind(wind_mode=parameters.get("wind_mode"), wind_params=parameters.get("wind_params"), turbulence = parameters.get("turbulence"))
         
         # Control surface limits
         self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
         # self.elev_limits = np.rad2deg([-0.872665, 0.872665]) # changed from +- 10 to 20
         self.elev_limits = np.rad2deg([-0.436332, 0.436332]) # changed from +- 10 to 20
 
-        self.update_air_data()
+        self.update_air_data(0.1)
         self.velocity_e = self.velocity_b
         self.velocity_e[0] += parameters.get("wind_params")[0]
 
@@ -119,8 +117,8 @@ class Bixler(object):
         self.tip_port      = np.float64(state[0,14])
         
         # Ensure air data reflects new state
-        self.update_air_data()
-    
+        self.update_air_data(0.1)
+
     def step(self,steptime):
         # Update the cosine matricies
         self.update_dcms()
@@ -142,7 +140,7 @@ class Bixler(object):
         self.position_e = self.position_e + self.velocity_e * steptime
 
         # Update alpha and beta for next step
-        self.update_air_data()
+        self.update_air_data(steptime)
 
 
     def _update_dcm_earth2body(self):
@@ -261,33 +259,42 @@ class Bixler(object):
         self.omega_dot_b = np.matmul(np.linalg.inv(self.inertia), idw)
 
 
-    def update_air_data(self):
+    def update_air_data(self, steptime):
         # TODO: wind model...
 
-        self.wind = self.wind_sim.get_wind()
+        self.wind = self.wind_sim.get_wind(self.airspeed, steptime)
 
         # print(f"Wind: {self.wind}")
 
-        wind_b = np.matmul(self.dcm_earth2body, self.wind) # + gusts
+        # print(self.dcm_earth2body)
+
+
+        # print(self.wind[1])
+        wind_b = np.matmul(self.dcm_earth2body, self.wind[0].T)  + self.wind[1].T
 
         # print(f"Wind_b: {wind_b}")
 
-        self.Vr = self.velocity_b[:,0] - wind_b
+        self.Vr = self.velocity_b - wind_b
+
+        # self.Vr = self.velocity_b
 
         # print(f"velocity_b: {self.velocity_b}")
 
         # print(f"Vr: {self.Vr}")
 # 
+        uSqd = self.Vr[0][0]**2
+        vSqd = self.Vr[1][0]**2
+        wSqd = self.Vr[2][0]**2
 
-        uSqd = self.Vr[0]**2
-        vSqd = self.Vr[1]**2
-        wSqd = self.Vr[2]**2
-        
+        # print(uSqd, vSqd, wSqd)
+
         self.airspeed = np.sqrt( uSqd + vSqd + wSqd )
 
         # print(f"airspeed {self.airspeed}")
         
-        self.alpha = np.rad2deg(np.arctan2(self.Vr[2],self.Vr[0]))
+        self.alpha = np.rad2deg(np.arctan2(self.Vr[2][0],self.Vr[0][0]))
+
+        # print(self.alpha)
         
         if self.airspeed == 0:
             self.beta = 0
@@ -298,7 +305,7 @@ class Bixler(object):
             if cosBeta < -1.0: cosBeta = -1.0
             elif cosBeta > 1.0: cosBeta = 1.0
             # Apply sign convention
-            self.beta = np.rad2deg(np.copysign(np.arccos(cosBeta), self.Vr[1]))
+            self.beta = np.rad2deg(np.copysign(np.arccos(cosBeta), self.Vr[1][0]))
     
     def wrap_orientation(self):
         self.orientation_e = (self.orientation_e + np.pi*2) % (np.pi*2)
@@ -403,7 +410,7 @@ class Bixler(object):
         C_Lq = 0.0
 
         if self.omega_b[1,0] < 0:
-            C_Lq = 0;
+            C_Lq = 0
         else:
             # scipy.interpolate.RectBivariateSpline?
             CLq6 = self._interpolate(self.sweep, sweep_sample_dynamic, CLq_6ms)

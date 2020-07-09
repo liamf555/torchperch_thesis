@@ -1,20 +1,22 @@
 #from . import cobra
-from . import perching_1
-from . import perching_2
-from . import perching_3
-from . import perching_4
-from . import perching_5
+# from . import perching_1
+# from . import perching_2
+# from . import perching_3
+# from . import perching_4
+# from . import perching_5
 from . import perching_standard
-from . import perching_6
-from . import perching_7
+# from . import perching_6
+# from . import perching_7
 from . import perching_long
 from . import height_gain
-from . import perching_long_test_1
-from . import perching_7_test_1
-from . import perching_7_test_2
+# from . import perching_long_test_1
+# from . import perching_7_test_1
+# from . import perching_7_test_2
 from . import bleed_1
 from . import bleed_2
-from . import perching_standard_cont
+# from . import perching_standard_cont
 from . import half_loop
+from . import half_loop_2
+from . import half_loop_3
 #from . import level_flight
 #from . import constant_airspeed
