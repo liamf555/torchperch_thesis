@@ -80,7 +80,7 @@ wandb.config.timesteps=10000000
 
 # env = gym.make(params.get("env"), parameters=params)
 
-env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
+env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=16, seed=0, monitor_dir=log_dir)
 env = VecNormalize(env, norm_reward=False)
 
 # eval_envs = make_eval_env(params)
