@@ -56,14 +56,14 @@ class Bixler(object):
         self.beta     = 0.0 # (deg)
         self.airspeed = 13.0 # (m/s)
         self.wind = np.zeros((3,1))
-        self.wind_sim = Wind(wind_mode=parameters.get("wind_mode"), wind_params=parameters.get("wind_params"), turbulence = parameters.get("turbulence"))
+        self.wind_sim = Wind(wind_mode=parameters.get("wind_mode"), wind_params=parameters.get("wind_params"))
         
         # Control surface limits
         self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
         # self.elev_limits = np.rad2deg([-0.872665, 0.872665]) # changed from +- 10 to 20
         self.elev_limits = np.rad2deg([-0.436332, 0.436332]) # changed from +- 10 to 20
 
-        self.update_air_data(0.1)
+        self.update_air_data()
         self.velocity_e = self.velocity_b
         self.velocity_e[0] += parameters.get("wind_params")[0]
 
@@ -117,7 +117,7 @@ class Bixler(object):
         self.tip_port      = np.float64(state[0,14])
         
         # Ensure air data reflects new state
-        self.update_air_data(0.1)
+        self.update_air_data()
 
     def step(self,steptime):
         # Update the cosine matricies
@@ -140,7 +140,7 @@ class Bixler(object):
         self.position_e = self.position_e + self.velocity_e * steptime
 
         # Update alpha and beta for next step
-        self.update_air_data(steptime)
+        self.update_air_data()
 
 
     def _update_dcm_earth2body(self):
@@ -259,10 +259,10 @@ class Bixler(object):
         self.omega_dot_b = np.matmul(np.linalg.inv(self.inertia), idw)
 
 
-    def update_air_data(self, steptime):
+    def update_air_data(self):
         # TODO: wind model...
 
-        self.wind = self.wind_sim.get_wind(self.airspeed, steptime)
+        self.wind = self.wind_sim.get_wind()
 
         # print(f"Wind: {self.wind}")
 
@@ -270,7 +270,7 @@ class Bixler(object):
 
 
         # print(self.wind[1])
-        wind_b = np.matmul(self.dcm_earth2body, self.wind[0].T)  + self.wind[1].T
+        wind_b = np.matmul(self.dcm_earth2body, self.wind.T) # + self.wind[1].T
 
         # print(f"Wind_b: {wind_b}")
 

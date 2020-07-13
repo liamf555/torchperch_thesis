@@ -1,5 +1,5 @@
 import numpy as np
-import wandb
+# import wandb
 
 class Wind(object):
 
@@ -25,7 +25,7 @@ class Wind(object):
             wind_north = self.np_random.normal(self.wind_params[0], self.wind_params[1])
             self.wind_vector = [wind_north, 0, 0]
 
-            wandb.log({"wind_speed": self.wind_vector[0]})
+            # wandb.log({"wind_speed": self.wind_vector[0]})
 
         if self.wind_mode == 'normal_eval' or self.wind_mode == 'steady_eval':
             self.wind_vector = self.wind_params
@@ -39,7 +39,7 @@ class Wind(object):
             wind_north = np.random.uniform(self.wind_params[0], self.wind_params[1])
             self.wind_vector = [wind_north, 0, 0]
             
-            wandb.log({"wind_speed": self.wind_vector[0]})
+            # wandb.log({"wind_speed": self.wind_vector[0]})
 
         # if self.turbulence:
         #     self.dryden.reset()
@@ -57,15 +57,15 @@ class Wind(object):
         #     wandb.log({"dryden_u": dryden[0]}) 
         #     return (np.array([self.wind_vector]), dryden)
 
-        return (np.array([self.wind_vector]), np.array([[0.0, 0.0, 0.0]]))
+        return np.array([self.wind_vector])
 
     
 
     def seed(self, seed=None):
 
         self.np_random = np.random.RandomState(seed)
-        if self.turbulence:
-            self.dryden.seed(seed)
+        # if self.turbulence:
+        #     self.dryden.seed(seed)
 
 def make_eval_wind(wind_mode, wind_params):
 

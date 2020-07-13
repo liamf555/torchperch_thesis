@@ -1,7 +1,7 @@
 {
   "env": "Bixler-v0",
   "controller": "sweep_elevator",
-  "scenario": "perching_standard",
+  "scenario": "perching_long",
   "model_file": "../output/",
   "algorithm": "PPO2",
   "latency": 0.0,
