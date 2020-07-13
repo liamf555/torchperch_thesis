@@ -9,7 +9,7 @@ from gym.utils import seeding
 import controllers
 import scenarios
 import wandb
-from wind.dryden import DrydenGustModel
+# from wind.dryden import DrydenGustModel
 
 from gym_bixler.envs.render import Rendermixin
 
@@ -47,10 +47,9 @@ class BixlerEnv(Rendermixin, gym.Env):
         else:
             self.action_space = gym.spaces.Discrete(self.scenario.actions)
 
-        if self.parameters.get("turbulence"):
-            self.dryden = DrydenGustModel(Va = 13, intensity = self.parameters.get("turbulence") )
+        # if self.parameters.get("turbulence"):
+            # self.dryden = DrydenGustModel(Va = 13, intensity = self.parameters.get("turbulence") )
 
-                                            
         self.observation_space = gym.spaces.Box(low=-np.inf, high = np.inf, shape = (1, self.scenario.state_dims), dtype = np.float64)
 
         self.bixler.reset_scenario()
@@ -72,14 +71,10 @@ class BixlerEnv(Rendermixin, gym.Env):
     def step(self, action):
         # peform action
 
-        # self.time += 0.1
-        # print(self.time)
-
         self.bixler.set_action(action)
 
         #bixler step function with timestep 0.1
         try:
-
             self.bixler.step(0.1)
         except FloatingPointError:
             done = True
@@ -103,6 +98,7 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         self.bixler.reset_scenario()
         self.time = 0
+        # self.dryden.update
 
         return self.bixler.get_normalized_obs()
 
