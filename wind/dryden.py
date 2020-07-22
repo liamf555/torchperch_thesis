@@ -99,9 +99,6 @@ class DrydenGustModel:
                         "H_q": Filter([-K_w * K_q * T_w1, -K_w * K_q, 0], [T_q * T_w2 ** 2, T_w2 ** 2 + 2 * T_q * T_w2, T_q + 2 * T_w2, 1]),
                         "H_r": Filter([K_v * K_r * T_v1, K_v * K_r, 0], [T_r * T_v2 ** 2, T_v2 ** 2 + 2 * T_r * T_v2, T_r + 2 * T_v2, 1]),}
 
-        self.np_random = None
-        self.seed()
-
         self.sim_length = 0
         self.dt = dt
 
@@ -218,7 +215,7 @@ class DrydenGustModel:
 
     def _gust(self, dt):
 
-        print(dt)
+        # print(dt)
         noise = np.sqrt(np.pi / dt) * self.np_random.standard_normal(2)
 
         # print(noise)
@@ -241,7 +238,7 @@ class DrydenGustModel:
 
         # print(gust_u.item(0))
 
-        wandb.log({'dryden_u': gust_u.item(0)})
+        # wandb.log({'dryden_u': gust_u.item(0)})
 
         self.gust = np.array([[gust_u.item(0), 0.0,  gust_w.item(0)]])
 
@@ -251,7 +248,7 @@ class DrydenGustModel:
 
     def update(self, Va, dt):
 
-        print(Va)
+        # print(Va)
         K_u = self.sigma_u * math.sqrt((2 * self.L_u) / (math.pi * Va))
         # K_v = sigma_v * math.sqrt((L_v) / (math.pi * self.Va))
         K_w = self.sigma_w * math.sqrt((self.L_w) / (math.pi * Va))
@@ -292,15 +289,15 @@ if __name__ == "__main__":
 
     i = 0
 
-    while sim_time < 0.9 :
+    while sim_time < 99.9 :
         sim_time += 0.1
         # noise = list(zip(*dryden.noise))[i]
         # print(noise)
         noise=0
-        dryden.update(13)
+        dryden.update(13, 0.01)
         u_vel.append(dryden.gust.item(0))
         # v_vel.append(dryden.gust.item(1))
-        w_vel.append(dryden.gust.item(1))
+        w_vel.append(dryden.gust.item(2))
         # q.append(dryden.gust.item(3))
         times.append(sim_time)
         i += 1

@@ -94,6 +94,8 @@ def wrap_class(BixlerClass, parameters):
                     return obs # using SB normalize wrapper
                 
                 def reset_scenario(self):
+
+                    print('resetting')
                     
                     self.wind_sim.update()
                     wind = self.wind_sim.get_wind()
@@ -101,7 +103,7 @@ def wrap_class(BixlerClass, parameters):
                     target_airspeed = 13 # m/s
                     u = target_airspeed + wind[0]
 
-                    initial_state = np.array([[-40,0,-5, 0,0,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
+                    initial_state = np.array([[-40,0,-5, 0,0,0, u[0],0,0, 0,0,0, 0,0,0]], dtype="float64")
 
                     if self.var_start:
                         # Add noise to starting velocity

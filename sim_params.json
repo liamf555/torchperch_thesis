@@ -10,5 +10,6 @@
   "wind_params": [0, 0, 0],
   "wind_mode": "None",
   "turbulence": false,
-  "log_file": "../output/"
+  "log_file": "../output/",
+  "seed": "None"
 }

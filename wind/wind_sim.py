@@ -15,9 +15,6 @@ class Wind(object):
         #     self.dryden = DrydenGustModel(Va = 13, intensity=self.turbulence)
         #     self.dryden.simulate(20)
         #     self.update()
-
-        self.seed()
-
     
     def update(self):
 
@@ -64,9 +61,8 @@ class Wind(object):
     def seed(self, seed=None):
 
         self.np_random = np.random.RandomState(seed)
-        # if self.turbulence:
-        #     self.dryden.seed(seed)
-
+        print(f'wind{seed}')
+       
 def make_eval_wind(wind_mode, wind_params):
 
     wind_north = []
