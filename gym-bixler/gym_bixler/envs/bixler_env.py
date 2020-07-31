@@ -135,7 +135,6 @@ class BixlerEnv(Rendermixin, gym.Env):
         
         
     # def close(self, path, reward):
-    #     print('goat')
     #     if self.render_flag:
     #         Rendermixin.save_data(self, path, reward)
 
