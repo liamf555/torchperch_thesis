@@ -13,7 +13,6 @@ def wrap_class(BixlerClass, parameters):
 
                     super(PerchingBixler,self).__init__(parameters)
                     self.var_start = parameters.get("variable_start")
-                    self.time = 0
 
                 def is_out_of_bounds(self):
                     def is_in_range(x,lower,upper):
@@ -101,12 +100,8 @@ def wrap_class(BixlerClass, parameters):
                     self.wind_sim.update()
                     wind = self.wind_sim.get_wind()
 
-                    # print(wind)
-
                     target_airspeed = 13 # m/s
                     u = target_airspeed + wind[0]
-
-                    # print(wind[0][0])
 
                 
                     # self.noiselevel = np.random.uniform(self.noiselevel_params[0], self.noiselevel_params[1])

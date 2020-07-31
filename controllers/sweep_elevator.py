@@ -40,9 +40,6 @@ class Bixler_SweepElevator(common.BixlerController):
 
         self.time_since_action += steptime
 
-        # print(self.time_since_action)
-        # print(self.latency)
-
         if (self.time_since_action >= self.latency):
             self.sweep_rate = self.next_sweep_rate
             self.elev_rate = self.next_elev_rate

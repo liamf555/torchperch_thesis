@@ -75,7 +75,6 @@ class BixlerEnv(Rendermixin, gym.Env):
     def step(self, action):
         # peform action
 
-        # print(gusts)
 
         self.bixler.set_action(action)
 
@@ -96,8 +95,6 @@ class BixlerEnv(Rendermixin, gym.Env):
             done = self.bixler.is_terminal()
 
             info = {}
-            self.time += 0.1
-            # print(self.time)
 
         return obs, self.reward, done, info
         
@@ -123,8 +120,6 @@ class BixlerEnv(Rendermixin, gym.Env):
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
 
-        print(f'env: {seed}')
-
         self.bixler.seed(seed)
 
         return [seed]
@@ -144,7 +139,6 @@ class BixlerEnv(Rendermixin, gym.Env):
         
         
     # def close(self, path, reward):
-    #     print('goat')
     #     if self.render_flag:
     #         Rendermixin.save_data(self, path, reward)
 

@@ -75,7 +75,6 @@ class Bixler(object):
         
     def seed(self, seed=None):
         self.np_random = np.random.RandomState(seed)
-        print(f'bixler {seed}')
         self.wind_sim.seed(seed)
         self.dryden.seed(seed)
 
@@ -277,7 +276,6 @@ class Bixler(object):
 
         # print(self.dcm_earth2body)
 
-        print(gusts)
         wind_b = np.matmul(self.dcm_earth2body, self.wind.T) + gusts.T
 
         # print(f"Wind_b: {wind_b}")
