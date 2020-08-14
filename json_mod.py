@@ -77,10 +77,7 @@ class JsonMod:
 
         self.data["model_file"] = self.args.log_file + model_name
         self.data["log_file"] = self.args.log_file
-        self.data["turbulence"] = self.args.turbulence
-        self.data["seed"] = self.args.seed
-
-
+    
 
         self.wind_amend()
     

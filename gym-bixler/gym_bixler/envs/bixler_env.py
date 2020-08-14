@@ -5,7 +5,6 @@ performing a perched landing manoeuvre.
 import gym
 import json
 import numpy as np 
-from gym.utils import seeding
 import controllers
 import scenarios
 import wandb
@@ -41,7 +40,8 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         self.bixler = self.scenario.wrap_class(self.controller, self.parameters)()
 
-        self.seed(self.parameters.get("seed"))
+        # self.seed(self.parameters.get("seed"))
+        self.seed()
 
         if self.parameters.get("controller") == "sweep_elevator_cont_rate":
             self.action_space = gym.spaces.Box(low = np.array([-1, -1]),
@@ -51,9 +51,7 @@ class BixlerEnv(Rendermixin, gym.Env):
                                             high = np.array([1]), dtype = np.float16)
         else:
             self.action_space = gym.spaces.Discrete(self.scenario.actions)
-
-        
-                          
+           
         self.observation_space = gym.spaces.Box(low=-np.inf, high = np.inf, shape = (1, self.scenario.state_dims), dtype = np.float64)
 
         self.bixler.reset_scenario()
@@ -118,8 +116,8 @@ class BixlerEnv(Rendermixin, gym.Env):
             self.create_array()
 
     def seed(self, seed=None):
-        self.np_random, seed = seeding.np_random(seed)
-
+        self.np_random, seed = gym.utils.seeding.np_random(seed)
+        print(seed)
         self.bixler.seed(seed)
 
         return [seed]

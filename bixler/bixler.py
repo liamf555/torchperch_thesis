@@ -69,12 +69,14 @@ class Bixler(object):
         self.velocity_e = self.velocity_b
         self.velocity_e[0] += parameters.get("wind_params")[0]
 
-        self.dryden = DrydenGustModel(Va = 13, intensity =parameters.get("turbulence"))
+        self.dryden = DrydenGustModel(Va = 13, intensity=parameters.get("turbulence"))
 
         self.np_random = None
         
     def seed(self, seed=None):
+
         self.np_random = np.random.RandomState(seed)
+        print(self.np_random)
         self.wind_sim.seed(seed)
         self.dryden.seed(seed)
 
@@ -268,7 +270,6 @@ class Bixler(object):
 
 
     def update_air_data(self, gusts):
-        # TODO: wind model...
 
         self.wind = self.wind_sim.get_wind()
 

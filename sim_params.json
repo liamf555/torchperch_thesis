@@ -8,8 +8,8 @@
   "noise": 0.0,
   "variable_start": false,
   "wind_params": [0, 0, 0],
-  "wind_mode": "None",
+  "wind_mode": false,
   "turbulence": false,
   "log_file": "../output/",
-  "seed": "None"
+  "seed": false
 }

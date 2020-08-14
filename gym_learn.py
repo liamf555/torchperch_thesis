@@ -58,7 +58,7 @@ def make_eval_env(params):
 	return eval_envs
 
 parser = argparse.ArgumentParser(description='Parse param file location')
-parser.add_argument("--param_file", type =str, default="sim_params.json")
+parser.add_argument("param_file", type =str, default="sim_params.json")
 args = parser.parse_args()
 
 os.environ["WANDB_API_KEY"] = "ea17412f95c94dfcc41410f554ef62a1aff388ab"
@@ -76,11 +76,11 @@ log_dir = params.get("log_file")
 
 wandb.config.update(params)
 
-wandb.config.timesteps=200
+wandb.config.timesteps=10000
 
 # env = gym.make(params.get("env"), parameters=params)
 
-env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=1, seed=0, monitor_dir=log_dir)
+env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, monitor_dir=log_dir)
 env = VecNormalize(env, norm_reward=False)
 
 # eval_envs = make_eval_env(params)
