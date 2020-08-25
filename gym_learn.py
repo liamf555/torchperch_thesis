@@ -80,7 +80,7 @@ wandb.config.timesteps=10000
 
 # env = gym.make(params.get("env"), parameters=params)
 
-env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, monitor_dir=log_dir)
+env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
 env = VecNormalize(env, norm_reward=False)
 
 # eval_envs = make_eval_env(params)
@@ -89,7 +89,7 @@ env = VecNormalize(env, norm_reward=False)
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-model = ModelType("MlpPolicy", env, verbose = 0, tensorboard_log=log_dir)
+model = ModelType("MlpPolicy", env, verbose = 1, tensorboard_log=log_dir)
 wandb.config.update({"policy": model.policy.__name__})
 
 for key, value in vars(model).items():

@@ -248,7 +248,7 @@ class DrydenGustModel:
 
     def update(self, Va, dt):
 
-        if self.intensity == False:
+        if self.intensity == 'none':
             return np.array([[0.0, 0.0, 0.0]])
 
         # print(Va)

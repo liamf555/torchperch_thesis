@@ -41,7 +41,7 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.bixler = self.scenario.wrap_class(self.controller, self.parameters)()
 
         # self.seed(self.parameters.get("seed"))
-        self.seed()
+        # self.seed()
 
         if self.parameters.get("controller") == "sweep_elevator_cont_rate":
             self.action_space = gym.spaces.Box(low = np.array([-1, -1]),
@@ -115,12 +115,11 @@ class BixlerEnv(Rendermixin, gym.Env):
             self.plot_flag = True
             self.create_array()
 
-    def seed(self, seed=None):
-        self.np_random, seed = gym.utils.seeding.np_random(seed)
-        print(seed)
-        self.bixler.seed(seed)
+    # def seed(self, seed=None):
+    #     self.np_random, seed = gym.utils.seeding.np_random(seed)
+    #     self.bixler.seed(seed)
 
-        return [seed]
+    #     return [seed]
 
 
     def create_array(self):

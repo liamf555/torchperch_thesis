@@ -61,7 +61,6 @@ class Wind(object):
     def seed(self, seed=None):
 
         self.np_random = np.random.RandomState(seed)
-        print(f'wind{seed}')
        
 def make_eval_wind(wind_mode, wind_params):
 

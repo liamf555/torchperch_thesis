@@ -95,8 +95,6 @@ def wrap_class(BixlerClass, parameters):
                 
                 def reset_scenario(self):
 
-                    print('resetting')
-                    
                     self.wind_sim.update()
                     wind = self.wind_sim.get_wind()
 
@@ -122,7 +120,6 @@ def wrap_class(BixlerClass, parameters):
 
                     self.set_state(initial_state)
 
-                    self.wind_sim.update()
 
 
     return PerchingBixler

@@ -72,11 +72,12 @@ class Bixler(object):
         self.dryden = DrydenGustModel(Va = 13, intensity=parameters.get("turbulence"))
 
         self.np_random = None
+
+        self.seed()
         
     def seed(self, seed=None):
 
         self.np_random = np.random.RandomState(seed)
-        print(self.np_random)
         self.wind_sim.seed(seed)
         self.dryden.seed(seed)
 
@@ -275,13 +276,13 @@ class Bixler(object):
 
         # print(f"Wind: {self.wind}")
 
-        # print(self.dcm_earth2body)
+        # print(f"Gusts: {gusts}")
 
         wind_b = np.matmul(self.dcm_earth2body, self.wind.T) + gusts.T
 
         # print(f"Wind_b: {wind_b}")
 
-        wandb.log({"wind": wind_b})
+        # wandb.log({"wind": wind_b})
 
         self.Vr = self.velocity_b - wind_b
 
