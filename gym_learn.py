@@ -32,7 +32,7 @@ from wind.wind_sim import make_eval_wind
 # from stable_baselines import DQN, PPO2, SAC
 
 from stable_baselines.common.cmd_util import make_vec_env
-from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv
+from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv, VecFrameStack
 
 def make_eval_env(params):
 
@@ -75,28 +75,20 @@ with open(args.param_file) as json_file:
 log_dir = params.get("log_file")
 
 wandb.config.update(params)
-
-wandb.config.timesteps=10000
-
-# env = gym.make(params.get("env"), parameters=params)
+wandb.config.timesteps=100000
 
 env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
+# env = VecFrameStack(env, 4)
 env = VecNormalize(env, norm_reward=False)
-
-# eval_envs = make_eval_env(params)
-
-# callback = EvalCallback(eval_envs, eval_freq=1250, log_path=log_dir, best_model_save_path=log_dir, n_eval_episodes=3)
-
 ModelType = check_algorithm(params.get("algorithm"))
+model = ModelType('MlpPolicy', env, verbose=1, tensorboard_log=log_dir)
 
-model = ModelType("MlpPolicy", env, verbose = 1, tensorboard_log=log_dir)
 wandb.config.update({"policy": model.policy.__name__})
 
 for key, value in vars(model).items():
 	if type(value) == float or type(value) == str or type(value) == int:
 		wandb.config.update({key: value})
  
-# model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
 model.learn(total_timesteps = wandb.config.timesteps)
 
 model.save(params.get("model_file"))
