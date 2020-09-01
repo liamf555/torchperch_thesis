@@ -77,7 +77,7 @@ class JsonMod:
 
         self.data["model_file"] = self.args.log_file + model_name
         self.data["log_file"] = self.args.log_file
-        self.data["turbulence"] = self.args.turbulence
+    
 
         self.wind_amend()
     
@@ -108,6 +108,7 @@ if __name__ == "__main__":
     parser.add_argument('--variable_start', type =str)
     parser.add_argument('--array_flag', action = 'store_true', dest = 'array')
     parser.add_argument('--turbulence', type = str)
+    parser.add_argument('--seed', type = int)
     args = parser.parse_args()
 
     amend = JsonMod(args)

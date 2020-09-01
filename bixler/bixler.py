@@ -1,5 +1,7 @@
 import numpy as np
 from wind.wind_sim import Wind
+from wind.dryden import DrydenGustModel
+import wandb
 
 # Force numpy to raise FloatingPointError for overflow
 np.seterr(all='raise')
@@ -63,15 +65,21 @@ class Bixler(object):
         # self.elev_limits = np.rad2deg([-0.872665, 0.872665]) # changed from +- 10 to 20
         self.elev_limits = np.rad2deg([-0.436332, 0.436332]) # changed from +- 10 to 20
 
-        self.update_air_data()
+        self.update_air_data(np.zeros((3,1)))
         self.velocity_e = self.velocity_b
         self.velocity_e[0] += parameters.get("wind_params")[0]
 
-        self.np_random = None
-        self.seed()
+        self.dryden = DrydenGustModel(Va = 13, intensity=parameters.get("turbulence"))
 
+        self.np_random = None
+
+        self.seed()
+        
     def seed(self, seed=None):
+
         self.np_random = np.random.RandomState(seed)
+        self.wind_sim.seed(seed)
+        self.dryden.seed(seed)
 
         
     def _interpolate(self, x_target, x_data, y_data):
@@ -117,10 +125,13 @@ class Bixler(object):
         self.tip_port      = np.float64(state[0,14])
         
         # Ensure air data reflects new state
-        self.update_air_data()
+        self.update_air_data(np.zeros((3,1)))
 
-    def step(self,steptime):
+    def step(self, steptime):
         # Update the cosine matricies
+
+        gusts = self.dryden.update(self.airspeed, steptime)
+
         self.update_dcms()
         
         # Update derivatives (Accel and AngAccel)
@@ -140,7 +151,7 @@ class Bixler(object):
         self.position_e = self.position_e + self.velocity_e * steptime
 
         # Update alpha and beta for next step
-        self.update_air_data()
+        self.update_air_data(gusts)
 
 
     def _update_dcm_earth2body(self):
@@ -239,7 +250,7 @@ class Bixler(object):
         #self.acceleration_b = self.acceleration_b - np.cross(self.omega_b, self.velocity_b, axis=0)
         self.acceleration_b = self.acceleration_b - self._cross(self.omega_b, self.velocity_b)
         # Generate noise
-        noise = np.random.rand(3,1) * self.noiselevel
+        noise = self.np_random.rand(3,1) * self.noiselevel
 
         # noise = self.np_random.rand(3,1) * self.noiselevel
 
@@ -259,20 +270,19 @@ class Bixler(object):
         self.omega_dot_b = np.matmul(np.linalg.inv(self.inertia), idw)
 
 
-    def update_air_data(self):
-        # TODO: wind model...
+    def update_air_data(self, gusts):
 
         self.wind = self.wind_sim.get_wind()
 
         # print(f"Wind: {self.wind}")
 
-        # print(self.dcm_earth2body)
+        # print(f"Gusts: {gusts}")
 
-
-        # print(self.wind[1])
-        wind_b = np.matmul(self.dcm_earth2body, self.wind.T) # + self.wind[1].T
+        wind_b = np.matmul(self.dcm_earth2body, self.wind.T) + gusts.T
 
         # print(f"Wind_b: {wind_b}")
+
+        # wandb.log({"wind": wind_b})
 
         self.Vr = self.velocity_b - wind_b
 

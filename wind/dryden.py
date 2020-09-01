@@ -57,12 +57,13 @@ class DrydenGustModel:
         """
         # For fixed (nominal) altitude and airspeed
         self.Va = Va  # airspeed [m/s]
+        self.intensity = intensity
 
-        if intensity == 'light':
+        if self.intensity == 'light':
             self.sigma_w = 0.7
             self.sigma_u = 1.06
             self.sigma_v = self.sigma_u
-        elif intensity == 'moderate':
+        elif self.intensity == 'moderate':
             self.sigma_u = 2.12
             self.sigma_v = self.sigma_u
             self.sigma_w =  1.4
@@ -72,35 +73,32 @@ class DrydenGustModel:
         self.L_v = self.L_u
         self.L_w = 50
 
-        K_u = self.sigma_u * math.sqrt((2 * self.L_u) / (math.pi * self.Va))
-        K_v = self.sigma_v * math.sqrt((self.L_v) / (math.pi * self.Va))
-        K_w = self.sigma_w * math.sqrt((self.L_w) / (math.pi * self.Va))
+        # K_u = self.sigma_u * math.sqrt((2 * self.L_u) / (math.pi * self.Va))
+        # K_v = self.sigma_v * math.sqrt((self.L_v) / (math.pi * self.Va))
+        # K_w = self.sigma_w * math.sqrt((self.L_w) / (math.pi * self.Va))
 
-        T_u = self.L_u / self.Va
-        T_v1 = math.sqrt(3.0) * self.L_v / self.Va
-        T_v2 = self.L_v / self.Va
-        T_w1 = math.sqrt(3.0) * self.L_w / self.Va
-        T_w2 = self.L_w / self.Va
+        # T_u = self.L_u / self.Va
+        # T_v1 = math.sqrt(3.0) * self.L_v / self.Va
+        # T_v2 = self.L_v / self.Va
+        # T_w1 = math.sqrt(3.0) * self.L_w / self.Va
+        # T_w2 = self.L_w / self.Va
 
-        K_p = self.sigma_w * math.sqrt(0.8 / self.Va) * ((math.pi / (4 * b)) ** (1 / 6)) / ((self.L_w) ** (1 / 3))
-        K_q = 1 / self.Va
-        K_r = K_q
+        # K_p = self.sigma_w * math.sqrt(0.8 / self.Va) * ((math.pi / (4 * b)) ** (1 / 6)) / ((self.L_w) ** (1 / 3))
+        # K_q = 1 / self.Va
+        # K_r = K_q
 
-        T_p = 4 * b / (math.pi * self.Va)
-        T_q = T_p
-        T_r = 3 * b / (math.pi * self.Va)
+        # T_p = 4 * b / (math.pi * self.Va)
+        # T_q = T_p
+        # T_r = 3 * b / (math.pi * self.Va)
 
+        # # self.filters = {"H_u": Filter(K_u, [T_u, 1]),
+        # #                 "H_w": Filter([K_w * T_w1, K_w], [T_w2 ** 2, 2 * T_w2, 1]),}
         # self.filters = {"H_u": Filter(K_u, [T_u, 1]),
-        #                 "H_w": Filter([K_w * T_w1, K_w], [T_w2 ** 2, 2 * T_w2, 1]),}
-        self.filters = {"H_u": Filter(K_u, [T_u, 1]),
-                        "H_v": Filter([ K_v * T_v1,K_v], [T_v2 ** 2, 2 * T_v2, 1]),
-                        "H_w": Filter([K_w * T_w1, K_w], [T_w2 ** 2, 2 * T_w2, 1]),
-                        "H_p": Filter(K_p, [T_p, 1]),
-                        "H_q": Filter([-K_w * K_q * T_w1, -K_w * K_q, 0], [T_q * T_w2 ** 2, T_w2 ** 2 + 2 * T_q * T_w2, T_q + 2 * T_w2, 1]),
-                        "H_r": Filter([K_v * K_r * T_v1, K_v * K_r, 0], [T_r * T_v2 ** 2, T_v2 ** 2 + 2 * T_r * T_v2, T_r + 2 * T_v2, 1]),}
-
-        self.np_random = None
-        self.seed()
+        #                 "H_v": Filter([ K_v * T_v1,K_v], [T_v2 ** 2, 2 * T_v2, 1]),
+        #                 "H_w": Filter([K_w * T_w1, K_w], [T_w2 ** 2, 2 * T_w2, 1]),
+        #                 "H_p": Filter(K_p, [T_p, 1]),
+        #                 "H_q": Filter([-K_w * K_q * T_w1, -K_w * K_q, 0], [T_q * T_w2 ** 2, T_w2 ** 2 + 2 * T_q * T_w2, T_q + 2 * T_w2, 1]),
+        #                 "H_r": Filter([K_v * K_r * T_v1, K_v * K_r, 0], [T_r * T_v2 ** 2, T_v2 ** 2 + 2 * T_r * T_v2, T_r + 2 * T_v2, 1]),}
 
         self.sim_length = 0
         self.dt = dt
@@ -134,29 +132,29 @@ class DrydenGustModel:
         # print(self.noise)
         return self.noise
 
-    def reset(self, noise=None):
-        """
-        Reset model.
-        :param noise: (np.array) Input to filters, should be four sequences of Gaussianly distributed numbers.
-        :return:
-        """
-        self.vel_lin = None
-        # self.vel_ang = None
-        self.sim_length = 0
+    # def reset(self, noise=None):
+    #     """
+    #     Reset model.
+    #     :param noise: (np.array) Input to filters, should be four sequences of Gaussianly distributed numbers.
+    #     :return:
+    #     """
+    #     self.vel_lin = None
+    #     # self.vel_ang = None
+    #     self.sim_length = 0
 
-        if noise is not None:
-            assert len(noise.shape) == 2
-            assert noise.shape[0] == 4
-            noise = noise * math.sqrt(math.pi / self.dt)
-        self.noise = noise
+    #     if noise is not None:
+    #         assert len(noise.shape) == 2
+    #         assert noise.shape[0] == 4
+    #         noise = noise * math.sqrt(math.pi / self.dt)
+    #     self.noise = noise
 
-        for filter in self.filters.values():
-            filter.reset()
+    #     for filter in self.filters.values():
+    #         filter.reset()
 
-    # def reset(self):
-    #     self._gust_u = 0.0
-    #     self._gust_w = 0.0
-    #     self.gust = []
+    def reset(self):
+        self._gust_u = 0.0
+        self._gust_w = 0.0
+        self.gust = []
 
     def simulate(self, length):
         """
@@ -190,7 +188,6 @@ class DrydenGustModel:
                         concat_noise = self.noise[:, :length - remaining_noise_length]
                     noise = np.concatenate((self.noise[:, noise_start_i:], concat_noise), axis=-1)
 
-        print(noise)
 
         vel_lin = np.array([self.filters["H_u"].simulate(noise[0], t),
                             self.filters["H_v"].simulate(noise[1], t),
@@ -218,7 +215,7 @@ class DrydenGustModel:
 
     def _gust(self, dt):
 
-        print(dt)
+        # print(dt)
         noise = np.sqrt(np.pi / dt) * self.np_random.standard_normal(2)
 
         # print(noise)
@@ -241,7 +238,7 @@ class DrydenGustModel:
 
         # print(gust_u.item(0))
 
-        wandb.log({'dryden_u': gust_u.item(0)})
+        # wandb.log({'dryden_u': gust_u.item(0)})
 
         self.gust = np.array([[gust_u.item(0), 0.0,  gust_w.item(0)]])
 
@@ -251,7 +248,10 @@ class DrydenGustModel:
 
     def update(self, Va, dt):
 
-        print(Va)
+        if self.intensity == 'none':
+            return np.array([[0.0, 0.0, 0.0]])
+
+        # print(Va)
         K_u = self.sigma_u * math.sqrt((2 * self.L_u) / (math.pi * Va))
         # K_v = sigma_v * math.sqrt((L_v) / (math.pi * self.Va))
         K_w = self.sigma_w * math.sqrt((self.L_w) / (math.pi * Va))
@@ -292,15 +292,15 @@ if __name__ == "__main__":
 
     i = 0
 
-    while sim_time < 0.9 :
+    while sim_time < 99.9 :
         sim_time += 0.1
         # noise = list(zip(*dryden.noise))[i]
         # print(noise)
         noise=0
-        dryden.update(13)
+        dryden.update(13, 0.01)
         u_vel.append(dryden.gust.item(0))
         # v_vel.append(dryden.gust.item(1))
-        w_vel.append(dryden.gust.item(1))
+        w_vel.append(dryden.gust.item(2))
         # q.append(dryden.gust.item(3))
         times.append(sim_time)
         i += 1

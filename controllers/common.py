@@ -10,7 +10,6 @@ class BixlerController(bixler.Bixler):
         # Bixler model stability needs timesteps of < 0.01s
         base_steptime = 0.01
         step_fraction, whole_steps = math.modf( steptime / base_steptime )
-
         try:
             for i in range(int(whole_steps)):
                 self.update_control_surfaces(base_steptime)

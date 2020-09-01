@@ -5,11 +5,9 @@ performing a perched landing manoeuvre.
 import gym
 import json
 import numpy as np 
-from gym.utils import seeding
 import controllers
 import scenarios
 import wandb
-# from wind.dryden import DrydenGustModel
 
 from gym_bixler.envs.render import Rendermixin
 
@@ -36,7 +34,14 @@ class BixlerEnv(Rendermixin, gym.Env):
         self.controller = check_controller(parameters.get("controller"))
         self.parameters = parameters
 
+        # if self.parameters.get("turbulence"):
+        
+            # self.parameters["dryden_gusts"] = 
+
         self.bixler = self.scenario.wrap_class(self.controller, self.parameters)()
+
+        # self.seed(self.parameters.get("seed"))
+        # self.seed()
 
         if self.parameters.get("controller") == "sweep_elevator_cont_rate":
             self.action_space = gym.spaces.Box(low = np.array([-1, -1]),
@@ -46,9 +51,6 @@ class BixlerEnv(Rendermixin, gym.Env):
                                             high = np.array([1]), dtype = np.float16)
         else:
             self.action_space = gym.spaces.Discrete(self.scenario.actions)
-
-        # if self.parameters.get("turbulence"):
-            # self.dryden = DrydenGustModel(Va = 13, intensity = self.parameters.get("turbulence") )
 
         self.observation_space = gym.spaces.Box(low=-np.inf, high = np.inf, shape = (1, self.scenario.state_dims), dtype = np.float64)
 
@@ -73,7 +75,7 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         self.bixler.set_action(action)
 
-        #bixler step function with timestep 0.1
+        # bixler step function with timestep 0.1
         try:
             self.bixler.step(0.1)
         except FloatingPointError:
@@ -113,12 +115,11 @@ class BixlerEnv(Rendermixin, gym.Env):
             self.plot_flag = True
             self.create_array()
 
-    def seed(self, seed=None):
-        self.np_random, seed = seeding.np_random(seed)
+    # def seed(self, seed=None):
+    #     self.np_random, seed = gym.utils.seeding.np_random(seed)
+    #     self.bixler.seed(seed)
 
-        self.bixler.seed(seed)
-
-        return [seed]
+    #     return [seed]
 
 
     def create_array(self):
