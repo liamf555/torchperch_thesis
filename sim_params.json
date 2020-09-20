@@ -11,5 +11,6 @@
   "wind_mode": false,
   "turbulence": false,
   "log_file": "../output/",
-  "seed": false
+  "seed": false,
+  "timesteps": 10000000
 }

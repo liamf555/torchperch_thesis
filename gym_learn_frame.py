@@ -74,28 +74,30 @@ with open(args.param_file) as json_file:
 
 log_dir = params.get("log_file")
 
+wandb.config.update(params)
 
+wandb.config.timesteps=10000000
 
 # env = gym.make(params.get("env"), parameters=params)
 
 env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
-# env = VecFrameStack(env, 4)
+env = VecFrameStack(env, 4)
 env = VecNormalize(env, norm_reward=False)
+
+# eval_envs = make_eval_env(params)
+
+# callback = EvalCallback(eval_envs, eval_freq=1250, log_path=log_dir, best_model_save_path=log_dir, n_eval_episodes=3)
+
 ModelType = check_algorithm(params.get("algorithm"))
-model = ModelType('MlpPolicy', env, verbose=1, tensorboard_log=log_dir)
 
-policy_kwargs = dict(act_fun=tf.nn.tanh, net_arch=[256, 256, 256])
-model = ModelType("MlpPolicy", env, policy_kwargs=policy_kwargs, verbose = 1, tensorboard_log=log_dir)
-
-wandb.config.update(params)
+model = ModelType("MlpPolicy", env, verbose = 1, tensorboard_log=log_dir)
 wandb.config.update({"policy": model.policy.__name__})
-wandb.config.update({"net_arch": model.policy_kwargs.get("net_arch")})
-wandb.config.timesteps=10000000
 
 for key, value in vars(model).items():
 	if type(value) == float or type(value) == str or type(value) == int:
 		wandb.config.update({key: value})
  
+# model.learn(total_timesteps = wandb.config.timesteps , callback = callback)
 model.learn(total_timesteps = wandb.config.timesteps)
 
 model.save(params.get("model_file"))
