@@ -63,7 +63,7 @@ class Bixler(object):
         # Control surface limits
         self.sweep_limits = np.rad2deg([-0.1745, 0.5236])
         # self.elev_limits = np.rad2deg([-0.872665, 0.872665]) # changed from +- 10 to 20
-        self.elev_limits = np.rad2deg([-0.436332, 0.436332]) # changed from +- 10 to 20
+        self.elev_limits = np.rad2deg([-0.436332, 0.436332]) # changed from +- 10 to 25
 
         self.update_air_data(np.zeros((3,1)))
         self.velocity_e = self.velocity_b

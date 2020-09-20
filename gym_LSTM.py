@@ -27,7 +27,7 @@ from stable_baselines.common.cmd_util import make_vec_env
 from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv
 
 parser = argparse.ArgumentParser(description='Parse param file location')
-parser.add_argument("--param_file", type =str, default="sim_params.json")
+parser.add_argument("param_file", type =str, default="sim_params.json")
 args = parser.parse_args()
 
 os.environ["WANDB_API_KEY"] = "ea17412f95c94dfcc41410f554ef62a1aff388ab"
@@ -45,54 +45,11 @@ log_dir = params.get("log_file")
 
 wandb.config.update(params)
 
-wandb.config.timesteps=10000
+wandb.config.timesteps=10000000
 
-class CustomPolicy(ActorCriticPolicy):
-    def __init__(self, sess, ob_space, ac_space, n_env, n_steps, n_batch, reuse=False, **kwargs):
-        super(CustomPolicy, self).__init__(sess, ob_space, ac_space, n_env, n_steps, n_batch, reuse=reuse, scale=True)
+# env = gym.make(params.get("env"), parameters=params)
 
-        with tf.variable_scope("model", reuse=reuse):
-            activ = tf.nn.relu
-
-            extracted_features = nature_cnn(self.processed_obs, **kwargs)
-            extracted_features = tf.layers.flatten(extracted_features)
-
-            pi_h = extracted_features
-            for i, layer_size in enumerate([128, 128, 128]):
-                pi_h = activ(tf.layers.dense(pi_h, layer_size, name='pi_fc' + str(i)))
-            pi_latent = pi_h
-
-            vf_h = extracted_features
-            for i, layer_size in enumerate([32, 32]):
-                vf_h = activ(tf.layers.dense(vf_h, layer_size, name='vf_fc' + str(i)))
-            value_fn = tf.layers.dense(vf_h, 1, name='vf')
-            vf_latent = vf_h
-
-            self._proba_distribution, self._policy, self.q_value = \
-                self.pdtype.proba_distribution_from_latent(pi_latent, vf_latent, init_scale=0.01)
-
-        self._value_fn = value_fn
-        self._setup_init()
-
-    def step(self, obs, state=None, mask=None, deterministic=False):
-        if deterministic:
-            action, value, neglogp = self.sess.run([self.deterministic_action, self.value_flat, self.neglogp],
-                                                   {self.obs_ph: obs})
-        else:
-            action, value, neglogp = self.sess.run([self.action, self.value_flat, self.neglogp],
-                                                   {self.obs_ph: obs})
-        return action, value, self.initial_state, neglogp
-
-    def proba_step(self, obs, state=None, mask=None):
-        return self.sess.run(self.policy_proba, {self.obs_ph: obs})
-
-    def value(self, obs, state=None, mask=None):
-        return self.sess.run(self.value_flat, {self.obs_ph: obs})
-
-
-env = gym.make(params.get("env"), parameters=params)
-
-# env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
+env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
 env = VecNormalize(env, norm_reward=False)
 
 # eval_envs = make_eval_env(params)
@@ -101,7 +58,7 @@ env = VecNormalize(env, norm_reward=False)
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-model = ModelType("MlpPolicy", env, verbose = 0, tensorboard_log=log_dir)
+model = ModelType("MlpLstmPolicy", env,  nminibatches=8, verbose = 0, tensorboard_log=log_dir)
 wandb.config.update({"policy": model.policy.__name__})
 
 for key, value in vars(model).items():
