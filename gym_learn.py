@@ -3,7 +3,6 @@ import os
 import argparse
 import json
 import wandb
-import inspect
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 import warnings
@@ -20,17 +19,16 @@ import gym_bixler
 import stable_baselines
 
 # from stable_baselines.deepq.policies import MlpPolicy
-from stable_baselines.sac.policies import MlpPolicy
+# from stable_baselines.sac.policies import MlpPolicy
 # from stable_baselines.common.policies import MlpPolicy
 # from stable_baselines.bench import Monitor
 # from stable_baselines.common.evaluation import evaluate_policy
 from callbacks.callbacks import EvalCallback, evaluate_policy
 from wind.wind_sim import make_eval_wind
 
+# from stable_baselines.common.cmd_util import make_vec_env
 
 # from stable_baselines import DQN, PPO2, SAC
-
-from stable_baselines import SAC
 
 from stable_baselines.common.cmd_util import make_vec_env
 from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv, VecFrameStack
@@ -75,25 +73,24 @@ with open(args.param_file) as json_file:
 
 log_dir = params.get("log_file")
 
+# env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=1, seed=0, monitor_dir=log_dir)
 
+env = gym.make(params.get("env"), parameters=params)
 
-# env = gym.make(params.get("env"), parameters=params)
-
-# env = gym.make(params.get("env"), parameters=params)
-env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=1, seed=0, monitor_dir=log_dir)
-env = VecNormalize(env, norm_reward=False)
-
+# env = VecNormalize(env, norm_reward=False)
 ModelType = check_algorithm(params.get("algorithm"))
 
-model = ModelType("MlpPolicy", env, verbose=1, tensorboard_log=log_dir)
+###### SAC ######
+model = ModelType('MlpPolicy', env, verbose=1, tensorboard_log=log_dir)
 
-policy_kwargs = dict(act_fun=tf.nn.tanh, net_arch=[256, 256, 256])
-model = ModelType("MlpPolicy", env, policy_kwargs=policy_kwargs, verbose = 1, tensorboard_log=log_dir)
+###### Others #######
+# policy_kwargs = dict(act_fun=tf.nn.tanh, net_arch=[64, 64])
+# model = ModelType("MlpPolicy", env, policy_kwargs=policy_kwargs, verbose = 1, tensorboard_log=log_dir)
 
 wandb.config.update(params)
 wandb.config.update({"policy": model.policy.__name__})
 wandb.config.update({"net_arch": model.policy_kwargs.get("net_arch")})
-wandb.config.timesteps=10000000
+wandb.config.timesteps=1000
 
 for key, value in vars(model).items():
 	if type(value) == float or type(value) == str or type(value) == int:
@@ -115,17 +112,12 @@ eval_env = VecNormalize.load((log_dir + "vec_normalize.pkl"), env0)
 eval_env.training = False
 
 final_model = ModelType.load(params.get("model_file"))
-# best_model = ModelType.load(log_dir +"best_model.zip")
 
 final_model.set_env(eval_env)
 
 final_model_eval = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
-# best_model_eval = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/best_model'))
 
 final_model_eval = round(final_model_eval, 4)
 
-# best_model_eval = [round(value, 4) for i in final_model_eval for value in i]
-# wandb.log({'best_model_eval': best_model_eval})
 wandb.log({'final_model_eval': final_model_eval})
 wandb.save(log_dir+'eval/*')
-# # wand.log({"test_image": wandb.})
