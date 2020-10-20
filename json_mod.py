@@ -108,6 +108,7 @@ if __name__ == "__main__":
     parser.add_argument('--variable_start', type =str)
     parser.add_argument('--array_flag', action = 'store_true', dest = 'array')
     parser.add_argument('--turbulence', type = str)
+    parser.add_argument('--timesteps', type = int)
     parser.add_argument('--seed', type = int)
     args = parser.parse_args()
 
