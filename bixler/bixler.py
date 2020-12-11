@@ -36,7 +36,7 @@ class Bixler(object):
     
         # State
         self.position_e = np.zeros((3,1))
-        self.velocity_b = np.array([[13.0],[0],[0]])
+        self.velocity_b = np.array([[0],[0],[0]])
         self.Vr = np.zeros((3,1))
         self.acceleration_b = np.zeros((3,1))
         
@@ -56,7 +56,7 @@ class Bixler(object):
         # Air data
         self.alpha    = 0.0 # (deg)
         self.beta     = 0.0 # (deg)
-        self.airspeed = 13.0 # (m/s)
+        self.airspeed = 0.0 # (m/s)
         self.wind = np.zeros((3,1))
         self.wind_sim = Wind(wind_mode=parameters.get("wind_mode"), wind_params=parameters.get("wind_params"))
         
@@ -66,8 +66,9 @@ class Bixler(object):
         self.elev_limits = np.rad2deg([-0.436332, 0.436332]) # changed from +- 10 to 25
 
         self.update_air_data(np.zeros((3,1)))
-        self.velocity_e = self.velocity_b
-        self.velocity_e[0] += parameters.get("wind_params")[0]
+        self.velocity_e = np.array([[0],[0],[0]])
+        # self.velocity_e[0] += parameters.get("wind_params")[0]
+        self.wind_b = np.array([[0],[0],[0]])
 
         self.dryden = DrydenGustModel(Va = 13, intensity=parameters.get("turbulence"))
 
@@ -126,6 +127,7 @@ class Bixler(object):
         
         # Ensure air data reflects new state
         self.update_air_data(np.zeros((3,1)))
+        self.update_dcms()
 
     def step(self, steptime):
         # Update the cosine matricies
@@ -138,8 +140,10 @@ class Bixler(object):
         self.update_derivatives()
         
         self.velocity_b = self.velocity_b + self.acceleration_b * steptime
+
+        # print(self.acceleration_b)
         self.omega_b = self.omega_b + self.omega_dot_b * steptime
-        
+    
         euler_rates = np.matmul(self.jacobian, self.omega_b)
 
         self.orientation_e = self.orientation_e + euler_rates * steptime
@@ -158,6 +162,7 @@ class Bixler(object):
         roll  = self.orientation_e[0,0]
         theta = self.orientation_e[1,0]
         yaw   = self.orientation_e[2,0]
+
 
         cr = np.cos(roll)
         sr = np.sin(roll)
@@ -243,6 +248,8 @@ class Bixler(object):
         thrust_b = np.array([[self.throttle],[0],[0]])
         # Get sum of forces on in body frame
         force_b = aeroforces_b + weight_b + thrust_b
+
+
         # Get acceleration of body
         self.acceleration_b = force_b * (1/self.mass)
         # Remove effects of rotating reference frame
@@ -260,13 +267,14 @@ class Bixler(object):
         # Moments
         # Rotate moments into body frame
         moments_b = np.matmul(self.dcm_wind2body, moments_w)
+
         # Define angular acceleration
         iw = np.matmul(self.inertia, self.omega_b)
         # np.cross slow for small sets so replace with own (function call overhead?)
         #cp = np.cross(self.omega_b, iw, axis=0)
         cp = self._cross(self.omega_b, iw)
         idw = moments_b - cp
-        
+
         self.omega_dot_b = np.matmul(np.linalg.inv(self.inertia), idw)
 
 
@@ -278,13 +286,17 @@ class Bixler(object):
 
         # print(f"Gusts: {gusts}")
 
-        wind_b = np.matmul(self.dcm_earth2body, self.wind.T) + gusts.T
+        # print(np.matmul(self.dcm_earth2body, self.wind.T))
+
+        self.wind_b = np.matmul(self.dcm_earth2body, self.wind.T) + gusts.T
+
+        # print(wind_b)
 
         # print(f"Wind_b: {wind_b}")
 
         # wandb.log({"wind": wind_b})
 
-        self.Vr = self.velocity_b - wind_b
+        self.Vr = self.velocity_b - self.wind_b
 
         # self.Vr = self.velocity_b
 
@@ -327,6 +339,7 @@ class Bixler(object):
         # Dynamic pressure
         Q = 0.5 * self.rho * (self.airspeed**2)
 
+
         # Roll rate
         p = np.rad2deg(self.omega_b[0,0])
 
@@ -362,6 +375,8 @@ class Bixler(object):
         C_m = C_m0 + (C_malpha * self.alpha) + (C_melev * self.elev) + (C_msweep * self.sweep) + (C_mwashout * self.washout) + (C_mq * q)
         # print(f'Q: {Q}, Cm: {C_m}')
         m = Q * self.S * self.c * C_m
+
+        # print(Q, C_m)
         #print("0: {}, a: {}, e: {}, s: {}, w: {}, q: {}".format(C_m0,(C_malpha * self.alpha),(C_melev * self.elev),(C_msweep * self.sweep),(C_mwashout * self.washout),(C_mq * q)))
         #print("{},{},{},{},{},{}".format(C_m0,(C_malpha * self.alpha),(C_melev * self.elev),(C_msweep * self.sweep),(C_mwashout * self.washout),(C_mq * q)))
         #print("a: {}, e: {}, s: {}, w: {}, q: {}".format(self.alpha,self.elev,self.sweep,self.washout,q))
@@ -372,6 +387,8 @@ class Bixler(object):
         C_n = C_n0 + (C_nrudder * self.rudder) + (C_nr * r)
         #n = Q * self.S * self.c * C_n
         n = Q * self.S * C_n # What!? No chord! To match JAVA_MODEL...
+
+        # print(self.alpha)
         
         return (
             np.array([[X],[Y],[Z]]), # Forces

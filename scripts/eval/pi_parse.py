@@ -4,6 +4,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from pathlib import Path
+import plotly
+# pd.options.plotting.backend = "plotly"
+import plotly.tools as tls
+import warnings
+warnings.filterwarnings("ignore")
 
 class PiParse:
 
@@ -12,6 +17,8 @@ class PiParse:
         self.ml_ep = False
         self.states = []
         self.ep_dict = {}
+        self.state_dict = {}
+        self.colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'tab:purple', 'tab:gray', 'tab:purple']
         
     def get_pos(self, line):
         if "r_a" in line:
@@ -32,6 +39,7 @@ class PiParse:
             line_list = line.split(',')
             line_list = [float(i.split(": [", 1)[1].replace(']','').strip()) for i in line_list]
             self.vel = line_list
+            # print(self.vel)
 
     def get_pitch(self, line):
         if 'pitch' in line:
@@ -49,46 +57,64 @@ class PiParse:
         if 'pitch' in line:
             self.states.append(self.pos + self.vel + self.pitch + self.cont)
 
+    def make_fig(self):
+
+        self.fig, ((self.ax1, self.ax2), (self.ax3, self.ax4), (self.ax5, self.ax6)) = plt.subplots(3, 2)
+
+    def plotter(self, dict_key):
+    #   self.fig, ((self.ax1, self.ax2), (self.ax3, self.ax4), (self.ax5, self.ax6)) = plt.subplots(3, 2)
+      for i, dataframe in enumerate(self.state_dict[dict_key].values()):
+        self.plot(dataframe, self.colours[i])
+      # self.fig.savefig('graph.pdf')
+    #   plotly_fig = tls.mpl_to_plotly(self.fig)
+    #   plotly_fig.write_image("fig1.pdf")
+    #   plotly.offline.iplot(plotly_fig)
+
     def plot(self, dataframe, colour):
-    
+      
         #Pitch(deg)
         dataframe['pitch'] = np.rad2deg(dataframe['pitch'])
-        dataframe.plot(x = 't', y = 'pitch', ax = ax1, color = colour, legend=False, label = r'$\theta$')
+        dataframe.plot(x = 't', y = 'pitch', ax = self.ax1, color = colour, legend=False, label = r'$\theta$')
 
         # self.df.plot(x = 't', y = 'alpha', color = 'orange',  ax = ax1, legend=True, label = 'AoA')
-        ax1.set_xlabel("Time(s)", fontsize=12)
-        ax1.set_ylabel("Pitch (deg)", fontsize=12)
-        ax1.grid()
+        self.ax1.set_xlabel("Time (s)", fontsize=18)
+        self.ax1.set_ylabel(r'$\theta$ (deg)', fontsize=18)
+        self.ax1.tick_params(labelsize=12)
+        self.ax1.grid()
 
         #Pitch(deg) rate
         dataframe['q'] = np.rad2deg(dataframe['q'])
-        dataframe.plot(x = 't', y = 'q', color = colour,  ax = ax2, legend=False)
-        ax2.set_xlabel("Time(s)", fontsize=12)
-        ax2.set_ylabel(r'q (deg/sec)', fontsize=12)
-        ax2.grid()
+        dataframe.plot(x = 't', y = 'q', color = colour,  ax = self.ax2, legend=False)
+        self.ax2.set_xlabel("Time (s)", fontsize=18)
+        self.ax2.set_ylabel(r'q (deg/sec)', fontsize=18)
+        self.ax2.tick_params(labelsize=12)
+        self.ax2.grid()
 
         #Sweep
-        dataframe.plot(x = 't', y = 'sweep', color = colour, ax = ax3, legend=False)
-        ax3.set_xlabel("Time(s)", fontsize=12)
-        ax3.set_ylabel(r'Sweep (deg)', fontsize=12)
-        ax3.grid()
+        dataframe.plot(x = 't', y = 'sweep', color = colour, ax = self.ax3, legend=False)
+        self.ax3.set_xlabel("Time (s)", fontsize=18)
+        self.ax3.set_ylabel(r'Sweep (deg)', fontsize=18)
+        self.ax3.tick_params(labelsize=12)
+        self.ax3.grid()
 
         #elev
-        dataframe.plot(x = 't', y = 'elev', color = colour, ax = ax4, legend=False)
-        ax4.set_xlabel("Time(s)", fontsize=12)
-        ax4.set_ylabel(r'Elevator (deg)', fontsize=12)
-        ax4.grid()
+        dataframe.plot(x = 't', y = 'elev', color = colour, ax = self.ax4, legend=False)
+        self.ax4.set_xlabel("Time (s)", fontsize=18)
+        self.ax4.set_ylabel(r'Elevator (deg)', fontsize=18)
+        self.ax4.tick_params(labelsize=12)
+        self.ax4.grid()
 
         #x vs y
         # ax5.invert_yaxis()
         dataframe['height'] = dataframe['z']*-1
 
-        dataframe.plot(x = 'x', y = 'height', color = colour,  ax = ax5, legend=False)
-        ax5.set_xlabel("x-Position (m)", fontsize=12)
-        ax5.set_ylabel('Height (m)', fontsize=12)
-        ax5.set_xlim(-40, 5)
+        dataframe.plot(x = 'x', y = 'height', color = colour,  ax = self.ax5, legend=False)
+        self.ax5.set_xlabel("x-Position (m)", fontsize=18)
+        self.ax5.set_ylabel('Height (m)', fontsize=18)
+        self.ax5.set_xlim(-40, 5)
+        self.ax5.tick_params(labelsize=12)
         # ax5.set_ylim(-6, 0)
-        ax5.grid()
+        self.ax5.grid()
 
 
         # #airspeed
@@ -100,17 +126,19 @@ class PiParse:
 
         # body velocities
 
-        dataframe.plot(x = 't', y = 'u', ax = ax6, color = colour,legend=False)
-        dataframe.plot(x = 't', y = 'w', ax = ax6, color = colour, linestyle='--',legend=False)
-        ax6.set_xlabel("Time(s)", fontsize=12)
-        ax6.set_ylabel(r'Body Velocities (m/s)', fontsize=12)
-        ax6.grid()
+        dataframe.plot(x = 't', y = 'u', ax = self.ax6, color = colour,legend=False)
+        dataframe.plot(x = 't', y = 'w', ax = self.ax6, color = colour, linestyle='--',legend=False)
+        self.ax6.set_xlabel("Time (s)", fontsize=18)
+        self.ax6.set_ylabel(r'Body Velocities (m/s)', fontsize=18)
+        self.ax6.tick_params(labelsize=12)
+        self.ax6.grid()
+
 
         custom_lines = [Line2D([0], [0], color='k', linestyle = '-',  lw=2),
                         Line2D([0], [0], color='k', linestyle = '--', lw=2)]
 
 
-        ax6.legend(custom_lines, ['u', 'w'])
+        self.ax6.legend(custom_lines, ['u', 'w'])
 
     def get_reward(self, dataframe):
         def gaussian(x, sig = 0.4, mu = 0):   
@@ -134,7 +162,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--directory', '-dir', type=str, required=True)
-    parser.add_argument('--plot', action='store_true')
+    # parser.add_argument('--plot', action='store_true')
     args = parser.parse_args()
 
     file_directory = Path(args.directory)
@@ -143,51 +171,59 @@ if __name__ == '__main__':
 
     results = {}
 
-    for log in file_directory.glob('*.txt'): 
+for log in file_directory.glob('*.txt'): 
 
-        ep_number = 0
-        ml_ep = False
-        with open(log, "r") as file:
-                for line in file:
-                    if 'Episode start' in line:
-                        ml_ep = True
-                        pi_parser.states = []
-                    elif 'Episode end' in line:
-                        ml_ep = False
-                        ep_number +=1
-                        # print(pi_parser.states)
-                        df = pd.DataFrame(pi_parser.states, columns=['x', 'z', 'u', 'w', 'pitch', 'q', 'sweep', 'elev'])
-                        pi_parser.ep_dict[ep_number] = df
-                        pi_parser.states = []
-                    if ml_ep:
-                        pi_parser.get_states(line)
+    ep_number = 0
+    ml_ep = False
+    with open(log, "r") as file:
+            for line in file:
+                if 'Episode start' in line:
+                    # print('new_ep')
+                    ml_ep = True
+                elif 'Episode end' in line:
+                    ml_ep = False
+                    ep_number +=1
+                    df = pd.DataFrame(pi_parser.states, columns=['x', 'z', 'u', 'w', 'pitch', 'q', 'sweep', 'elev'])
+                    pi_parser.ep_dict[ep_number] = df
+                    pi_parser.states = []
+                if ml_ep:
+                    pi_parser.get_states(line)
+    t = 0
+    ts = []
+    rewards = []
+    for i, dataframe in enumerate(pi_parser.ep_dict.values()):
+        rows = dataframe.shape[0]
+        for j in range(rows):
+            ts.append(t)
+            t += 0.1
+        dataframe['t'] = ts
+        ep_reward = pi_parser.get_reward(dataframe)
+        rewards.append(ep_reward)
         t = 0
         ts = []
-        colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'tab:purple', 'tab:gray', 'tab:purple']
-        rewards = [] 
-        fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2)
-        for i, dataframe in enumerate(pi_parser.ep_dict.values()):
-            rows = dataframe.shape[0]
-            for j in range(rows):
-                ts.append(t)
-                t += 0.1
-            dataframe['t'] = ts
-            colour = colours[i]
-            # print(dataframe)
-            ep_reward = pi_parser.get_reward(dataframe)
-            rewards.append(ep_reward)
-            pi_parser.plot(dataframe, colour)
-            t = 0
-            ts = []
-            # print(f"Episode: {i} Reward: {ep_reward}")
-        results[log.stem] = rewards
-        if args.plot:
-            plt.show()
-    final_df = pd.DataFrame.from_dict(results, orient='index')
-    final_df = final_df.transpose()
-    final_df.loc['Mean'] = final_df.mean()
-    final_df.loc['SD'] = final_df.std()
-    print(final_df)
+    
+    results[log.stem] = rewards
+    pi_parser.state_dict[log.stem] = pi_parser.ep_dict
+    pi_parser.ep_dict = {}
+reward_df = pd.DataFrame.from_dict(results, orient='index')
+reward_df = reward_df.transpose()
+reward_df.loc['Mean'] = reward_df.mean()
+reward_df.loc['SD'] = reward_df.std()
+
+cols=reward_df.columns.tolist()
+cols.sort()
+reward_df=reward_df[cols]
+print(reward_df)
+
+
+pi_parser.make_fig()
+# pi_parser.plotter("wind_1_tail_1")
+pi_parser.plotter("gust_1_head_1")
+# pi_parser.plotter("wind_2_head_1")
+
+# pi_parser.plotter("baseline_1_head_2")
+
+plt.show()
     
         
 

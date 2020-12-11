@@ -73,24 +73,17 @@ with open(args.param_file) as json_file:
 
 log_dir = params.get("log_file")
 
-# env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=1, seed=0, monitor_dir=log_dir)
+# env = gym.make(params.get("env"), parameters=params)
 
-env = gym.make(params.get("env"), parameters=params)
+env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
+env = VecNormalize(env, norm_reward=False)
 
-# env = VecNormalize(env, norm_reward=False)
 ModelType = check_algorithm(params.get("algorithm"))
 
-###### SAC ######
 model = ModelType('MlpPolicy', env, verbose=1, tensorboard_log=log_dir)
-
-###### Others #######
-# policy_kwargs = dict(act_fun=tf.nn.tanh, net_arch=[64, 64])
-# model = ModelType("MlpPolicy", env, policy_kwargs=policy_kwargs, verbose = 1, tensorboard_log=log_dir)
 
 wandb.config.update(params)
 wandb.config.update({"policy": model.policy.__name__})
-wandb.config.update({"net_arch": model.policy_kwargs.get("net_arch")})
-wandb.config.timesteps=1000
 
 for key, value in vars(model).items():
 	if type(value) == float or type(value) == str or type(value) == int:
@@ -106,6 +99,9 @@ wandb.save(log_dir +"best_model.zip")
 wandb.save(log_dir + "monitor.csv")
 
 del model
+
+params["training"] = False
+
 
 env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
 eval_env = VecNormalize.load((log_dir + "vec_normalize.pkl"), env0)

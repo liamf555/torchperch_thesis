@@ -16,6 +16,8 @@ import gym
 import gym_bixler
 import argparse
 import stable_baselines
+from pprint import pprint
+import pandas as pd
 
 from wind.wind_sim import make_eval_wind
 from callbacks.callbacks import evaluate_policy
@@ -57,6 +59,7 @@ parser.add_argument('--noise', type = float)
 parser.add_argument('--wind_mode', type = str)
 parser.add_argument('--wind_params', type = str, nargs='*')
 parser.add_argument('--variable_start', type =str)
+parser.add_argument('--turbulence', type = str, default = 'none')
 args = parser.parse_args()
 
 dir_path = args.dir_path
@@ -91,13 +94,17 @@ best_model_path = dir_path / 'best_model.zip'
 # print(params)
 
 wind_speeds = [-6.0, -4.0, -2.0, 0.0, 2.0, 4.0]
+mean_rewards = []
 
 for wind in wind_speeds:
 
+# wind = -4.0
+    
     params["wind_params"] = [wind, 0.0, 0.0]
     params["wind_mode"] = "steady"
+    params["turbulence"] = args.turbulence
 
-    print(wind)
+    # print(wind)
 
     env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
     eval_env = VecNormalize.load((dir_path / "vec_normalize.pkl"), env0)
@@ -108,24 +115,30 @@ for wind in wind_speeds:
 
     final_model.set_env(eval_env)
 
-    # final_model_eval = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
+        # final_model_eval = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
 
     eval_dir = dir_path / ('eval_' + str(wind))
 
     eval_dir.mkdir(parents=True, exist_ok=True)
 
     final_model_data_path = eval_dir / 'final_model'
-    # best_model_data_path =  eval_dir / 'best_model'
+        # best_model_data_path =  eval_dir / 'best_model'
+
 
     final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = str(final_model_data_path))
+    mean_rewards.append(final_rewards)
 
-    # best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = best_model_data_path)
+        # best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = best_model_data_path)
 
-    # final_rewards, final_wind_speeds = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True)
+        # final_rewards, final_wind_speeds = evaluate_policy(final_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True)
 
-    # best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True )
+        # best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True )
 
-    print(final_rewards)
+
+    # print(final_rewards)
+
+for reward in mean_rewards:
+    print(reward)
 
 
 

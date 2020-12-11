@@ -5,7 +5,7 @@ import numpy as np
 state_dims = 8
 actions = 49
 failReward = 0.0
-h_min = -15
+h_min = -20
 
 def wrap_class(BixlerClass, parameters):
     class PerchingBixler(BixlerClass):
@@ -62,6 +62,7 @@ def wrap_class(BixlerClass, parameters):
                         if self.is_out_of_bounds():
                             return failReward
                         obs = np.array([self.position_e[0,0], self.position_e[2,0], self.orientation_e[1,0], self.velocity_b[0,0], self.velocity_b[2,0]])
+                        # print(obs)
                         target_state = np.array([0.0, 0.0, 0.0, 0.0, 0.0], dtype='float64')
                         bound = np.array([15, 5, np.deg2rad(20),10,10])
                         cost = (target_state - obs)/bound
@@ -98,25 +99,31 @@ def wrap_class(BixlerClass, parameters):
                     self.wind_sim.update()
                     wind = self.wind_sim.get_wind()
 
-                    target_airspeed = 13 # m/s
-                    u = target_airspeed + wind[0]
-
-                    initial_state = np.array([[-40,0,-5, 0,0,0, u[0],0,0, 0,0,0, 0,0,0]], dtype="float64")
+                    self.airspeed = 13 # m/s
+                    u = self.airspeed + wind[0]
+                    # print(self.velocity_e)
+                    self.velocity_e = np.array([[0],[0],[0]])
+                    self.velocity_e[0][0] = u[0]
+                    # print(self.velocity_e)
+                    
+                    initial_state = np.array([[-40,0,-5.0, 0,0,0, u[0],0,0, 0,0,0, 0,0,0]], dtype="float64")
 
                     if self.var_start:
                         # Add noise to starting velocity
-                        # start_shift_u =  np.random.uniform(-1.0, 1.0)
-                        # start_shift_w = np.random.uniform(-1.0, 1.0)
-                        # start_shift_theta = np.random.uniform(-0.061, 0.061) #shift +-3.5degs in theta
 
-                        start_shift_u =  self.np_random.uniform(-1.0, 1.0)
-                        start_shift_w = self.np_random.uniform(-1.0, 1.0)
-                        start_shift_theta = self.np_random.uniform(-0.061, 0.061) #shift +-3.5degs in theta
+                        # start_shift_u =  self.np_random.uniform(-1.0, 1.0)
+                        # start_shift_w = self.np_random.uniform(-1.0, 1.0)
+
+                        start_shift_theta = self.np_random.normal(0, 0.0262) #shift +-3.5degs in theta
+                        target_airspeed = self.np_random.normal(13, 0.75) 
+                        start_shift_u = (target_airspeed + wind[0])[0]
 
                         # Scale for +- 1m/s
-                        initial_state[:,6] += start_shift_u
-                        initial_state[:,8] += start_shift_w
-                        initial_state[:,4] += start_shift_theta
+                        initial_state[:,6] = start_shift_u
+                        # initial_state[:,8] += start_shift_w
+                        # initial_state[:,4] = start_shift_theta
+
+                        print(f"u: {start_shift_u}, wind: {wind[0]}, airspeed: {target_airspeed}")
 
                     self.set_state(initial_state)
 

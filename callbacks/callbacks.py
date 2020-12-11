@@ -52,6 +52,7 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
     episode_rewards, episode_lengths = [], []
     for _ in range(n_eval_episodes):
         obs = env.reset()
+        # print(env.bixler.airspeed)
         done, state = False, None
         episode_reward = 0.0
         episode_length = 0
@@ -68,7 +69,8 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
         env.close()
         episode_rewards.append(episode_reward)
         episode_lengths.append(episode_length)
-
+    # print(episode_rewards)
+    # print(episode_lengths)
     mean_reward = np.mean(episode_rewards)
     std_reward = np.std(episode_rewards)
 

@@ -241,6 +241,7 @@ class DrydenGustModel:
         # wandb.log({'dryden_u': gust_u.item(0)})
 
         self.gust = np.array([[gust_u.item(0), 0.0,  gust_w.item(0)]])
+        # print(self.gust)
 
         # self.gust = np.array([[0.0, 0.0,  0.0]])
 

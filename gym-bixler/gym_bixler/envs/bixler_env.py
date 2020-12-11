@@ -56,24 +56,30 @@ class BixlerEnv(Rendermixin, gym.Env):
 
         self.bixler.reset_scenario()
 
-        self.state = self.bixler.get_state()
-        self.state = np.concatenate((self.state, self.bixler.velocity_e.T), axis = 1)
-        state_list = self.state[0].tolist()
-        state_list.insert(0, 0)
-        state_list.append(self.bixler.alpha)
-        state_list.append(self.bixler.airspeed)
-        self.state_array = []
-        self.state_array.append(state_list)
+        # self.state = self.bixler.get_state()
+        # self.state = np.concatenate((self.state, self.bixler.velocity_e.T), axis = 1)
+        # state_list = self.state[0].tolist()
+        # state_list.insert(0, 0)
+        # state_list.append(self.bixler.alpha)
+        # state_list.append(self.bixler.airspeed)
+        # self.state_array = []
+        # self.state_array.append(state_list)
 
-        self.render_flag = False
+        self.training = parameters.get("training")
+        self.render_flag_entry = True
+
         self.plot_flag = False
-        self.time = 0.0
+        self.save_flag = False
+
+        # self.time = 0.0
 
         
     def step(self, action):
         # peform action
 
         self.bixler.set_action(action)
+
+        # print(action)
 
         # bixler step function with timestep 0.1
         try:
@@ -86,6 +92,7 @@ class BixlerEnv(Rendermixin, gym.Env):
        	else:
 		    #get observation
             obs = self.bixler.get_normalized_obs()
+            # print(obs)
             #get reward
             self.reward = self.bixler.get_reward()
             
@@ -99,20 +106,37 @@ class BixlerEnv(Rendermixin, gym.Env):
     def reset(self):
 
         self.bixler.reset_scenario()
-        self.time = 0
-        # self.dryden.update
+        # print('new ep')
+        
+        if not self.training:
+            self.time = 0.0
+            # print(self.bixler.wind)
+            if self.render_flag_entry:
+                self.state = self.bixler.get_state()
+                
+                self.state = np.concatenate((self.state, self.bixler.velocity_e.T), axis = 1)
+                state_list = self.state[0].tolist()
+                state_list.insert(0, 0)
+                state_list.append(self.bixler.alpha)
+                state_list.append(self.bixler.airspeed)
+                self.state_array = []
+                self.state_array.append(state_list)
+                self.render_flag_entry = False
+
+
+        # print(self.bixler.get_normalized_obs())
 
         return self.bixler.get_normalized_obs()
 
     def render(self, mode):
 
-        self.render_flag = True
-
         if mode == 'save':
             self.create_array()
+            self.save_flag = True
 
         if mode == 'plot':
             self.plot_flag = True
+            self.save_flag = True
             self.create_array()
 
     # def seed(self, seed=None):
@@ -140,9 +164,8 @@ class BixlerEnv(Rendermixin, gym.Env):
     #         Rendermixin.save_data(self, path, reward)
 
     def save_plots(self, path, reward):
-        if self.render_flag:
+        if self.save_flag:
             Rendermixin.save_data(self, path, reward)
-        
 
 
             
