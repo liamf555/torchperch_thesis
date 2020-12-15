@@ -26,6 +26,8 @@ import stable_baselines
 from callbacks.callbacks import EvalCallback, evaluate_policy
 from wind.wind_sim import make_eval_wind
 
+from pathlib import Path
+
 # from stable_baselines.common.cmd_util import make_vec_env
 
 # from stable_baselines import DQN, PPO2, SAC
@@ -71,7 +73,7 @@ def check_algorithm(algorithm_name):
 with open(args.param_file) as json_file:
             params = json.load(json_file)
 
-log_dir = params.get("log_file")
+log_dir = Path(params.get("log_file"))
 
 # env = gym.make(params.get("env"), parameters=params)
 
@@ -92,11 +94,13 @@ for key, value in vars(model).items():
 model.learn(total_timesteps = wandb.config.timesteps)
 
 model.save(params.get("model_file"))
-env.save(log_dir + "vec_normalize.pkl")
-wandb.save(log_dir + "vec_normalize.pkl")
+
+vec_file = log_dir / "vec_normalize.pkl"
+env.save(str(vec_file))
+wandb.save(str(vec_file))
 wandb.save(params.get("model_file") + ".zip")
-wandb.save(log_dir +"best_model.zip")
-wandb.save(log_dir + "monitor.csv")
+wandb.save(str(log_dir / "best_model.zip"))
+wandb.save(str(log_dir / "monitor.csv"))
 
 del model
 
@@ -104,16 +108,16 @@ params["training"] = False
 
 
 env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
-eval_env = VecNormalize.load((log_dir + "vec_normalize.pkl"), env0)
+eval_env = VecNormalize.load((vec_file), env0)
 eval_env.training = False
 
 final_model = ModelType.load(params.get("model_file"))
 
 final_model.set_env(eval_env)
 
-final_model_eval = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = (log_dir+'eval/final_model'))
+final_model_eval = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = str(log_dir/ 'eval/final_model'))
 
 final_model_eval = round(final_model_eval, 4)
 
 wandb.log({'final_model_eval': final_model_eval})
-wandb.save(log_dir+'eval/*')
+wandb.save(str(log_dir/'eval/*'))

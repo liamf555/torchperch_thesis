@@ -105,6 +105,7 @@ class Rendermixin(object):
         ax6.set_xlabel("Time(s)", fontsize=12)
         ax6.set_ylabel(r'Body Velocities (m/s)', fontsize=12)
         ax6.grid()
+        
         plt.savefig(path+'.png')
         
         wandb.log({fig_title: plt})
