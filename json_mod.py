@@ -56,6 +56,10 @@ class JsonMod:
         for key, value in vars(self.args).items():
             if value is not None:
                 if key is not "log_file" and key is not "array" and key is not "wind_params":
+                    if key is "start_config":
+                        start_config = [float(i) for i in value]
+                        self.data["start_config"] = start_config
+                    else:
                         self.data[key] = value 
 
         
@@ -80,6 +84,8 @@ class JsonMod:
     
 
         self.wind_amend()
+
+        
     
         with open(self.args.log_file + "/sim_params.json", "w") as jsonFile:
             json.dump(self.data, jsonFile, indent=2)
@@ -110,6 +116,7 @@ if __name__ == "__main__":
     parser.add_argument('--turbulence', type = str)
     parser.add_argument('--timesteps', type = int)
     parser.add_argument('--seed', type = int)
+    parser.add_argument('--start_config', type = str, nargs='*')
     args = parser.parse_args()
 
     amend = JsonMod(args)

@@ -5,14 +5,15 @@ import numpy as np
 state_dims = 8
 actions = 49
 failReward = 0.0
-h_min = -10
+h_min = -20
 
 def wrap_class(BixlerClass, parameters):
     class PerchingBixler(BixlerClass):
                 def __init__(self):
 
                     super(PerchingBixler,self).__init__(parameters)
-                    self.var_start = parameters.get("variable_start")
+                    self.variable_start = parameters.get("variable_start")
+                    self.start_config = tuple(parameters.get("start_config"))
 
                 def is_out_of_bounds(self):
                     def is_in_range(x,lower,upper):
@@ -106,9 +107,11 @@ def wrap_class(BixlerClass, parameters):
                     self.velocity_e[0][0] = u[0]
                     # print(self.velocity_e)
                     
-                    initial_state = np.array([[-40,0,-5.0, 0,0,0, u[0],0,0, 0,0,0, 0,0,0]], dtype="float64")
+                    initial_state = np.array([[self.start_config[0],0, self.start_config[1], 0,0,0, u[0],0,0, 0,0,0, 0,0,0]], dtype="float64")
 
-                    if self.var_start:
+                    print(initial_state)
+
+                    if self.variable_start:
                         # Add noise to starting velocity
 
                         # start_shift_u =  self.np_random.uniform(-1.0, 1.0)
@@ -123,7 +126,7 @@ def wrap_class(BixlerClass, parameters):
                         # initial_state[:,8] += start_shift_w
                         # initial_state[:,4] = start_shift_theta
 
-                        print(f"u: {start_shift_u}, wind: {wind[0]}, airspeed: {target_airspeed}")
+                        # print(f"u: {start_shift_u}, wind: {wind[0]}, airspeed: {target_airspeed}")
 
                     self.set_state(initial_state)
 

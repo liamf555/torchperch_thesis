@@ -12,5 +12,6 @@
   "turbulence": false,
   "log_file": "../output/",
   "seed": false,
-  "timesteps": 10000000
+  "timesteps": 10000000,
+  "start_config": [-40, -5]
 }
