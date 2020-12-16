@@ -40,11 +40,12 @@ JOB_NID=${PBS_JOBID%%[.\[]*}${PBS_ARRAYID:+-$PBS_ARRAYID}
 python json_mod.py --log_file ../output/$JOB_NID/ \
     --algorithm PPO2 \
     --wind_mode uniform \
-    --wind_params -6 4 \
+    --wind_params -6 0 \
     --scenario perching_long \
     --controller sweep_elevator \
     --turbulence light \
-    --timesteps 20000000
+    --timesteps 20000000 \
+    --start_config -30 -5
 
 echo "Beginning training"
 
