@@ -2,7 +2,7 @@ import numpy as np
 
 # Perching scenario
 
-state_dims = 8
+state_dims = 9
 actions = 49
 failReward = 0.0
 h_min = -20
@@ -88,6 +88,8 @@ def wrap_class(BixlerClass, parameters):
 
                     obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
 
+                    obs = np.concatenate((obs, [[self.airspeed]]), axis = 1)
+
                     # pb2 = np.pi*2
                     # mins = np.array([ -50,  h_min,  -pb2, -10, -10,  -pb2,  self.sweep_limits[0], self.elev_limits[0]])
                     # maxs = np.array([  10,       1,  pb2, 20,   10,   pb2,  self.sweep_limits[1], self.elev_limits[1]])
@@ -101,27 +103,27 @@ def wrap_class(BixlerClass, parameters):
                     wind = self.wind_sim.get_wind()
 
                     if self.variable_start:
-                            # start_shift_theta = self.np_random.normal(0, 0.0262) #shift +-3.5degs in theta
-                            # initial_state[:,4] = start_shift_theta
-                            # start_shift_u =  self.np_random.uniform(-1.0, 1.0)
-                            # start_shift_w = self.np_random.uniform(-1.0, 1.0)
+                         # start_shift_theta = self.np_random.normal(0, 0.0262) #shift +-3.5degs in theta
+                         # initial_state[:,4] = start_shift_theta
+                         # start_shift_u =  self.np_random.uniform(-1.0, 1.0)
+                        # start_shift_w = self.np_random.uniform(-1.0, 1.0)
 
-                            # Scale for +- 1m/s
-                            # initial_state[:,6] = start_shift_u
-                            # initial_state[:,8] += start_shift_w
-                            
+                        # Scale for +- 1m/s
+                        # initial_state[:,6] = start_shift_u
+                        # initial_state[:,8] += start_shift_w
+                         
                         self.airspeed = self.np_random.normal(13, 0.75) 
 
                     else:
                         self.airspeed = 13 # m/s
-
+                
                     u = (self.airspeed + wind[0])[0]
                     self.velocity_e = np.array([[0],[0],[0]])
                     self.velocity_e[0][0] = u
                     
                     initial_state = np.array([[self.start_config[0],0, self.start_config[1], 0,0,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
 
-                    # print(f"u: {start_shift_u}, wind: {wind[0]}, airspeed: {target_airspeed}")
+                    print(self.airspeed, u, initial_state)
 
                     self.set_state(initial_state)
 
