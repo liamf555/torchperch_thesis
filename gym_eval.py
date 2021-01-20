@@ -93,7 +93,7 @@ best_model_path = dir_path / 'best_model.zip'
 
 # print(params)
 
-wind_speeds = [-6.0, -4.0, -2.0, 0.0, 2.0, 4.0]
+wind_speeds = [-6.0, -4.0, -2.0, 0.0]
 mean_rewards = []
 
 for wind in wind_speeds:

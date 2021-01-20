@@ -64,13 +64,14 @@ def wrap_class(BixlerClass, parameters):
                             return failReward
                         obs = np.array([self.position_e[0,0], self.position_e[2,0], self.orientation_e[1,0], self.velocity_b[0,0], self.velocity_b[2,0]])
                         # print(obs)
-                        target_state = np.array([0.0, 0.0, 0.0, 0.0, 0.0], dtype='float64')
+                        target_state = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
                         bound = np.array([15, 5, np.deg2rad(20),10,10])
                         cost = (target_state - obs)/bound
                         cost = list(map(self.gaussian, cost))
                         reward = np.prod(cost)
                         return reward
                     return 0.0
+
         
                 def is_terminal(self):
                     # Terminal point is floor
@@ -123,10 +124,9 @@ def wrap_class(BixlerClass, parameters):
                     
                     initial_state = np.array([[self.start_config[0],0, self.start_config[1], 0,0,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
 
-                    print(self.airspeed, u, initial_state)
+                    # print(self.airspeed, u, initial_state)
 
                     self.set_state(initial_state)
-
 
 
     return PerchingBixler
