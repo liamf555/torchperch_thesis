@@ -108,7 +108,7 @@ class Rendermixin(object):
         
         plt.savefig(path+'.png')
         
-        wandb.log({fig_title: plt})
+        # wandb.log({fig_title: plt})
         
         if self.plot_flag:
             plt.show()
