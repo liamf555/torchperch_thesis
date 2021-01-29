@@ -2,6 +2,7 @@
 from . import perching_standard
 from . import perching_long
 from . import perching_long_airspeed
+from . import perching_long_airspeed_2
 from . import height_gain
 from . import bleed_1
 from . import bleed_2
