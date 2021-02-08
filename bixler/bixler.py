@@ -73,7 +73,6 @@ class Bixler(object):
         self.dryden = DrydenGustModel(Va = 13, intensity=parameters.get("turbulence"))
 
         self.np_random = None
-        self.counter = 0
 
         self.seed()
         
@@ -131,7 +130,6 @@ class Bixler(object):
         self.dryden.reset()
         
         self.update_dcms()
-        self.counter = 0
 
     def step(self, steptime):
         # Update the cosine matricies
