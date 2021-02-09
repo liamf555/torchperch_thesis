@@ -73,32 +73,32 @@ class DrydenGustModel:
         self.L_v = self.L_u
         self.L_w = 50
 
-        K_u = self.sigma_u * math.sqrt((2 * self.L_u) / (math.pi * self.Va))
-        K_v = self.sigma_v * math.sqrt((self.L_v) / (math.pi * self.Va))
-        K_w = self.sigma_w * math.sqrt((self.L_w) / (math.pi * self.Va))
+        # K_u = self.sigma_u * math.sqrt((2 * self.L_u) / (math.pi * self.Va))
+        # K_v = self.sigma_v * math.sqrt((self.L_v) / (math.pi * self.Va))
+        # K_w = self.sigma_w * math.sqrt((self.L_w) / (math.pi * self.Va))
 
-        T_u = self.L_u / self.Va
-        T_v1 = math.sqrt(3.0) * self.L_v / self.Va
-        T_v2 = self.L_v / self.Va
-        T_w1 = math.sqrt(3.0) * self.L_w / self.Va
-        T_w2 = self.L_w / self.Va
+        # T_u = self.L_u / self.Va
+        # T_v1 = math.sqrt(3.0) * self.L_v / self.Va
+        # T_v2 = self.L_v / self.Va
+        # T_w1 = math.sqrt(3.0) * self.L_w / self.Va
+        # T_w2 = self.L_w / self.Va
 
-        K_p = self.sigma_w * math.sqrt(0.8 / self.Va) * ((math.pi / (4 * b)) ** (1 / 6)) / ((self.L_w) ** (1 / 3))
-        K_q = 1 / self.Va
-        K_r = K_q
+        # K_p = self.sigma_w * math.sqrt(0.8 / self.Va) * ((math.pi / (4 * b)) ** (1 / 6)) / ((self.L_w) ** (1 / 3))
+        # K_q = 1 / self.Va
+        # K_r = K_q
 
-        T_p = 4 * b / (math.pi * self.Va)
-        T_q = T_p
-        T_r = 3 * b / (math.pi * self.Va)
+        # T_p = 4 * b / (math.pi * self.Va)
+        # T_q = T_p
+        # T_r = 3 * b / (math.pi * self.Va)
 
+        # # self.filters = {"H_u": Filter(K_u, [T_u, 1]),
+        # #                 "H_w": Filter([K_w * T_w1, K_w], [T_w2 ** 2, 2 * T_w2, 1]),}
         # self.filters = {"H_u": Filter(K_u, [T_u, 1]),
-        #                 "H_w": Filter([K_w * T_w1, K_w], [T_w2 ** 2, 2 * T_w2, 1]),}
-        self.filters = {"H_u": Filter(K_u, [T_u, 1]),
-                        "H_v": Filter([ K_v * T_v1,K_v], [T_v2 ** 2, 2 * T_v2, 1]),
-                        "H_w": Filter([K_w * T_w1, K_w], [T_w2 ** 2, 2 * T_w2, 1]),
-                        "H_p": Filter(K_p, [T_p, 1]),
-                        "H_q": Filter([-K_w * K_q * T_w1, -K_w * K_q, 0], [T_q * T_w2 ** 2, T_w2 ** 2 + 2 * T_q * T_w2, T_q + 2 * T_w2, 1]),
-                        "H_r": Filter([K_v * K_r * T_v1, K_v * K_r, 0], [T_r * T_v2 ** 2, T_v2 ** 2 + 2 * T_r * T_v2, T_r + 2 * T_v2, 1]),}
+        #                 "H_v": Filter([ K_v * T_v1,K_v], [T_v2 ** 2, 2 * T_v2, 1]),
+        #                 "H_w": Filter([K_w * T_w1, K_w], [T_w2 ** 2, 2 * T_w2, 1]),
+        #                 "H_p": Filter(K_p, [T_p, 1]),
+        #                 "H_q": Filter([-K_w * K_q * T_w1, -K_w * K_q, 0], [T_q * T_w2 ** 2, T_w2 ** 2 + 2 * T_q * T_w2, T_q + 2 * T_w2, 1]),
+        #                 "H_r": Filter([K_v * K_r * T_v1, K_v * K_r, 0], [T_r * T_v2 ** 2, T_v2 ** 2 + 2 * T_r * T_v2, T_r + 2 * T_v2, 1]),}
 
         self.sim_length = 0
         self.dt = dt
@@ -132,24 +132,24 @@ class DrydenGustModel:
         # print(self.noise)
         return self.noise
 
-    def reset_2(self, noise=None):
-        """
-        Reset model.
-        :param noise: (np.array) Input to filters, should be four sequences of Gaussianly distributed numbers.
-        :return:
-        """
-        self.vel_lin = None
-        # self.vel_ang = None
-        self.sim_length = 0
+    # def reset(self, noise=None):
+    #     """
+    #     Reset model.
+    #     :param noise: (np.array) Input to filters, should be four sequences of Gaussianly distributed numbers.
+    #     :return:
+    #     """
+    #     self.vel_lin = None
+    #     # self.vel_ang = None
+    #     self.sim_length = 0
 
-        if noise is not None:
-            assert len(noise.shape) == 2
-            assert noise.shape[0] == 4
-            noise = noise * math.sqrt(math.pi / self.dt)
-        self.noise = noise
+    #     if noise is not None:
+    #         assert len(noise.shape) == 2
+    #         assert noise.shape[0] == 4
+    #         noise = noise * math.sqrt(math.pi / self.dt)
+    #     self.noise = noise
 
-        for filter in self.filters.values():
-            filter.reset()
+    #     for filter in self.filters.values():
+    #         filter.reset()
 
     def reset(self):
         self._gust_u = 0.0

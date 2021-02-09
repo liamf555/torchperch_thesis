@@ -34,6 +34,10 @@ echo "JobID $PBS_JOBID"
 JOB_NID=${PBS_JOBID%%[.\[]*}${PBS_ARRAYID:+-$PBS_ARRAYID}
 # mkdir ../output/$JOB_NID
 
+## Error and output file location
+#PBS -e  /$WORK/logs/$JOB_NID/error.txt
+#PBS -o  /$WORK/logs/$JOB_NID/output.txt
+
 #export OMP_NUM_THREADS=8
 #export KMP_AFFINITY=granularity=fine,compact,1,0
  

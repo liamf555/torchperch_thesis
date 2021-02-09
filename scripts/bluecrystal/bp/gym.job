@@ -8,10 +8,12 @@
 #PBS -M liam.fletcher@bristol.ac.uk
 
 ## Run with one node and 4 cores per job
-#PBS -l select=1:ncpus=16
+#PBS -l select=1:ncpus=8
 
 ## Run with a maximum of 6h walltime
 #PBS -l walltime=01:0:00
+
+
 
 # Change to workdir and print
 cd $PBS_O_WORKDIR
