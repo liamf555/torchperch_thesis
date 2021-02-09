@@ -8,5 +8,5 @@
 # export WANDB_API_KEY=$ea17412f95c94dfcc41410f554ef62a1aff388ab
 
 # Load the conda module + setup
-source /cm/shared/languages/Anaconda3-2019.10/etc/profile.d/conda.sh
+module load lang/python/anaconda/3.7-2019.10
 
