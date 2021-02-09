@@ -128,6 +128,7 @@ class Bixler(object):
         # Ensure air data reflects new state
         self.update_air_data(np.zeros((3,1)))
         self.update_dcms()
+        self.dryden.reset()
 
     def step(self, steptime):
         # Update the cosine matricies
