@@ -77,7 +77,7 @@ log_dir = Path(params.get("log_file"))
 
 # env = gym.make(params.get("env"), parameters=params)
 
-env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
+env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=16, seed=0, monitor_dir=log_dir)
 env = VecNormalize(env, norm_reward=False)
 
 ModelType = check_algorithm(params.get("algorithm"))

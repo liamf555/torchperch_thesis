@@ -127,6 +127,8 @@ class Bixler(object):
         
         # Ensure air data reflects new state
         self.update_air_data(np.zeros((3,1)))
+        self.dryden.reset()
+        
         self.update_dcms()
         self.dryden.reset()
 
@@ -134,6 +136,10 @@ class Bixler(object):
         # Update the cosine matricies
 
         gusts = self.dryden.update(self.airspeed, steptime)
+        # gusts_2 = self.dryden_2.get_turbulence_linear(self.counter)[0]
+
+        # wandb.log({'gust_1':gusts[0]})
+        # wandb.log({'gust_2':gusts_2})
 
         self.update_dcms()
         

@@ -1,0 +1,12 @@
+# bluepebble_gym
+
+
+# module add \
+#   openmpi/gcc/64/2.1.1 \
+#   tools/git-2.22.0
+
+# export WANDB_API_KEY=$ea17412f95c94dfcc41410f554ef62a1aff388ab
+
+# Load the conda module + setup
+module load lang/python/anaconda/3.7-2019.10
+
