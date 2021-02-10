@@ -130,7 +130,6 @@ class Bixler(object):
         self.dryden.reset()
         
         self.update_dcms()
-        self.dryden.reset()
 
     def step(self, steptime):
         # Update the cosine matricies
