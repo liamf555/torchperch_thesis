@@ -77,12 +77,12 @@ log_dir = Path(params.get("log_file"))
 
 # env = gym.make(params.get("env"), parameters=params)
 
-env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=16, seed=0, monitor_dir=log_dir)
+env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
 env = VecNormalize(env, norm_reward=False)
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-model = ModelType('MlpPolicy', env, verbose=1, tensorboard_log=log_dir)
+model = ModelType('MlpPolicy', env, verbose=0, tensorboard_log=log_dir)
 
 wandb.config.update(params)
 wandb.config.update({"policy": model.policy.__name__})
@@ -99,25 +99,25 @@ vec_file = log_dir / "vec_normalize.pkl"
 env.save(str(vec_file))
 wandb.save(str(vec_file))
 wandb.save(params.get("model_file") + ".zip")
-wandb.save(str(log_dir / "best_model.zip"))
-wandb.save(str(log_dir / "monitor.csv"))
+# wandb.save(str(log_dir / "best_model.zip"))
+# wandb.save(str(log_dir / "monitor.csv"))
 
-del model
+# del model
 
-params["training"] = False
+# params["training"] = False
 
 
-env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
-eval_env = VecNormalize.load((vec_file), env0)
-eval_env.training = False
+# env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
+# eval_env = VecNormalize.load((vec_file), env0)
+# eval_env.training = False
 
-final_model = ModelType.load(params.get("model_file"))
+# final_model = ModelType.load(params.get("model_file"))
 
-final_model.set_env(eval_env)
+# final_model.set_env(eval_env)
 
-final_model_eval = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = str(log_dir/ 'eval/final_model'))
+# final_model_eval = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = str(log_dir/ 'eval/final_model'))
 
-final_model_eval = round(final_model_eval, 4)
+# final_model_eval = round(final_model_eval, 4)
 
-wandb.log({'final_model_eval': final_model_eval})
-wandb.save(str(log_dir/'eval/*'))
+# wandb.log({'final_model_eval': final_model_eval})
+# wandb.save(str(log_dir/'eval/*'))

@@ -125,7 +125,7 @@ for wind in wind_speeds:
         # best_model_data_path =  eval_dir / 'best_model'
 
 
-    final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = str(final_model_data_path))
+    final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=20, return_episode_rewards=True, render=args.render_mode, path = str(final_model_data_path))
     mean_rewards.append(final_rewards)
 
         # best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = best_model_data_path)
