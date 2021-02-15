@@ -38,7 +38,7 @@ hyperparameter_defaults = dict(
     wind_mode = "uniform",
     turbulence ="light",
     seed  = False,
-    timesteps = 100000,
+    timesteps = 1000000,
     start_config = [-40, -5],
     gamma=0.99,
     n_steps=128,
@@ -47,6 +47,8 @@ hyperparameter_defaults = dict(
     cliprange=0.2,
     n_batch = 32,
     )
+
+    [64, 64], [128, 128], [256, 256, 256]
 
   
 
