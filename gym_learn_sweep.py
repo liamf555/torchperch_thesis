@@ -48,9 +48,6 @@ hyperparameter_defaults = dict(
     n_batch = 32,
     )
 
-    [64, 64], [128, 128], [256, 256, 256]
-
-  
 
 os.environ["WANDB_API_KEY"] = "ea17412f95c94dfcc41410f554ef62a1aff388ab"
 
@@ -74,7 +71,7 @@ if n_steps < batch_size:
 else:
   nminibatches = int(n_steps / batch_size)
 
-log_dir = "../output/sweep/"
+log_dir = "/work/tu18537/sweep/"
 
 model = ModelType('MlpPolicy', env, verbose=1, tensorboard_log=log_dir,
 gamma = params.get("gamma"),
