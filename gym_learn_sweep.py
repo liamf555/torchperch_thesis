@@ -42,12 +42,10 @@ hyperparameter_defaults = dict(
     start_config = [-40, -5],
     gamma=0.99,
     n_steps=128,
-    ent_coef=0.01,
     learning_rate=0.00025,
     cliprange=0.2,
     n_batch = 32,
     )
-
 
 os.environ["WANDB_API_KEY"] = "ea17412f95c94dfcc41410f554ef62a1aff388ab"
 
@@ -79,7 +77,6 @@ n_steps = params.get("n_steps"),
 learning_rate = params.get("learning_rate"),
 noptepochs = params.get("noptepochs"),
 cliprange = params.get("cliprange"),
-ent_coef = params.get("ent_coef"),
 lam = params.get("lam"),
 nminibatches = nminibatches)
 
