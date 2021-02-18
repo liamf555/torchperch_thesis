@@ -7,9 +7,9 @@ python json_mod.py --log_file ../output/$EPOCHTIME/ \
     --wind_mode uniform \
     --wind_params -8 0 \
     --scenario perching_long \
-    --controller sweep_elevator \
+    --controller sweep_elevator_cont_rate \
     --turbulence light \
-    --timesteps 1000000 \
+    --timesteps 100000 \
     --start_config -40 -5
 
 nohup python gym_learn.py ../output/$EPOCHTIME/sim_params.json &
