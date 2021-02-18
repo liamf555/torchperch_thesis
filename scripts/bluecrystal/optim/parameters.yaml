@@ -18,3 +18,5 @@ parameters:
     values: [1, 5, 10, 20, 30, 50]
   learning_rate:
     values: [0.000025, 0.00025, 0.0025]
+  net_arch:
+    values: ["small, medium"]
