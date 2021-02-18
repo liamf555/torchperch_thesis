@@ -69,7 +69,7 @@ if n_steps < batch_size:
 else:
   nminibatches = int(n_steps / batch_size)
 
-log_dir = "../output/sweep/"
+log_dir = "/work/tu18537/sweep/"
 
 model = ModelType('MlpPolicy', env, verbose=1, tensorboard_log=log_dir,
 gamma = params.get("gamma"),
