@@ -5,3 +5,4 @@
 *.csv
 /wandb/*
 .vscode/
+*.out

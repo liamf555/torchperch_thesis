@@ -42,15 +42,11 @@ hyperparameter_defaults = dict(
     start_config = [-40, -5],
     gamma=0.99,
     n_steps=128,
-    ent_coef=0.01,
     learning_rate=0.00025,
     cliprange=0.2,
     n_batch = 32,
     )
 
-    # [64, 64], [128, 128], [256, 256, 256]
-
-  
 os.environ["WANDB_API_KEY"] = "ea17412f95c94dfcc41410f554ef62a1aff388ab"
 
 wandb.init(sync_tensorboard=True, config=hyperparameter_defaults)
@@ -73,7 +69,7 @@ if n_steps < batch_size:
 else:
   nminibatches = int(n_steps / batch_size)
 
-log_dir = "../output/sweep/"
+log_dir = "/work/tu18537/sweep/"
 
 model = ModelType('MlpPolicy', env, verbose=0, tensorboard_log=log_dir,
 gamma = params.get("gamma"),
@@ -81,7 +77,6 @@ n_steps = params.get("n_steps"),
 learning_rate = params.get("learning_rate"),
 noptepochs = params.get("noptepochs"),
 cliprange = params.get("cliprange"),
-ent_coef = params.get("ent_coef"),
 lam = params.get("lam"),
 nminibatches = nminibatches)
 

@@ -123,23 +123,23 @@ def dryden_wind_velocities(airspeed):
     plt.xlabel('time in seconds')
     plt.grid(True)
 
-    #plots for cross-wind velocities generated using Python
-    plt.figure(2)
+    # #plots for cross-wind velocities generated using Python
+    # plt.figure(2)
 
-    plt.plot(t_p, y2_f, 'r')
-    # plt.plot(t_w, y2_f, 'r')
-    plt.ylabel('cross-wind in m/s (P)')
-    plt.xlabel('time in seconds')
-    plt.grid(True)
+    # plt.plot(t_p, y2_f, 'r')
+    # # plt.plot(t_w, y2_f, 'r')
+    # plt.ylabel('cross-wind in m/s (P)')
+    # plt.xlabel('time in seconds')
+    # plt.grid(True)
 
-    #plots for vertical-wind velocities generated using Python
-    plt.figure(3)
+    # #plots for vertical-wind velocities generated using Python
+    # plt.figure(3)
 
-    plt.plot(t_p, y3_f, 'g')
-    # plt.plot(t_w, y3_f, 'g')
-    plt.ylabel('vertical-wind in m/s (P)')
-    plt.xlabel('time in seconds')
-    plt.grid(True)
+    # plt.plot(t_p, y3_f, 'g')
+    # # plt.plot(t_w, y3_f, 'g')
+    # plt.ylabel('vertical-wind in m/s (P)')
+    # plt.xlabel('time in seconds')
+    # plt.grid(True)
 
     # Show all plots
     plt.show()
