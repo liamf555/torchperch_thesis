@@ -38,7 +38,7 @@ hyperparameter_defaults = dict(
     wind_mode = "uniform",
     turbulence ="light",
     seed  = False,
-    timesteps = 1000000,
+    timesteps = 5000000,
     start_config = [-40, -5],
     gamma=0.99,
     n_steps=128,
@@ -48,10 +48,9 @@ hyperparameter_defaults = dict(
     n_batch = 32,
     )
 
-    [64, 64], [128, 128], [256, 256, 256]
+    # [64, 64], [128, 128], [256, 256, 256]
 
   
-
 os.environ["WANDB_API_KEY"] = "ea17412f95c94dfcc41410f554ef62a1aff388ab"
 
 wandb.init(sync_tensorboard=True, config=hyperparameter_defaults)
@@ -76,7 +75,7 @@ else:
 
 log_dir = "../output/sweep/"
 
-model = ModelType('MlpPolicy', env, verbose=1, tensorboard_log=log_dir,
+model = ModelType('MlpPolicy', env, verbose=0, tensorboard_log=log_dir,
 gamma = params.get("gamma"),
 n_steps = params.get("n_steps"),
 learning_rate = params.get("learning_rate"),
