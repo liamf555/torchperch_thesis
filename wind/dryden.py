@@ -23,6 +23,10 @@ class DrydenGustModel:
             self.sigma_u = 2.12
             self.sigma_v = self.sigma_u
             self.sigma_w =  1.4
+        else:
+            self.sigma_w = 0.0
+            self.sigma_u = 0.0
+            self.sigma_v = 0.0
 
         # Turbulence length scales
         self.Lu = 200
@@ -58,6 +62,8 @@ class DrydenGustModel:
         self._gust_state = np.zeros((5, 1))
 
     def update(self, Va, dt):
+        if self.intensity == 'none':
+            return np.array([[0.0, 0.0, 0.0]])
         self._A = np.array([[-Va/self.Lu, 0, 0, 0, 0],
                             [0, -2*(Va/self.Lv), -(Va/self.Lv)**2, 0, 0],
                             [0, 1, 0, 0, 0],
