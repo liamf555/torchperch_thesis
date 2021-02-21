@@ -36,7 +36,7 @@ hyperparameter_defaults = dict(
     noise = 0.0,
     variable_start = False,
     seed  = False,
-    timesteps = 100000,
+    timesteps = 2500000,
     start_config = [-40, -5],
     wind_params = [-8, 0],
     wind_mode = "uniform",
@@ -83,8 +83,8 @@ policy_kwargs = dict(
 #   nminibatches = int(n_steps / batch_size)
 
 unixepoch = int(time.time()) 
-# log_dir = "/work/tu18537/sweep/" + str(unixepoch) + "/"
-log_dir = "../output/sweep/" + str(unixepoch) + "/"
+log_dir = "/work/tu18537/sweep/" + str(unixepoch) + "/"
+# log_dir = "../output/sweep/" + str(unixepoch) + "/"
 log_dir = Path(log_dir)
 log_dir.mkdir(parents=True, exist_ok=True)
 

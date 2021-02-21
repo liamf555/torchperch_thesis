@@ -11,7 +11,7 @@
 #PBS -l select=1:ncpus=8
 
 ## Run with a maximum of 6h walltime
-#PBS -l walltime=5:00:00
+#PBS -l walltime=72:00:00
 
 JOB_NID=${PBS_JOBID%%[.\[]*}${PBS_ARRAYID:+-$PBS_ARRAYID}
 
@@ -27,4 +27,4 @@ echo "Activated environment"
 
 wandb login ea17412f95c94dfcc41410f554ef62a1aff388ab
 
-wandb agent tu18537/torchperch/2ieb3j5l
+wandb agent tu18537/torchperch/v2gif7gp
