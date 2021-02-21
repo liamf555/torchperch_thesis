@@ -10,7 +10,8 @@ python json_mod.py --log_file ../output/$EPOCHTIME/ \
     --controller sweep_elevator\
     --turbulence none \
     --timesteps 10000000 \
-    --start_config -40 -5
+    --start_config -40 -5 \
+    --net_arch medium 
 
 nohup python gym_learn.py ../output/$EPOCHTIME/sim_params.json &
 
