@@ -20,6 +20,7 @@ class JsonMod:
         eval_dir.mkdir(parents=True, exist_ok=True)
 
         copyfile("./sim_params.json", (args.log_file + "/sim_params.json"))
+        # copyfile("./model_params", (args.log_file + "/model_params"))
 
         with open((args.log_file + "/sim_params.json"), "r") as jsonFile:
             self.data = json.load(jsonFile)
@@ -55,7 +56,7 @@ class JsonMod:
     def json_single(self):
         for key, value in vars(self.args).items():
             if value is not None:
-                if key is not "log_file" and key is not "array" and key is not "wind_params":
+                if key is not "log_file" and key is not "array" and key is not "wind_params" and key is not "kwargs":
                     if key is "start_config":
                         start_config = [float(i) for i in value]
                         self.data["start_config"] = start_config
@@ -81,6 +82,7 @@ class JsonMod:
 
         self.data["model_file"] = self.args.log_file + model_name
         self.data["log_file"] = self.args.log_file
+        # self.data["kwargs"] = self.args.kwargs
     
 
         self.wind_amend()
@@ -101,6 +103,14 @@ class JsonMod:
 
 if __name__ == "__main__":
 
+    class ParseKwargs(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string=None):
+            setattr(namespace, self.dest, dict())
+            for value in values:
+                key, value = value.split('=')
+                getattr(namespace, self.dest)[key] = value
+
+
     parser = argparse.ArgumentParser(description='RL for Bixler UAV')
     parser.add_argument('--algorithm', '-a', type=str)
     parser.add_argument('--scenario', type=str)
@@ -117,6 +127,9 @@ if __name__ == "__main__":
     parser.add_argument('--timesteps', type = int)
     parser.add_argument('--seed', type = int)
     parser.add_argument('--start_config', type = str, nargs='*')
+    parser.add_argument('--net_arch', type = str)
+    # parser.add_argument('--use_kwargs', action='store_true')
+
     args = parser.parse_args()
 
     amend = JsonMod(args)
