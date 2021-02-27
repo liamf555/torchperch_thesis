@@ -13,6 +13,6 @@ python json_mod.py --log_file ../output/$EPOCHTIME/ \
     --start_config -40 -5 \
     --net_arch medium 
 
-nohup python gym_learn.py ../output/$EPOCHTIME/sim_params.json &
+python gym_learn.py ../output/$EPOCHTIME/sim_params.json
 
 # py-spy record -o profile -f speedscope -- python gym_learn.py ../output/$EPOCHTIME/sim_params.json
