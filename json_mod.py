@@ -128,7 +128,7 @@ if __name__ == "__main__":
     parser.add_argument('--seed', type = int)
     parser.add_argument('--start_config', type = str, nargs='*')
     parser.add_argument('--net_arch', type = str)
-    # parser.add_argument('--use_kwargs', action='store_true')
+    parser.add_argument('--obs_noise', action='store_true')
 
     args = parser.parse_args()
 

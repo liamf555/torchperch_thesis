@@ -77,8 +77,8 @@ log_dir = Path(params.get("log_file"))
 # env = gym.make(params.get("env"), parameters=params)
 
 env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
-env = VecFrameStack(env, 8)
-env = VecNormalize(env, norm_reward=False)
+# env = VecFrameStack(env, 8)
+env = VecNormalize(env, norm_reward=False, obs_noise=params.get("obs_noise"))
 
 net_arch = {
     "small": [dict(pi=[64, 64], vf=[64, 64])],
@@ -92,10 +92,10 @@ policy_kwargs = dict(
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-# model = ModelType('MlpPolicy', env, verbose=0, tensorboard_log=log_dir, policy_kwargs = policy_kwargs)
+model = ModelType('MlpPolicy', env, verbose=0, tensorboard_log=log_dir, policy_kwargs = policy_kwargs)
 
 # model = ModelType('MlpLstmPolicy', env, verbose=0, tensorboard_log=log_dir)
-model = ModelType(MlpPolicy, env, verbose=0, tensorboard_log=log_dir)
+# model = ModelType(MlpPolicy, env, verbose=0, tensorboard_log=log_dir)
 
 wandb.config.update(params)
 wandb.config.update({"policy": model.policy.__name__})
