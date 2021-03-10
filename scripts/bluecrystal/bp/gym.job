@@ -40,7 +40,7 @@ echo "JobID $PBS_JOBID"
 #export KMP_AFFINITY=granularity=fine,compact,1,0
  
 python json_mod.py --log_file /$WORK/output/$JOB_NID/ \
-    --algorithm SAC \
+    --algorithm PPO2 \
     --wind_mode uniform \
     --wind_params -8 0 \
     --scenario perching_long_airspeed_2 \
@@ -49,7 +49,8 @@ python json_mod.py --log_file /$WORK/output/$JOB_NID/ \
     --timesteps 20000000 \
     --start_config -40 -5 \
     --net_arch medium \
-    --variable_start
+    --variable_start \
+    --obs_noise
 
 echo "Beginning training"
 
