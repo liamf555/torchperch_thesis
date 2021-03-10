@@ -4,7 +4,7 @@ import numpy as np
 
 state_dims = 9
 actions = 49
-failReward = 0.0
+failReward = -1.0
 h_min = - 20
 
 def wrap_class(BixlerClass, parameters):
@@ -70,6 +70,15 @@ def wrap_class(BixlerClass, parameters):
                         cost = list(map(self.gaussian, cost))
                         reward = np.prod(cost)
                         return reward
+                    return 0.0
+
+                def get_reward(self):
+                    if self.is_terminal():
+                        if self.is_out_of_bounds():
+                            return failReward
+                        cost_vector = np.array([1,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0 ])
+                        cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector ) / 2500
+                        return  ((1.0 - cost) * 2.0) - 1.0
                     return 0.0
 
         
