@@ -63,6 +63,7 @@ args = parser.parse_args()
 
 os.environ["WANDB_API_KEY"] = "ea17412f95c94dfcc41410f554ef62a1aff388ab"
 
+wandb.init(project="disco", sync_tensorboard=True)
 wandb.init(project="disco", sync_tensorboard=True, dir="/work/tu18537/")
 
 def check_algorithm(algorithm_name):
@@ -76,8 +77,12 @@ log_dir = Path(params.get("log_file"))
 
 # env = gym.make(params.get("env"), parameters=params)
 
-env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0, monitor_dir=log_dir)
-# env = VecFrameStack(env, 8)
+env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0)
+try: 
+	env = VecFrameStack(env, int(params.get("framestack")))
+except:
+	pass
+
 env = VecNormalize(env, norm_reward=False, obs_noise=params.get("obs_noise"))
 
 net_arch = {
