@@ -92,16 +92,10 @@ class BixlerEnv(Rendermixin, gym.Env):
        	else:
 		    #get observation
             obs = self.bixler.get_normalized_obs()
-            # print(obs)
-            #get reward
-            done = self.bixler.is_terminal()   
+             
+            self.reward = self.bixler.get_reward()
 
-            if not done:
-                self.reward = self.bixler.get_reward()
-            else:
-                self.reward = 0.0
-            
-            
+            done = self.bixler.is_terminal()  
 
             info = {}
 
