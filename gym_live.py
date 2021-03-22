@@ -1,17 +1,34 @@
-import numpy as np
+# Run with:
+# MAVLINK20=1 PYTHONPATH=~/ardupilot/modules/mavlink python3 agent.py
+# Pre-reqs:
+#  sudo apt install libxslt-dev libxml2
+#  python3 -m pip install lxml
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=Warning)
+import tensorflow as tf
+tf.get_logger().setLevel('INFO')
+# tf.autograph.set_verbosity(0)
+import logging
+tf.get_logger().setLevel(logging.ERROR)
+
 import gym
 import gym_bixler
-import bixler
-import time
+import pprint
 
+from pathlib import Path
 import stable_baselines
-
-from stable_baselines.deepq.policies import FeedForwardPolicy
-from stable_baselines import DQN
-
+import numpy as np
+import json
+import time
 from pymavlink import mavutil
-
 import argparse
+
+from stable_baselines import DQN, PPO2
+from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv
 
 def check_algorithm(algorithm_name):
 	if hasattr(stable_baselines,algorithm_name):
@@ -20,21 +37,24 @@ def check_algorithm(algorithm_name):
 		msg = "Could not find algorithm: {}".format(algorithm_name)
 		raise argparse.ArgumentTypeError(msg)
 
+
 parser = argparse.ArgumentParser(prog='gym_infer', description="Live inference script for generic stable_baselines model")
-parser.add_argument('--algorithm', '-a', type=check_algorithm, required=True)
-parser.add_argument('trained_model_file', type=argparse.FileType('r'))
-parser.add_argument('--env', type=str, default = 'Bixler-v0')
+parser.add_argument("param_file", type=Path)
+parser.add_argument('model_dir', type=Path)
 args = parser.parse_args()
 
 def process_msg(msg):
     # Process incoming message
     # Convert state into required format for agent
-    return np.array([[msg.x,     msg.y,        msg.z,
-                      msg.phi,   msg.theta,    msg.psi,
-                      msg.u,     msg.v,        msg.w,
-                      msg.p,     msg.q,        msg.r,
-                      msg.sweep, msg.elevator
-	                  ]])
+    return (
+        np.array([[msg.x,     msg.y,        msg.z,
+                   msg.phi,   msg.theta,    msg.psi,
+                   msg.u,     msg.v,        msg.w,
+                   msg.p,     msg.q,        msg.r,
+                   msg.sweep, msg.elevator, msg.va
+	               ]]),
+        msg.tip == 1.0
+        )
 
 def check_heartbeat(master):
     if time.time() - check_heartbeat.last_heartbeat_time >= 1.0:
@@ -48,7 +68,7 @@ class Transform():
     def __init__(self):
         self.o_agent_ekf = np.zeros((3,1))
         self.rotation = np.identity(3)
-        self.offset_vector = np.array([[40], [0], [2]])
+        self.offset_vector = np.array([[40], [0], [5]])
 
     def setup(self, state):
 
@@ -88,14 +108,23 @@ class Transform():
 
 # Setup the model for inference
 
-env = gym.make(args.env)
-ModelType = args.algorithm
-model = ModelType.load(args.trained_model_file.name)
+
+with open(args.param_file) as json_file:
+            params = json.load(json_file)
+
+ModelType = check_algorithm(params.get("algorithm"))
+env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
+env = VecNormalize.load((args.model_dir / "vec_normalize"), env0)
+env.training = False
+model = ModelType.load(args.model_dir / (str(ModelType.__name__)))
+model.set_env(env)
+
 
 # Establish connection to autopilot
 #MAVLINK20=1 python3 -i -c "from pymavlink import mavutil; mav = mavutil.mavlink_connection('/dev/ttyS0,115200')"
-master = mavutil.mavlink_connection('/dev/ttyS0', baud=115200, source_system=1, source_component=158)
+# master = mavutil.mavlink_connection('/dev/ttyS0', baud=115200, source_system=1, source_component=158)
 #master = mavutil.mavlink_connection('/dev/ttyTHS2', baud=57600, source_system=1, source_component=158)
+master = mavutil.mavlink_connection('tcp:127.0.0.1:5763', baud=115200, source_system=1, source_component=158)
 
 # Wait for ArduPilot to be up and running
 master.wait_heartbeat()
@@ -105,8 +134,9 @@ check_heartbeat.last_heartbeat_time = time.time() - 10.0
 check_heartbeat(master)
 
 transform = Transform()
-reset_flag = False
-emit_action = False
+in_episode = False
+
+pprint.pprint(params)
 
 while True:
     #Send heartbeat if needed
@@ -122,42 +152,57 @@ while True:
         if msg.name is 'PARAM_REQUEST_LIST':
             # If an attempt to get parameters is made, return a PARAM_VALUE message indicating no parameters
             master.mav.param_value_send("",0,mavutil.mavlink.MAV_PARAM_TYPE_UINT8,0,0)
-        if msg.name == 'STATUSTEXT':
-            if 'enabled' in str(msg.text): # Detected expr mode entry
-                print('Experiment enabled, resetting transform')
-                reset_flag = True
-                emit_action = True
-            if 'disabled' in str(msg.text): # Experiment done
-                print('Experiment disabled, disabling output')
-                emit_action = False
         continue
 
-    # Extract state from message
-    real_state = process_msg(msg)
 
-    # calculate obs first time round and each time switch activated
-    if reset_flag == True:
+    # Extract state from message
+    (real_state,experimental_mode_enabled) = process_msg(msg)
+
+    if (in_episode is True) and (experimental_mode_enabled is False):
+        print("Episode abort")
+        in_episode = False
+
+    # Check for episode start
+    if (in_episode is False) and (experimental_mode_enabled is True):
+        print("Episode start")
         transform.setup(real_state)
-       # print(transform.rotation)
-        reset_flag = False
+        in_episode = True
 
     transformed_state = transform.apply(real_state.copy())
 
+    if (transformed_state[:,2] > 0) and (in_episode is True):
+        master.mav.mlagent_action_send(1,1,float('nan'),float('nan'))
+        print("Episode end")
+        in_episode = False
+
     print("r_ekf: {}, r_a: {}".format( str(real_state[:,0:3]), str(transformed_state[:,0:3]) ) )
+    if "airspeed" in params.get("scenario"):
+        transformed_state = (np.delete(transformed_state, [1, 3, 5, 7, 9, 11], axis=1))
+    else:
+        transformed_state = (np.delete(transformed_state, [1, 3, 5, 7, 9, 11, 14], axis=1))
 
-    # Normalise state for model
-    obs = env.bixler.get_normalized_state(transformed_state)
 
-    # Get optimal action
+	 # Normalise state for model
+
+    obs = env.normalize_obs(transformed_state)
+
+	    # # Get optimal action
     action, _states = model.predict(obs, deterministic=True)
 
-    # Convert action index to actions
-    env.bixler.set_action(action)
+    env.env_method("set_bixler_action", (action))
 
     # Get rates from bixler model
-    sweep_rate = env.bixler.sweep_rate
-    elev_rate = env.bixler.elev_rate
+    sweep_rate = env.get_attr("bixler")[0].next_sweep_rate
+    elev_rate = env.get_attr("bixler")[0].next_elev_rate
 
-    if emit_action:
+    # print("sweep: {}, elev: {}".format(str(transformed_state[:,6]),str(transformed_state[:,7])))
+
+    if in_episode:
         # Pass action on to autopilot
         master.mav.mlagent_action_send(1,1,sweep_rate, elev_rate)
+        print("sweep: {}, elev: {}".format(str(transformed_state[:,6]),str(transformed_state[:,7])))
+        print("u: {}, w: {}".format(str(transformed_state[:,3]), str(transformed_state[:,4])))
+        print("pitch : {}, pitch_rate: {}".format(str(transformed_state[:,2]),str(transformed_state[:,5])))
+        print("airspeed: {}".format(str(transformed_state[:,8])))
+    
+ 
