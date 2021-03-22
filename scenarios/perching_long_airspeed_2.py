@@ -116,25 +116,17 @@ def wrap_class(BixlerClass, parameters):
                     wind = self.wind_sim.get_wind()
 
                     if self.variable_start:
-                         # start_shift_theta = self.np_random.normal(0, 0.0262) #shift +-3.5degs in theta
-                         # initial_state[:,4] = start_shift_theta
-                         # start_shift_u =  self.np_random.uniform(-1.0, 1.0)
-                        # start_shift_w = self.np_random.uniform(-1.0, 1.0)
-
-                        # Scale for +- 1m/s
-                        # initial_state[:,6] = start_shift_u
-                        # initial_state[:,8] += start_shift_w
-                         
+                        theta = self.np_random.normal(0, 0.0524) #shift +-3.5degs in theta      
                         self.airspeed = self.np_random.normal(13, 0.75) 
-
                     else:
                         self.airspeed = 13 # m/s
+                        theta = 0.0
                 
                     u = (self.airspeed + wind[0])[0]
                     self.velocity_e = np.array([[0],[0],[0]])
                     self.velocity_e[0][0] = u
                     
-                    initial_state = np.array([[self.start_config[0],0, self.start_config[1], 0,0,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
+                    initial_state = np.array([[self.start_config[0],0, self.start_config[1], 0,theta,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
 
                     # print(self.airspeed, u, initial_state)
 

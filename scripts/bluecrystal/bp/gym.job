@@ -43,14 +43,16 @@ python json_mod.py --log_file /$WORK/output/$JOB_NID/ \
     --algorithm PPO2 \
     --wind_mode uniform \
     --wind_params -8 0 \
-    --scenario perching_long_airspeed_2 \
+    --scenario perching_long \
     --controller sweep_elevator \
     --turbulence moderate \
+    --framestack 8 \
     --timesteps 20000000 \
     --start_config -40 -5 \
     --net_arch medium \
     --variable_start \
     --obs_noise
+
 
 echo "Beginning training"
 
