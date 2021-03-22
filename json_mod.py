@@ -129,6 +129,7 @@ if __name__ == "__main__":
     parser.add_argument('--start_config', type = str, nargs='*')
     parser.add_argument('--net_arch', type = str)
     parser.add_argument('--obs_noise', action='store_true')
+    parser.add_argument('--framestack', type = str)
 
     args = parser.parse_args()
 
