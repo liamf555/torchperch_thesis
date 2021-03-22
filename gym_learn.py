@@ -117,6 +117,7 @@ vec_file = log_dir / "vec_normalize.pkl"
 env.save(str(vec_file))
 wandb.save(str(vec_file))
 wandb.save(params.get("model_file") + ".zip")
+wandb.save(args.param_file)
 # wandb.save(str(log_dir / "best_model.zip"))
 # wandb.save(str(log_dir / "monitor.csv"))
 
