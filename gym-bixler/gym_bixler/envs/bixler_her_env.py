@@ -9,7 +9,12 @@ from gym.utils import seeding
 from gym import GoalEnv, spaces
 import controllers
 import scenarios
-import wandb
+
+try:
+    import wandb
+except ImportError:
+    pass
+    
 import pprint as pp
 
 from gym_bixler.envs.render import Rendermixin

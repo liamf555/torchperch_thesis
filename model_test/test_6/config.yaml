@@ -1,0 +1,117 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.8.35
+    code_path: code/gym_learn.py
+    framework: tensorflow
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.6.9
+algorithm:
+  desc: null
+  value: PPO2
+cliprange:
+  desc: null
+  value: 0.2
+cliprange_vf:
+  desc: null
+  value: 0.2
+controller:
+  desc: null
+  value: sweep_elevator
+ent_coef:
+  desc: null
+  value: 0.01
+env:
+  desc: null
+  value: Bixler-v0
+framestack:
+  desc: null
+  value: '4'
+gamma:
+  desc: null
+  value: 0.99
+lam:
+  desc: null
+  value: 0.95
+latency:
+  desc: null
+  value: 0.0
+learning_rate:
+  desc: null
+  value: 0.00025
+log_file:
+  desc: null
+  value: //work/tu18537/output/979516/
+max_grad_norm:
+  desc: null
+  value: 0.5
+model_file:
+  desc: null
+  value: //work/tu18537/output/979516/PPO2_final_model
+n_batch:
+  desc: null
+  value: 1024
+n_envs:
+  desc: null
+  value: 8
+n_steps:
+  desc: null
+  value: 128
+net_arch:
+  desc: null
+  value: medium
+nminibatches:
+  desc: null
+  value: 4
+noise:
+  desc: null
+  value: 0.0
+noptepochs:
+  desc: null
+  value: 4
+num_timesteps:
+  desc: null
+  value: 0
+obs_noise:
+  desc: null
+  value: true
+policy:
+  desc: null
+  value: MlpPolicy
+scenario:
+  desc: null
+  value: perching_long_airspeed_2
+seed:
+  desc: null
+  value: false
+start_config:
+  desc: null
+  value:
+  - -40.0
+  - -5.0
+timesteps:
+  desc: null
+  value: 20000000
+turbulence:
+  desc: null
+  value: moderate
+variable_start:
+  desc: null
+  value: true
+verbose:
+  desc: null
+  value: 0
+vf_coef:
+  desc: null
+  value: 0.5
+wind_mode:
+  desc: null
+  value: uniform
+wind_params:
+  desc: null
+  value:
+  - -8.0
+  - 0.0
