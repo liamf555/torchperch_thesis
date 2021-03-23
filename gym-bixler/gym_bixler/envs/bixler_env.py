@@ -7,7 +7,10 @@ import json
 import numpy as np 
 import controllers
 import scenarios
-import wandb
+try:
+    import wandb
+except ImportError:
+    pass
 
 from gym_bixler.envs.render import Rendermixin
 

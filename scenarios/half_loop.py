@@ -1,5 +1,8 @@
 import numpy as np
-import wandb
+try:
+    import wandb
+except ImportError:
+    pass
 
 # Perching scenario
 

@@ -28,7 +28,7 @@ from pymavlink import mavutil
 import argparse
 
 from stable_baselines import DQN, PPO2
-from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv
+from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv, VecFrameStack
 
 def check_algorithm(algorithm_name):
 	if hasattr(stable_baselines,algorithm_name):
@@ -114,7 +114,13 @@ with open(args.param_file) as json_file:
 
 ModelType = check_algorithm(params.get("algorithm"))
 env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
+# try: 
+# 	env0 = VecFrameStack(env0, int(params.get("framestack")))
+# except:
+#     pass
+
 env = VecNormalize.load((args.model_dir / "vec_normalize"), env0)
+
 env.training = False
 model = ModelType.load(args.model_dir / (str(ModelType.__name__)))
 model.set_env(env)
@@ -122,9 +128,9 @@ model.set_env(env)
 
 # Establish connection to autopilot
 #MAVLINK20=1 python3 -i -c "from pymavlink import mavutil; mav = mavutil.mavlink_connection('/dev/ttyS0,115200')"
-# master = mavutil.mavlink_connection('/dev/ttyS0', baud=115200, source_system=1, source_component=158)
+master = mavutil.mavlink_connection('/dev/ttyS0', baud=115200, source_system=1, source_component=158)
 #master = mavutil.mavlink_connection('/dev/ttyTHS2', baud=57600, source_system=1, source_component=158)
-master = mavutil.mavlink_connection('tcp:127.0.0.1:5763', baud=115200, source_system=1, source_component=158)
+# master = mavutil.mavlink_connection('tcp:127.0.0.1:5763', baud=115200, source_system=1, source_component=158)
 
 # Wait for ArduPilot to be up and running
 master.wait_heartbeat()
@@ -151,6 +157,7 @@ while True:
     if msg.name is not 'MLAGENT_STATE':
         if msg.name is 'PARAM_REQUEST_LIST':
             # If an attempt to get parameters is made, return a PARAM_VALUE message indicating no parameters
+            print(mavutil.mavlink.MAV_PARAM_TYPE_UINT8)
             master.mav.param_value_send("",0,mavutil.mavlink.MAV_PARAM_TYPE_UINT8,0,0)
         continue
 
@@ -203,6 +210,6 @@ while True:
         print("sweep: {}, elev: {}".format(str(transformed_state[:,6]),str(transformed_state[:,7])))
         print("u: {}, w: {}".format(str(transformed_state[:,3]), str(transformed_state[:,4])))
         print("pitch : {}, pitch_rate: {}".format(str(transformed_state[:,2]),str(transformed_state[:,5])))
-        print("airspeed: {}".format(str(transformed_state[:,8])))
+        print("airspeed: {}".format(str(real_state[:,14])))
     
  

@@ -1,7 +1,10 @@
 import numpy as np
 from wind.wind_sim import Wind
 from wind.dryden import DrydenGustModel
-import wandb
+try:
+    import wandb
+except ImportError:
+    pass
 
 # Force numpy to raise FloatingPointError for overflow
 np.seterr(all='raise')
