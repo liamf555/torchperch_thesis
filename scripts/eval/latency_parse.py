@@ -36,7 +36,7 @@ class PiParse:
                 self.last_latency = latencies[0]
                 self.first_flag = False
             self.latency = latencies[1] - latencies[0]
-            print(abs(self.latency))
+            # print(abs(self.latency))
             if abs(self.latency) < 1000:
 
                 time_delta = latencies[0] - self.last_latency
@@ -47,14 +47,15 @@ class PiParse:
             
 
 
-    # def make_fig(self):
+    def make_fig(self):
+        pass
 
-    #     self.fig, ((self.ax1, self.ax2), (self.ax3, self.ax4), (self.ax5, self.ax6)) = plt.subplots(3, 2)
+        # self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2)
 
     def plotter(self, dict_key):
     # #   self.fig, ((self.ax1, self.ax2), (self.ax3, self.ax4), (self.ax5, self.ax6)) = plt.subplots(3, 2)
       for i, dataframe in enumerate(self.state_dict[dict_key].values()):
-        print(dataframe)
+        # print(dataframe)
         self.plot(dataframe, self.colours[i])
     #   # self.fig.savefig('graph.pdf')
     # #   plotly_fig = tls.mpl_to_plotly(self.fig)
@@ -64,11 +65,30 @@ class PiParse:
     def plot(self, dataframe, colour):
 
     #     #Pitch(deg)
-        # dataframe['pitch'] = np.rad2deg(dataframe['pitch'])
-        try:
-            dataframe.plot(x = 'Time', y = 'Latency', color = colour, legend=False, label = r'$\theta$')
-        except:
-            pass
+        # # dataframe['pitch'] = np.rad2deg(dataframe['pitch'])
+        # try:
+        #     dataframe.plot(x = 'Time', y = 'Latency', color = colour, legend=False, label = r'$\theta$')
+        # except:
+        #     pass
+
+        # print(dataframe)
+
+
+        # df = dataframe.groupby('Latency')['Time'].nunique()
+
+        df = dataframe['Latency']
+
+        hist = df.hist(bins=50)
+
+        print(df)
+
+        # df['Probability'] = (df['Time']) / (df['Time'].sum())
+
+        # print(df.keys())
+        # try:
+        #     df.plot.bar(x = 'Latency', y = "Probability")
+        # except:
+        #     pass
 
     #     # self.df.plot(x = 't', y = 'alpha', color = 'orange',  ax = ax1, legend=True, label = 'AoA')
     #     self.ax1.set_xlabel("Time (s)", fontsize=18)
@@ -212,8 +232,8 @@ for log in file_directory.glob('*.txt'):
 # print(reward_df)
 
 
-# pi_parser.make_fig()
-pi_parser.plotter("latency_3")
+pi_parser.make_fig()
+pi_parser.plotter("latency_2")
 # pi_parser.plotter("gust_1_head_1")
 # # pi_parser.plotter("wind_2_head_1")
 
