@@ -52,10 +52,6 @@ python json_mod.py --log_file /$WORK/output/$JOB_NID/ \
     --net_arch medium \
     --variable_start \
     --obs_noise
-<<<<<<< HEAD
-=======
-
->>>>>>> new_reward
 
 echo "Beginning training"
 
