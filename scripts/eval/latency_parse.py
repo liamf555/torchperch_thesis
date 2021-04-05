@@ -1,265 +1,84 @@
-import argparse
+# %%
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
-from pathlib import Path
-import plotly
-# pd.options.plotting.backend = "plotly"
-import plotly.tools as tls
-import warnings
-warnings.filterwarnings("ignore")
 
-class PiParse:
+# %%
+file_directory = Path("./experiments/logs/latency_logs/new")
+dataframes = []
+# %%                
+for log in file_directory.glob('*.txt'):
 
-    def __init__(self):
-
-        self.ml_ep = False
-        self.states = []
-        self.last_latency=0
-        self.time = 0
-        self.ep_dict = {}
-        self.state_dict = {}
-        self.colours = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'tab:purple', 'tab:gray', 'tab:purple']
-        
-    def get_lat(self, line):
-        if "S: " in line:
-            # line_list = (line.split("r_a: [[",1)[1].replace(']]', '').strip().split(" "))
-            line_list = line.split("]", 1)[1].split()
-            latencies = []
-            for item in line_list:
-                try:
-                    latencies.append(int(item))
-                except:
-                    pass
-            if self.first_flag: 
-                self.last_latency = latencies[0]
-                self.first_flag = False
-            self.latency = latencies[1] - latencies[0]
-            # print(abs(self.latency))
-            if abs(self.latency) < 1000:
-
-                time_delta = latencies[0] - self.last_latency
-                self.time += time_delta
-                self.last_latency = latencies[0]
-            
-                self.states.append([self.time/1000, self.latency])
-            
-
-
-    def make_fig(self):
-        pass
-
-        # self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2)
-
-    def plotter(self, dict_key):
-    # #   self.fig, ((self.ax1, self.ax2), (self.ax3, self.ax4), (self.ax5, self.ax6)) = plt.subplots(3, 2)
-      for i, dataframe in enumerate(self.state_dict[dict_key].values()):
-        # print(dataframe)
-        self.plot(dataframe, self.colours[i])
-    #   # self.fig.savefig('graph.pdf')
-    # #   plotly_fig = tls.mpl_to_plotly(self.fig)
-    # #   plotly_fig.write_image("fig1.pdf")
-    # #   plotly.offline.iplot(plotly_fig)
-
-    def plot(self, dataframe, colour):
-
-    #     #Pitch(deg)
-        # # dataframe['pitch'] = np.rad2deg(dataframe['pitch'])
-        # try:
-        #     dataframe.plot(x = 'Time', y = 'Latency', color = colour, legend=False, label = r'$\theta$')
-        # except:
-        #     pass
-
-        # print(dataframe)
-
-
-        # df = dataframe.groupby('Latency')['Time'].nunique()
-
-        df = dataframe['Latency']
-
-        hist = df.hist(bins=50)
-
-        print(df)
-
-        # df['Probability'] = (df['Time']) / (df['Time'].sum())
-
-        # print(df.keys())
-        # try:
-        #     df.plot.bar(x = 'Latency', y = "Probability")
-        # except:
-        #     pass
-
-    #     # self.df.plot(x = 't', y = 'alpha', color = 'orange',  ax = ax1, legend=True, label = 'AoA')
-    #     self.ax1.set_xlabel("Time (s)", fontsize=18)
-    #     self.ax1.set_ylabel(r'$\theta$ (deg)', fontsize=18)
-    #     self.ax1.tick_params(labelsize=12)
-    #     self.ax1.grid()
-
-    #     #Pitch(deg) rate
-    #     dataframe['q'] = np.rad2deg(dataframe['q'])
-    #     dataframe.plot(x = 't', y = 'q', color = colour,  ax = self.ax2, legend=False)
-    #     self.ax2.set_xlabel("Time (s)", fontsize=18)
-    #     self.ax2.set_ylabel(r'q (deg/sec)', fontsize=18)
-    #     self.ax2.tick_params(labelsize=12)
-    #     self.ax2.grid()
-
-    #     #Sweep
-    #     dataframe.plot(x = 't', y = 'sweep', color = colour, ax = self.ax3, legend=False)
-    #     self.ax3.set_xlabel("Time (s)", fontsize=18)
-    #     self.ax3.set_ylabel(r'Sweep (deg)', fontsize=18)
-    #     self.ax3.tick_params(labelsize=12)
-    #     self.ax3.grid()
-
-    #     #elev
-    #     dataframe.plot(x = 't', y = 'elev', color = colour, ax = self.ax4, legend=False)
-    #     self.ax4.set_xlabel("Time (s)", fontsize=18)
-    #     self.ax4.set_ylabel(r'Elevator (deg)', fontsize=18)
-    #     self.ax4.tick_params(labelsize=12)
-    #     self.ax4.grid()
-
-    #     #x vs y
-    #     # ax5.invert_yaxis()
-    #     dataframe['height'] = dataframe['z']*-1
-
-    #     dataframe.plot(x = 'x', y = 'height', color = colour,  ax = self.ax5, legend=False)
-    #     self.ax5.set_xlabel("x-Position (m)", fontsize=18)
-    #     self.ax5.set_ylabel('Height (m)', fontsize=18)
-    #     self.ax5.set_xlim(-40, 5)
-    #     self.ax5.tick_params(labelsize=12)
-    #     # ax5.set_ylim(-6, 0)
-    #     self.ax5.grid()
-
-
-    #     # #airspeed
-        
-    #     # self.df.plot(x = 'Time(sec)', y = 'airspeed',  ax = ax6, legend=False)
-    #     # ax6.set_xlabel("Time(sec)")
-    #     # ax6.set_ylabel(r'Airspeed (m/s)')
-    #     # ax6.grid()
-
-    #     # body velocities
-
-    #     dataframe.plot(x = 't', y = 'u', ax = self.ax6, color = colour,legend=False)
-    #     dataframe.plot(x = 't', y = 'w', ax = self.ax6, color = colour, linestyle='--',legend=False)
-    #     self.ax6.set_xlabel("Time (s)", fontsize=18)
-    #     self.ax6.set_ylabel(r'Body Velocities (m/s)', fontsize=18)
-    #     self.ax6.tick_params(labelsize=12)
-    #     self.ax6.grid()
-
-
-    #     custom_lines = [Line2D([0], [0], color='k', linestyle = '-',  lw=2),
-    #                     Line2D([0], [0], color='k', linestyle = '--', lw=2)]
-
-
-    #     self.ax6.legend(custom_lines, ['u', 'w'])
-
-    # def get_reward(self, dataframe):
-    #     def gaussian(x, sig = 0.4, mu = 0):   
-    #                 return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2)/2)
-
-
-        
-    #     final_state = dataframe.tail(1)   
-
-    #     obs = np.array([final_state.iloc[0]['x'], final_state.iloc[0]['z'], final_state.iloc[0]['pitch'], final_state.iloc[0]['u'] , final_state.iloc[0]['w']])
-    #     target_state = np.array([0.0, 0.0, 0.0, 0.0, 0.0], dtype='float64')
-    #     bound = np.array([15, 5, np.deg2rad(20),10,10])
-    #     cost = (target_state - obs)/bound
-    #     cost = list(map(gaussian, cost))
-    #     reward = np.prod(cost)
-    #     return reward
-
-        
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--directory', '-dir', type=str, required=True)
-    # parser.add_argument('--plot', action='store_true')
-    args = parser.parse_args()
-
-    file_directory = Path(args.directory)
-
-    pi_parser = PiParse()
-
-    results = {}
-
-for log in file_directory.glob('*.txt'): 
-
-    ep_number = 0
+    states = []
     lat_ep = False
+
+    dataframe = pd.DataFrame()
     with open(log, "r") as file:
-            for line in file:
-                if 'Entering ML mode' in line:
-                    # print('new_ep')
-                    lat_ep = True
-                    pi_parser.first_flag = True
-                elif "Experimental mode disallowed" in line:
-                    lat_ep = False
-                    ep_number +=1
-                    pi_parser.last_latency = 0
-                    pi_parser.time = 0
-                    # print(pi_parser.states)
-                    df = pd.DataFrame(pi_parser.states, columns=['Time', 'Latency'])
-                    # print(df)
-                    pi_parser.ep_dict[ep_number] = df
-                    pi_parser.states = []
-                if lat_ep:
-                    pi_parser.get_lat(line)
-#     t = 0
-#     ts = []
-#     for i, dataframe in enumerate(pi_parser.ep_dict.values()):
-#         rows = dataframe.shape[0]
-#         for j in range(rows):
-#             ts.append(t)
-#             t += 0.1
-#         dataframe['t'] = ts
-#         ep_reward = pi_parser.get_reward(dataframe)
-#         rewards.append(ep_reward)
-#         t = 0
-#         ts = []
+        for line in file:
+            if 'Entering ML mode' in line:
+                lat_ep = True
+                first_flag = True
+                time = 0
+                states = []
+            elif "Experimental mode disallowed" in line:
+                lat_ep = False
+                df = pd.DataFrame(states, columns=['Time', 'Latency'])
+                dataframe = dataframe.append(df)
+            if lat_ep:
+                if "S: " in line:
+                    line_list = line.split("]", 1)[1].split()
+                    latencies = []
+                    for item in line_list:
+                        try:
+                            latencies.append(int(item))
+                        except:
+                            pass
+                    if first_flag: 
+                        last_latency = latencies[0]
+                        first_flag = False
+                    latency = latencies[1] - latencies[0]
+                    if abs(latency) < 1000:
+
+                        time_delta = latencies[0] - last_latency
+                        time += time_delta
+                        last_latency = latencies[0]
     
-#     results[log.stem] = rewards
-    pi_parser.state_dict[log.stem] = pi_parser.ep_dict
-    pi_parser.ep_dict = {}
-# reward_df = pd.DataFrame.from_dict(results, orient='index')
-# reward_df = reward_df.transpose()
-
-# cols=reward_df.columns.tolist()
-# cols.sort()
-# reward_df=reward_df[cols]
-# print(reward_df)
+                        states.append([time/1000, latency])
+        dataframes.append(dataframe)
 
 
-pi_parser.make_fig()
-pi_parser.plotter("latency_2")
-# pi_parser.plotter("gust_1_head_1")
-# # pi_parser.plotter("wind_2_head_1")
+# # pd.set_option("display.max_rows", None, "display.max_columns", None)
+final_frame = pd.DataFrame(columns=['Time', 'Latency'])
+for i in dataframes:
+    final_frame = final_frame.append(i)
 
-# # pi_parser.plotter("baseline_1_head_2")
+print(final_frame)
+
+final_frame["Latency"].hist(bins=100, normed=True)
+# plt.show()
+
+
+
+
+mu, sigma = 0, 1
+s = 19 + np.random.lognormal(mu, sigma, 10000000)
+
+
+count, bins, ignored = plt.hist(s, 1000, density=True, align='mid')
+
+x = np.linspace(min(bins), max(bins), 10000)
+
+pdf = (np.exp(-(np.log(x) - mu)**2 / (2 * sigma**2))
+
+       / (x * sigma * np.sqrt(2 * np.pi)))
+
+plt.plot(x, pdf, linewidth=2, color='r')
+
+axes = plt.gca()
+# axes.set_xlim([0,100])
 
 plt.show()
-    
-        
 
-
-
-  
-  
-                    
-
-
-
-                
-                
-                    
-                    
-
-
-
-
-
-                
-
-
+# %%

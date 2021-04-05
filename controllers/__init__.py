@@ -1,4 +1,5 @@
 from .sweep_elevator import Bixler_SweepElevator as sweep_elevator
+from .sweep_elevator_2 import Bixler_SweepElevator2 as sweep_elevator_2
 from .sweep_throttle import Bixler_SweepThrottle as sweep_throttle
 from .throttle_elevator import Bixler_ThrottleElevator as throttle_elevator
 from .sweep_elevator_cont import Bixler_SweepElevatorCont as sweep_elevator_cont

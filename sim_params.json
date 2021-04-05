@@ -4,7 +4,7 @@
   "scenario": "perching_long",
   "model_file": "../output/",
   "algorithm": "PPO2",
-  "latency": 0.0,
+  "latency": false,
   "noise": 0.0,
   "variable_start": false,
   "wind_params": [0, 0, 0],

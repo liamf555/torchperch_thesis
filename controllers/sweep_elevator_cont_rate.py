@@ -14,19 +14,33 @@ class Bixler_SweepElevatorContRate(common.BixlerController):
         # Control surface rates
         self.sweep_rate = 0 # (deg/s)
         self.elev_rate = 0  # (deg/s)
+        self.next_sweep_rate = 0
+        self.next_elev_rate = 0
+
+        #Latency params
+        self.latency_on = parameters.get("latency")
         
     def set_action(self,action):
-        
-        self.elev_rate =  action[0] * self.elev_rate_lim
-        self.sweep_rate = action[1] * self.sweep_rate_lim
+
+        self.next_elev_rate =  action[0] * self.elev_rate_lim
+        self.next_sweep_rate = action[1] * self.sweep_rate_lim
+        self.time_since_action = 0.0 
+        if self.latency_on:
+            self.latency = (18 + np.random.lognormal(0, 1))/1000
+        else:
+            self.latency = 0.0
 
     def update_control_surfaces(self,steptime):
-        self.sweep = np.clip(self.sweep + self.sweep_rate * steptime, self.sweep_limits[0], self.sweep_limits[1])
 
-        # print(self.sweep)
+        self.time_since_action += steptime
+
+        if (self.time_since_action >= self.latency):
+            self.sweep_rate = self.next_sweep_rate
+            self.elev_rate = self.next_elev_rate
+
+        self.sweep = np.clip(self.sweep + self.sweep_rate * steptime, self.sweep_limits[0], self.sweep_limits[1])
         self.elev = np.clip(self.elev + self.elev_rate * steptime, self.elev_limits[0], self.elev_limits[1])
 
-        # print(self.elev)
         self.rudder = 0.0
         self.tip_port = 0.0
         self.tip_stbd = 0.0
