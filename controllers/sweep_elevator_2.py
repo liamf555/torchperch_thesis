@@ -6,11 +6,11 @@ import time
 class Bixler_SweepElevator2(common.BixlerController):
     
     def __init__(self, parameters):
-        super(Bixler_SweepElevator, self).__init__(parameters)
+        super(Bixler_SweepElevator2, self).__init__(parameters)
         
         # Control surface rates for each action
         self.elev_rates = [-60, -45,  -30, -10, -5, 0, 5, 10, 30, 45, 60]
-        self.sweep_rates = [-60, -45 -30, -10, -5, 0, 5, 10, 30, 45, 60 ]
+        self.sweep_rates = [-60, -45, -30, -10, -5, 0, 5, 10, 30, 45, 60 ]
         
         # Control surface rates
         self.sweep_rate = 0 # (deg/s)

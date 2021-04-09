@@ -38,8 +38,8 @@ class Bixler_SweepElevatorContRate(common.BixlerController):
         self.time_since_action += steptime
  
         if (self.time_since_action >= self.latency):
-            self.sweep_rate = self.next_sweep_rate
-            self.elev_rate = self.next_elev_rate
+            self.sweep_rate = round(self.next_sweep_rate)
+            self.elev_rate = round(self.next_elev_rate)
 
         self.sweep = np.clip(self.sweep + self.sweep_rate * steptime, self.sweep_limits[0], self.sweep_limits[1])
         self.elev = np.clip(self.elev + self.elev_rate * steptime, self.elev_limits[0], self.elev_limits[1])
