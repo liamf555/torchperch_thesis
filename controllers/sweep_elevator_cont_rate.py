@@ -22,8 +22,11 @@ class Bixler_SweepElevatorContRate(common.BixlerController):
         
     def set_action(self,action):
 
-        self.next_elev_rate =  action[0] * self.elev_rate_lim
+        
+
+        self.next_elev_rate = action[0] * self.elev_rate_lim
         self.next_sweep_rate = action[1] * self.sweep_rate_lim
+    
         self.time_since_action = 0.0 
         if self.latency_on:
             self.latency = (18 + np.random.lognormal(0, 1))/1000
@@ -33,7 +36,7 @@ class Bixler_SweepElevatorContRate(common.BixlerController):
     def update_control_surfaces(self,steptime):
 
         self.time_since_action += steptime
-
+ 
         if (self.time_since_action >= self.latency):
             self.sweep_rate = self.next_sweep_rate
             self.elev_rate = self.next_elev_rate

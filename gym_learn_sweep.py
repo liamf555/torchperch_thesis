@@ -29,23 +29,24 @@ from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv
 
 hyperparameter_defaults = dict(
     env ="Bixler-v0",
-    controller = "sweep_elevator",
+    controller = "sweep_elevator_cont_rate",
     scenario = "perching_long_airspeed_2",
     algorithm = "PPO2",
-    latency = 0.0,
+    latency = True,
     noise = 0.0,
-    variable_start = False,
+    variable_start = True,
     seed  = False,
-    timesteps = 2500000,
+    timesteps = 5000000,
     start_config = [-40, -5],
     wind_params = [-8, 0],
     wind_mode = "uniform",
-    turbulence = "light",
+    turbulence = "moderate",
     gamma=0.99,
     ent_coef = 0.01,
-    net_arch = "small",
+    net_arch = "medium",
     learning_rate=0.00025,
     cliprange=0.2,
+    obs_noise=True
     )
 
 os.environ["WANDB_API_KEY"] = "ea17412f95c94dfcc41410f554ef62a1aff388ab"
@@ -58,12 +59,12 @@ def check_algorithm(algorithm_name):
 		return getattr(stable_baselines,algorithm_name)
 
 env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0)
-env = VecNormalize(env, norm_reward=False)
+env = VecNormalize(env, norm_reward=False, obs_noise=params.get("obs_noise"))
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-# n_steps = params.get("n_steps")
-# batch_size = params.get("n_batch")
+n_steps = params.get("n_steps")
+batch_size = params.get("batch_size")
 
 net_arch = params.get("net_arch")
 
@@ -77,14 +78,14 @@ policy_kwargs = dict(
     act_fun=tf.tanh,
 )
 
-# if n_steps < batch_size:
-#   nminibatches = 1
-# else:
-#   nminibatches = int(n_steps / batch_size)
+if n_steps < batch_size:
+  nminibatches = 1
+else:
+  nminibatches = int(n_steps / batch_size)
 
 unixepoch = int(time.time()) 
-log_dir = "/work/tu18537/sweep/" + str(unixepoch) + "/"
-# log_dir = "../output/sweep/" + str(unixepoch) + "/"
+# log_dir = "/work/tu18537/sweep/" + str(unixepoch) + "/"
+log_dir = "../output/sweep/" + str(unixepoch) + "/"
 log_dir = Path(log_dir)
 log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -107,7 +108,6 @@ policy_kwargs=policy_kwargs)
  
 model.learn(total_timesteps = wandb.config.timesteps)
 
-
 model_path = log_dir / 'final_model'
 
 model.save(str(model_path))
@@ -122,9 +122,7 @@ for wind in wind_speeds:
     eval_params = dict(params)
     eval_params["wind_params"] = [wind, 0.0, 0.0]
     eval_params["wind_mode"] = "steady"
-    eval_params["turbulence"] = "light"
-
-    # print(wind)
+    eval_params["turbulence"] = "moderate"
 
     env0 = DummyVecEnv([lambda: gym.make(eval_params.get("env"), parameters=eval_params)])
     eval_env = VecNormalize.load((log_dir / "vec_normalize.pkl"), env0)
