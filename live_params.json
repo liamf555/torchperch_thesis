@@ -1,7 +1,7 @@
 {
     "env": "Bixler-v1",
     "controller": "sweep_elevator",
-    "scenario": "perching_long_airspeed_2",
+    "scenario": "perching_long",
     "algorithm": "PPO2",
     "latency": 0.0,
     "noise": 0.0,

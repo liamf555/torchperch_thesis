@@ -97,7 +97,9 @@ learning_rate = params.get("learning_rate"),
 noptepochs = params.get("noptepochs"),
 cliprange = params.get("cliprange"),
 lam = params.get("lam"),
-policy_kwargs=policy_kwargs)
+policy_kwargs=policy_kwargs,
+nminibatches=nminibatches,
+n_steps=n_steps)
 
 # wandb.config.update(params)
 # wandb.config.update({"policy": model.policy.__name__})

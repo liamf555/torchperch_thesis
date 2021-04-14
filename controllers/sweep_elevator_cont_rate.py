@@ -22,8 +22,6 @@ class Bixler_SweepElevatorContRate(common.BixlerController):
         
     def set_action(self,action):
 
-        
-
         self.next_elev_rate = action[0] * self.elev_rate_lim
         self.next_sweep_rate = action[1] * self.sweep_rate_lim
     

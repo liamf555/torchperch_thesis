@@ -21,7 +21,7 @@ import pandas as pd
 
 from wind.wind_sim import make_eval_wind
 from callbacks.callbacks import evaluate_policy
-from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv
+from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv, VecFrameStack
 
 
 def check_algorithm(algorithm_name):
@@ -54,12 +54,12 @@ def make_eval_envs(params, wind_args=None):
 parser = argparse.ArgumentParser(description='Load trained model and plot results')
 parser.add_argument('--dir_path', type=Path)
 parser.add_argument('--render_mode', type = str, default=None)
-parser.add_argument('--latency', type = float)
+parser.add_argument('--latency', action='store_true')
 parser.add_argument('--noise', type = float)
 parser.add_argument('--wind_mode', type = str)
 parser.add_argument('--wind_params', type = str, nargs='*')
-parser.add_argument('--variable_start', type =str)
 parser.add_argument('--turbulence', type = str, default = 'none')
+parser.add_argument('--variable_start', action='store_true')
 args = parser.parse_args()
 
 dir_path = args.dir_path
@@ -86,7 +86,7 @@ ModelType = check_algorithm(algorithm)
 final_model_path = algorithm + "_final_model.zip"
 final_model_path = dir_path / final_model_path
 
-best_model_path = dir_path / 'best_model.zip'
+# best_model_path = dir_path / 'best_model.zip'
 
 # final_model = ModelType.load(final_model_path)
 # best_model = ModelType.load(best_model_path)
@@ -103,13 +103,21 @@ for wind in wind_speeds:
     params["wind_params"] = [wind, 0.0, 0.0]
     params["wind_mode"] = "steady"
     params["turbulence"] = args.turbulence
+    params["latency"] = args.latency
+    params["variable_start"]=args.variable_start
+    params["noise"]=args.noise
+
+    print(params)
 
     # print(wind)
 
     env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
+    # env0 = VecFrameStack(env0, 4)
     eval_env = VecNormalize.load((dir_path / "vec_normalize.pkl"), env0)
     eval_env.training = False
 
+
+    
     final_model = ModelType.load(final_model_path)
     # best_model = ModelType.load(log_dir +"best_model.zip")
 
@@ -125,7 +133,7 @@ for wind in wind_speeds:
         # best_model_data_path =  eval_dir / 'best_model'
 
 
-    final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = str(final_model_data_path))
+    final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=50, return_episode_rewards=True, render=args.render_mode, path = str(final_model_data_path))
     mean_rewards.append(final_rewards)
 
         # best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = best_model_data_path)

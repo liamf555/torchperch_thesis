@@ -293,8 +293,6 @@ class Bixler(object):
 
         # print(f"Wind: {self.wind}")
 
-        # print(f"Gusts: {gusts}")
-
         # print(np.matmul(self.dcm_earth2body, self.wind.T))
 
         self.wind_b = np.matmul(self.dcm_earth2body, self.wind.T) + gusts.T
