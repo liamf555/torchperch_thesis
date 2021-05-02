@@ -65,7 +65,8 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
             episode_length += 1
             if render:
                 env.render(render)
-        env.env_method('save_plots', path = path, reward = episode_reward[0])
+        if render is not None: 
+            env.env_method('save_plots', path = path, reward = episode_reward[0])
         env.close()
         episode_rewards.append(episode_reward)
         episode_lengths.append(episode_length)
@@ -168,25 +169,23 @@ class EvalCallback(EventCallback):
             if self.log_path is not None:
                 self.evaluations_timesteps.append(self.num_timesteps)
                 self.evaluations_results.append(episode_rewards)
-                # self.evaluations_length.append(episode_lengths)
+                self.evaluations_length.append(episode_lengths)
                 np.savez(self.log_path, timesteps=self.evaluations_timesteps,
                          results=self.evaluations_results, ep_lengths=self.evaluations_length)
 
 
-            # mean_reward, std_reward = np.mean(episode_rewards), np.std(episode_rewards)
-            mean_reward = episode_rewards
+            mean_reward, std_reward = np.mean(episode_rewards), np.std(episode_rewards)
+            # mean_reward = episode_rewards
 
-            # mean_ep_length, std_ep_length = np.mean(episode_lengths), np.std(episode_lengths)
+            mean_ep_length, std_ep_length = np.mean(episode_lengths), np.std(episode_lengths)
             # Keep track of the last evaluation, useful for classes that derive from this callback
             self.last_mean_reward = mean_reward
 
             if self.verbose > 0:
-                # print("Eval num_timesteps={}, "
-                #       "episode_reward={:.2f} +/- {:.2f}".format(self.num_timesteps, mean_reward, std_reward))
                 print("Eval num_timesteps={}, "
-                    "episode_rewards={}".format(self.num_timesteps, mean_reward))
-                # print("Episode length: {:.2f} +/- {:.2f}".format(mean_ep_length, std_ep_length))
-                wandb.log({"eval_reward_"+str(wind_speeds[0]): mean_reward[0], "eval_reward_"+str(wind_speeds[1]): mean_reward[1], "eval_reward_"+str(wind_speeds[2]): mean_reward[2]})
+                      "episode_reward={:.2f} +/- {:.2f}".format(self.num_timesteps, mean_reward, std_reward))
+                print("Episode length: {:.2f} +/- {:.2f}".format(mean_ep_length, std_ep_length))
+                wandb.log({"eval_mean_reward": mean_reward})
 
             if all([mean > best for mean, best in zip(mean_reward, self.best_mean_reward)]):
                 if self.verbose > 0:

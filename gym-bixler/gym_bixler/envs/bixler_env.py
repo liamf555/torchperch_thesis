@@ -141,6 +141,9 @@ class BixlerEnv(Rendermixin, gym.Env):
             self.save_flag = True
             self.create_array()
 
+        if mode == None:
+            pass
+
     # def seed(self, seed=None):
     #     self.np_random, seed = gym.utils.seeding.np_random(seed)
     #     self.bixler.seed(seed)

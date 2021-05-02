@@ -106,18 +106,20 @@ class Transform():
 
 # Setup the model for inference
 
+with open(args.model_dir / "sim_params.json") as json_file:
+    original_params = json.load(json_file)
 
-with open(args.param_file) as json_file:
-            params = json.load(json_file)
+with open(args.param_file) as live_json_file:
+    live_params = json.load(live_json_file)
+
+params = {key: live_params.get(key, original_params[key]) for key in original_params}
 
 framestack_flag =  params.get("framestack")
-print(framestack_flag)
 ModelType = check_algorithm(params.get("algorithm"))
 env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
 if framestack_flag:
     env0 = LiveFrameStack(env0, 4)
 env = VecNormalize.load((args.model_dir / "vec_normalize"), env0)
-
 
 start_position = params.get("start_config")
 

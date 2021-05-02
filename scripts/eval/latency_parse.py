@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 # %%
-file_directory = Path("./experiments/logs/latency_logs/new")
+file_directory = Path("./experiments/logs/latency_logs/frames")
 dataframes = []
 # %%                
 for log in file_directory.glob('*.txt'):
@@ -62,19 +62,19 @@ final_frame["Latency"].hist(bins=100, normed=True)
 
 
 
-mu, sigma = 0, 1
-s = 19 + np.random.lognormal(mu, sigma, 10000000)
+# mu, sigma = 0, 1
+# s = 19 + np.random.lognormal(mu, sigma, 10000000)
 
 
-count, bins, ignored = plt.hist(s, 1000, density=True, align='mid')
+# count, bins, ignored = plt.hist(s, 1000, density=True, align='mid')
 
-x = np.linspace(min(bins), max(bins), 10000)
+# x = np.linspace(min(bins), max(bins), 10000)
 
-pdf = (np.exp(-(np.log(x) - mu)**2 / (2 * sigma**2))
+# pdf = (np.exp(-(np.log(x) - mu)**2 / (2 * sigma**2))
 
-       / (x * sigma * np.sqrt(2 * np.pi)))
+#        / (x * sigma * np.sqrt(2 * np.pi)))
 
-plt.plot(x, pdf, linewidth=2, color='r')
+# plt.plot(x, pdf, linewidth=2, color='r')
 
 axes = plt.gca()
 # axes.set_xlim([0,100])

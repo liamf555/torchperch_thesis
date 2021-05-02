@@ -44,7 +44,7 @@ class PiParse:
     def get_pitch(self, line):
         if 'pitch' in line:
             line_list = line.split(',')
-            line_list[0] = float(line_list[0].split(':[',1)[1].replace(']', '').strip())
+            line_list[0] = float(line_list[0].split(': [',1)[1].replace(']', '').strip())
             line_list[1] = float(line_list[1].split(': [',1)[1].replace(']', '').strip())
             self.pitch = line_list
 
@@ -213,12 +213,17 @@ reward_df.loc['SD'] = reward_df.std()
 cols=reward_df.columns.tolist()
 cols.sort()
 reward_df=reward_df[cols]
+# pd.set_option('display.max_columns', None)  
+# pd.set_option('display.expand_frame_repr', False)
+# pd.set_option('max_colwidth', -1)
 print(reward_df)
 
+for column in reward_df:
+    print(reward_df[column].to_string(index=False))
 
 pi_parser.make_fig()
 # pi_parser.plotter("wind_1_tail_1")
-pi_parser.plotter("gust_1_head_1")
+pi_parser.plotter("pl_cont_2")
 # pi_parser.plotter("wind_2_head_1")
 
 # pi_parser.plotter("baseline_1_head_2")

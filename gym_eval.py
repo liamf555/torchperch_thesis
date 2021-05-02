@@ -85,8 +85,7 @@ ModelType = check_algorithm(algorithm)
 
 final_model_path = algorithm + "_final_model.zip"
 final_model_path = dir_path / final_model_path
-
-# best_model_path = dir_path / 'best_model.zip'
+best_model_path = dir_path / 'best_model.zip'
 
 # final_model = ModelType.load(final_model_path)
 # best_model = ModelType.load(best_model_path)
@@ -94,7 +93,8 @@ final_model_path = dir_path / final_model_path
 # print(params)
 
 wind_speeds = [-8.0, -6.0, -4.0, -2.0, 0.0]
-mean_rewards = []
+final_mean_rewards = []
+best_mean_rewards = []
 
 for wind in wind_speeds:
 
@@ -112,14 +112,14 @@ for wind in wind_speeds:
     # print(wind)
 
     env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
-    # env0 = VecFrameStack(env0, 4)
+    env0 = VecFrameStack(env0, 4)
     eval_env = VecNormalize.load((dir_path / "vec_normalize.pkl"), env0)
     eval_env.training = False
 
 
     
     final_model = ModelType.load(final_model_path)
-    # best_model = ModelType.load(log_dir +"best_model.zip")
+    best_model = ModelType.load(best_model_path)
 
     final_model.set_env(eval_env)
 
@@ -130,11 +130,13 @@ for wind in wind_speeds:
     eval_dir.mkdir(parents=True, exist_ok=True)
 
     final_model_data_path = eval_dir / 'final_model'
-        # best_model_data_path =  eval_dir / 'best_model'
+    best_model_data_path =  eval_dir / 'best_model'
 
 
-    final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=50, return_episode_rewards=True, render=args.render_mode, path = str(final_model_data_path))
-    mean_rewards.append(final_rewards)
+    final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=100, return_episode_rewards=True, render=args.render_mode, path = str(final_model_data_path))
+    best_rewards = evaluate_policy(best_model, eval_env, n_eval_episodes=100, return_episode_rewards=True, render=args.render_mode, path = str(best_model_data_path))
+    final_mean_rewards.append(final_rewards)
+    best_mean_rewards.append(best_rewards)
 
         # best_rewards, best_reward_speeds = evaluate_policy(best_model, eval_envs, n_eval_episodes=1, return_episode_rewards=True, render=args.render_mode, path = best_model_data_path)
 
@@ -145,7 +147,12 @@ for wind in wind_speeds:
 
     # print(final_rewards)
 
-for reward in mean_rewards:
+for reward in final_mean_rewards:
+    print(reward)
+
+print("best model")
+
+for reward in best_mean_rewards:
     print(reward)
 
 
