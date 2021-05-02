@@ -8,11 +8,14 @@ python json_mod.py --log_file ../output/$EPOCHTIME/ \
     --wind_params -6 0   \
     --scenario perching_long \
     --controller sweep_elevator\
-    --turbulence moderate \
-    --timesteps 10000 \
-    --start_config -40 -5 \
+    --turbulence light \
+    --timesteps 40000000 \
+    --start_config -40 -10 \
     --net_arch medium  \
-    --framestack none
+    --framestack none \
+    --variable_start \
+    --obs_noise
+
 
 python gym_learn.py ../output/$EPOCHTIME/sim_params.json
 

@@ -7,7 +7,7 @@
 #PBS -m abe
 #PBS -M liam.fletcher@bristol.ac.uk
 
-## Run with one node and 4 cores per job
+## Run with one node and 8 cores per job
 #PBS -l select=1:ncpus=8
 
 ## Run with a maximum of 6h walltime
@@ -45,14 +45,17 @@ python json_mod.py --log_file /$WORK/output/$JOB_NID/ \
     --wind_params -8 0 \
     --scenario perching_long_airspeed_2 \
     --controller sweep_elevator_cont_rate \
-    --turbulence moderate \
+    --turbulence light \
     --framestack none \
-    --timesteps 20000000 \
-    --start_config -40 -5 \
+    --timesteps 40000000 \
+    --start_config -40 -10 \
     --net_arch medium \
-    --variable_start \
+    --latency \
     --obs_noise \
-    --latency
+    --noise 0.3 \
+    --variable_start
+   
+
 
 echo "Beginning training"
 

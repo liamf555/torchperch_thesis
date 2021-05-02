@@ -66,7 +66,7 @@ policy_kwargs = dict(
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-model = ModelType('MlpPolicy', env, verbose=1, tensorboard_log=log_dir, policy_kwargs = policy_kwargs)
+model = ModelType('MlpPolicy', env, verbose=0, tensorboard_log=log_dir, policy_kwargs = policy_kwargs, n_steps=2048, nminibatches=32) #n_steps=2048, nminibatches=32
 
 # model = ModelType('MlpLstmPolicy', env, verbose=0, tensorboard_log=log_dir)
 # model = ModelType(MlpPolicy, env, verbose=0, tensorboard_log=log_dir)
@@ -88,21 +88,19 @@ eval_params["noise"]= 0.3
 
 
 eval_env = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=eval_params)])
-eval_env = VecNormalize(eval_env, norm_reward=False, obs_noise=params.get("obs_noise"), training=False)
-
-
-# TODO framestacking
 
 try: 
 	eval_env = VecFrameStack(eval_env, int(params.get("framestack")))
 except:
 	pass
 
+eval_env = VecNormalize(eval_env, norm_reward=False, obs_noise=params.get("obs_noise"), training=False)
+
 eval_env.training = False
 
 eval_callback = EvalCallback(eval_env, best_model_save_path=log_dir,
-                             log_path=log_dir, eval_freq=1000,
-                             deterministic=True, render=False, n_eval_episodes=100)
+                             log_path=log_dir, eval_freq=25000,
+                             deterministic=True, render=False, n_eval_episodes=200)
  
 model.learn(total_timesteps = wandb.config.timesteps, callback=eval_callback)
 
@@ -118,12 +116,6 @@ wandb.save(str(log_dir / "best_model.zip"))
 
 del model
 
-
-eval_params["turbulence"] = "light"
-eval_params["latency"] = True
-eval_params["variable_start"]=True
-eval_params["noise"]= 0.3
-
 env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=eval_params)])
 try: 
 	env0 = VecFrameStack(env0, int(params.get("framestack")))
@@ -138,12 +130,8 @@ best_model = ModelType.load(str(log_dir / "best_model.zip"))
 final_model.set_env(eval_env)
 best_model.set_env(eval_env)
 
-final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=100, return_episode_rewards=False, render=False)
-best_model_rewards = evaluate_policy(best_model, eval_env, n_eval_episodes=100, return_episode_rewards=False, render=False)
-
-print(final_rewards)
-print(best_model_rewards)
+final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=500, return_episode_rewards=False, render=False)
+best_model_rewards = evaluate_policy(best_model, eval_env, n_eval_episodes=500, return_episode_rewards=False, render=False)
 
 wandb.log({'final_model_eval': final_rewards[0]})
 wandb.log({'best_model_eval': best_model_rewards[0]})
-# wandb.save(str(log_dir/'eval/*'))
