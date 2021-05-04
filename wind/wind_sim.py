@@ -35,6 +35,8 @@ class Wind(object):
         if self.wind_mode == 'uniform':
             wind_north = np.random.uniform(self.wind_params[0], self.wind_params[1])
             self.wind_vector = [wind_north, 0, 0]
+
+            # print(self.wind_vector)
             
             # wandb.log({"wind_speed": self.wind_vector[0]})
 

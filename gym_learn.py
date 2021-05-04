@@ -66,7 +66,7 @@ policy_kwargs = dict(
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-model = ModelType('MlpPolicy', env, verbose=0, tensorboard_log=log_dir, policy_kwargs = policy_kwargs, n_steps=2048, nminibatches=32) #n_steps=2048, nminibatches=32
+model = ModelType('MlpPolicy', env, verbose=0, tensorboard_log=log_dir, policy_kwargs = policy_kwargs) #n_steps=2048, nminibatches=32
 
 # model = ModelType('MlpLstmPolicy', env, verbose=0, tensorboard_log=log_dir)
 # model = ModelType(MlpPolicy, env, verbose=0, tensorboard_log=log_dir)
@@ -81,10 +81,15 @@ for key, value in vars(model).items():
 
 eval_params = params
 
-eval_params["turbulence"] = "light"
-eval_params["latency"] = True
-eval_params["variable_start"]= True
-eval_params["noise"]= 0.3
+# eval_params["turbulence"] = "light"
+# eval_params["latency"] = True
+# eval_params["variable_start"]= True
+# eval_params["noise"]= 0.3
+
+eval_params["turbulence"] = "none"
+eval_params["latency"] = False
+eval_params["variable_start"]= False
+eval_params["noise"]= 0.0
 
 
 eval_env = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=eval_params)])

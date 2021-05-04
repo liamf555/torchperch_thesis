@@ -258,7 +258,6 @@ class Bixler(object):
         # Get sum of forces on in body frame
         force_b = aeroforces_b + weight_b + thrust_b
 
-
         # Get acceleration of body
         self.acceleration_b = force_b * (1/self.mass)
         # Remove effects of rotating reference frame
@@ -290,6 +289,8 @@ class Bixler(object):
     def update_air_data(self, gusts):
 
         self.wind = self.wind_sim.get_wind()
+
+        # print(self.wind)
 
         # print(f"Wind: {self.wind}")
 

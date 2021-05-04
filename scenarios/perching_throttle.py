@@ -1,4 +1,5 @@
 import numpy as np
+import wandb
 
 # Perching scenario
 
@@ -10,7 +11,6 @@ h_min = -20
 def wrap_class(BixlerClass, parameters):
     class PerchingBixler(BixlerClass):
                 def __init__(self):
-
                     super(PerchingBixler,self).__init__(parameters)
                     self.variable_start = parameters.get("variable_start")
                     self.start_config = tuple(parameters.get("start_config"))
@@ -24,9 +24,11 @@ def wrap_class(BixlerClass, parameters):
                     # Check x remains sensible
                     if not is_in_range(self.position_e[0,0],-50,10):
                         return True
-                    # Check y remains sensible
-                    if not is_in_range(self.position_e[1,0],-2,2):
-                        return True
+                    # Check not trying to turn throttle back on
+                    # if self.throttle_change and self.throttle_on:
+                    #     return True 
+                    if self.throttle_on and abs(self.orientation_e[1,0] > np.deg2rad(15)):
+                        return True 
                     # Check z remains sensible (i.e. not crashed)
                     if not is_in_range(self.position_e[2,0],h_min,1):
                         return True
@@ -38,29 +40,15 @@ def wrap_class(BixlerClass, parameters):
                         return True    
                     return False
         
-                # def get_reward(self):
-                #     if self.is_terminal():
-                #         if self.is_out_of_bounds():
-                #             return failReward
-                #         cost_vector = np.array([10,0,1, 0,100,0, 10,0,10, 0,0,0, 0,0])
-                #         cost = np.dot( np.squeeze(self.get_state()) ** 2, cost_vector ) / 2500
-                #         # product_list = [a*b for a,b in zip((np.squeeze(self.get_state()) ** 2), cost_vector)]
-                #         # product_list = [a/2500 for a in product_list]
-                #         # mask = [0,2,4,6,8]
-                #         # product_list = [product_list[i] for i in mask]
-                #         # product_list = [1/(sum(product_list)/a) for a in product_list]
-                #         # print(product_list)
-                #         return  ((1.0 - cost) * 2.0) - 1.0
-                #     return 0.0
-
-                 #     return 0.0
                 @staticmethod
                 def gaussian(x, sig = 0.4, mu = 0):   
-                           return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2)/2)
+                    return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2)/2)
                 
                 def get_reward(self):
                     if self.is_terminal():
                         if self.is_out_of_bounds():
+                            return failReward
+                        if self.throttle_change == 0:
                             return failReward
                         obs = np.array([self.position_e[0,0], self.position_e[2,0], self.orientation_e[1,0], self.velocity_b[0,0], self.velocity_b[2,0]])
                         # print(obs)
@@ -68,11 +56,12 @@ def wrap_class(BixlerClass, parameters):
                         bound = np.array([15, 5, np.deg2rad(20),10,10])
                         cost = (target_state - obs)/bound
                         cost = list(map(self.gaussian, cost))
-                        reward = np.prod(cost)
+                        reward = np.prod(cost) * ((1/np.exp(self.throttle_change) * np.exp(1)))
+                        # print(self.throttle_change)
+                        wandb.log({"throttle_change": self.throttle_change})
                         return reward
                     return 0.0
 
-        
                 def is_terminal(self):
                     # Terminal point is floor
                     if self.position_e[2,0] > 0:
@@ -88,8 +77,9 @@ def wrap_class(BixlerClass, parameters):
                         state=self.get_state()
 
                     obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
+                    obs = np.concatenate((obs, [[self.throttle_change]]), axis = 1)
 
-                    obs = np.concatenate((obs, [[self.throttle]]), axis = 1)
+                    # print(obs)
 
                     # pb2 = np.pi*2
                     # mins = np.array([ -50,  h_min,  -pb2, -10, -10,  -pb2,  self.sweep_limits[0], self.elev_limits[0]])
@@ -104,29 +94,26 @@ def wrap_class(BixlerClass, parameters):
                     wind = self.wind_sim.get_wind()
 
                     if self.variable_start:
-                         # start_shift_theta = self.np_random.normal(0, 0.0262) #shift +-3.5degs in theta
-                         # initial_state[:,4] = start_shift_theta
-                         # start_shift_u =  self.np_random.uniform(-1.0, 1.0)
-                        # start_shift_w = self.np_random.uniform(-1.0, 1.0)
-
-                        # Scale for +- 1m/s
-                        # initial_state[:,6] = start_shift_u
-                        # initial_state[:,8] += start_shift_w
-                         
+                        theta = self.np_random.normal(0, 0.0524) #shift +-3.5degs in theta
                         self.airspeed = self.np_random.normal(13, 0.75) 
 
                     else:
                         self.airspeed = 13 # m/s
-                
+                        theta = 0.0
+
                     u = (self.airspeed + wind[0])[0]
                     self.velocity_e = np.array([[0],[0],[0]])
                     self.velocity_e[0][0] = u
+                    self.throttle_on = True
+                    self.throttle_change = 0
+                    self.prev_throttle = True
                     
-                    initial_state = np.array([[self.start_config[0],0, self.start_config[1], 0,0,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
+                    initial_state = np.array([[self.start_config[0],0, self.start_config[1], 0,theta,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
 
-                    # print(self.airspeed, u, initial_state)
+                    # print(f"u: {start_shift_u}, wind: {wind[0]}, airspeed: {target_airspeed}")
 
                     self.set_state(initial_state)
+
 
 
     return PerchingBixler
