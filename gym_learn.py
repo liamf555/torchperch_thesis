@@ -31,9 +31,9 @@ args = parser.parse_args()
 
 os.environ["WANDB_API_KEY"] = "ea17412f95c94dfcc41410f554ef62a1aff388ab"
 
-# wandb.init(project="disco", sync_tensorboard=True)
+wandb.init(project="disco", sync_tensorboard=True)
 
-wandb.init(project="disco", sync_tensorboard=True, dir="/work/tu18537/")
+# wandb.init(project="disco", sync_tensorboard=True, dir="/work/tu18537/")
 
 def check_algorithm(algorithm_name):
 	if hasattr(stable_baselines,algorithm_name):

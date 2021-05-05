@@ -7,11 +7,11 @@ python json_mod.py --log_file ../output/$EPOCHTIME/ \
     --wind_mode steady \
     --wind_params 0 0 0 \
     --scenario perching_long \
-    --controller sweep_elevator_cont_rate\
-    --turbulence none \
-    --timesteps 10000000 \
-    --start_config -40 -5 \
-    --net_arch small  \
+    --controller sweep_elevator\
+    --turbulence light \
+    --timesteps 40000000 \
+    --start_config -40 -10 \
+    --net_arch medium  \
     --framestack none \
     --variable_start \
     --obs_noise

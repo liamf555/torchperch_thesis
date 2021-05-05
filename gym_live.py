@@ -27,9 +27,10 @@ import time
 from pymavlink import mavutil
 import argparse
 
-from stable_baselines import DQN, PPO2
-from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv, VecFrameStack
+from gym_bixler.envs.live_frame_stack import LiveFrameStack
 
+from stable_baselines import PPO2
+from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv, VecFrameStack
 def check_algorithm(algorithm_name):
 	if hasattr(stable_baselines,algorithm_name):
 		return getattr(stable_baselines,algorithm_name)
@@ -65,10 +66,10 @@ def check_heartbeat(master):
 
 class Transform():
 
-    def __init__(self):
+    def __init__(self, start_position):
         self.o_agent_ekf = np.zeros((3,1))
         self.rotation = np.identity(3)
-        self.offset_vector = np.array([[40], [0], [5]])
+        self.offset_vector = np.array([[-start_position[0]], [0], [-start_position[1]]])
 
     def setup(self, state):
 
@@ -85,9 +86,6 @@ class Transform():
             ])
 
         offset_vector_rot = np.matmul(rot, self.offset_vector)
-
-        position = np.transpose(state[:,0:3])
-
         self.o_agent_ekf = position_ekf + offset_vector_rot
 
         self.rotation = np.transpose(rot)
@@ -112,14 +110,16 @@ class Transform():
 with open(args.param_file) as json_file:
             params = json.load(json_file)
 
+framestack_flag =  params.get("framestack")
+print(framestack_flag)
 ModelType = check_algorithm(params.get("algorithm"))
 env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
-# try: 
-# 	env0 = VecFrameStack(env0, int(params.get("framestack")))
-# except:
-#     pass
-
+if framestack_flag:
+    env0 = LiveFrameStack(env0, 4)
 env = VecNormalize.load((args.model_dir / "vec_normalize"), env0)
+
+
+start_position = params.get("start_config")
 
 env.training = False
 model = ModelType.load(args.model_dir / (str(ModelType.__name__)))
@@ -139,7 +139,7 @@ master.wait_heartbeat()
 check_heartbeat.last_heartbeat_time = time.time() - 10.0
 check_heartbeat(master)
 
-transform = Transform()
+transform = Transform(start_position)
 in_episode = False
 
 pprint.pprint(params)
@@ -174,6 +174,7 @@ while True:
         print("Episode start")
         transform.setup(real_state)
         in_episode = True
+        env.stack_reset()
 
     transformed_state = transform.apply(real_state.copy())
 
@@ -192,6 +193,8 @@ while True:
 	 # Normalise state for model
 
     obs = env.normalize_obs(transformed_state)
+    if framestack_flag:
+        obs = env.stack_obs(obs)
 
 	    # # Get optimal action
     action, _states = model.predict(obs, deterministic=True)

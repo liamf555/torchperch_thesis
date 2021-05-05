@@ -8,6 +8,8 @@ import numpy as np
 import controllers
 import scenarios
 
+from .live_frame_stack import LiveFrameStack
+
 def check_controller(controller_name):
 	if hasattr(controllers,controller_name):
 		return getattr(controllers,controller_name)
@@ -91,4 +93,7 @@ class BixlerEnvLive(gym.Env):
         pass
 
     def set_bixler_action(self, action):
-        self.bixler.set_action(action)  
+        self.bixler.set_action(action) 
+
+    def live_frame_stack_init(env, n_stack):
+        return LiveFrameStack(env, n_stack)
