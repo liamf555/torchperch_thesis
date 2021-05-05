@@ -27,4 +27,4 @@ echo "Activated environment"
 
 wandb login ea17412f95c94dfcc41410f554ef62a1aff388ab
 
-wandb agent tu18537/torchperch/v2gif7gp
+wandb agent tu18537/torchperch/8ulpfj99

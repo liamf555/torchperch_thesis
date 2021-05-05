@@ -17,46 +17,14 @@ import gym
 import gym_bixler
 import stable_baselines
 
-# from stable_baselines.deepq.policies import MlpPolicy
-# from stable_baselines.sac.policies import MlpPolicy
-# from stable_baselines.common.policies import MlpPolicy
-# from stable_baselines.bench import Monitor
-# from stable_baselines.common.evaluation import evaluate_policy
-from callbacks.callbacks import EvalCallback, evaluate_policy
+# from callbacks.callbacks import evaluate_policy
 from wind.wind_sim import make_eval_wind
 
 from pathlib import Path
-
-# from stable_baselines.common.cmd_util import make_vec_env
-
-# from stable_baselines import DQN, PPO2, SAC
-
 from stable_baselines.common.cmd_util import make_vec_env
+from stable_baselines.common.evaluation import evaluate_policy
 from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv, VecFrameStack
-
-def make_eval_env(params):
-
-	if params.get("wind_mode") == 'normal':
-		params["wind_mode"] = 'normal_eval'   
-		wind_north = make_eval_wind("normal_eval", params["wind_params"])
-
-	if params.get("wind_mode") == "steady":
-		params["wind_mode"] = 'steady_eval'   
-		wind_north = make_eval_wind("steady_eval", params["wind_params"])
-
-	eval_envs = []
-
-	for wind in wind_north:
-		
-		params["wind_params"] = [wind, 0, 0]
-
-		# eval_env = gym.make(params.get("env"), parameters = params)
-		eval_env = make_vec_env(lambda: gym.make(params.get("env"), parameters=params), n_envs=8, seed=0)
-
-		eval_envs.append(eval_env)
-
-	return eval_envs
-
+from stable_baselines.common.callbacks import EvalCallback
 parser = argparse.ArgumentParser(description='Parse param file location')
 parser.add_argument("param_file", type =str, default="sim_params.json")
 args = parser.parse_args()
@@ -98,7 +66,7 @@ policy_kwargs = dict(
 
 ModelType = check_algorithm(params.get("algorithm"))
 
-model = ModelType('MlpPolicy', env, verbose=0, tensorboard_log=log_dir, policy_kwargs = policy_kwargs)
+model = ModelType('MlpPolicy', env, verbose=0, tensorboard_log=log_dir, policy_kwargs = policy_kwargs, n_steps=2048, nminibatches=32) #n_steps=2048, nminibatches=32
 
 # model = ModelType('MlpLstmPolicy', env, verbose=0, tensorboard_log=log_dir)
 # model = ModelType(MlpPolicy, env, verbose=0, tensorboard_log=log_dir)
@@ -109,8 +77,32 @@ wandb.config.update({"policy": model.policy.__name__})
 for key, value in vars(model).items():
 	if type(value) == float or type(value) == str or type(value) == int:
 		wandb.config.update({key: value})
+
+
+eval_params = params
+
+eval_params["turbulence"] = "light"
+eval_params["latency"] = True
+eval_params["variable_start"]= True
+eval_params["noise"]= 0.3
+
+
+eval_env = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=eval_params)])
+
+try: 
+	eval_env = VecFrameStack(eval_env, int(params.get("framestack")))
+except:
+	pass
+
+eval_env = VecNormalize(eval_env, norm_reward=False, obs_noise=params.get("obs_noise"), training=False)
+
+eval_env.training = False
+
+eval_callback = EvalCallback(eval_env, best_model_save_path=log_dir,
+                             log_path=log_dir, eval_freq=25000,
+                             deterministic=True, render=False, n_eval_episodes=200)
  
-model.learn(total_timesteps = wandb.config.timesteps)
+model.learn(total_timesteps = wandb.config.timesteps, callback=eval_callback)
 
 model.save(params.get("model_file"))
 
@@ -119,25 +111,27 @@ env.save(str(vec_file))
 wandb.save(str(vec_file))
 wandb.save(params.get("model_file") + ".zip")
 wandb.save(args.param_file)
-# wandb.save(str(log_dir / "best_model.zip"))
+wandb.save(str(log_dir / "best_model.zip"))
 # wandb.save(str(log_dir / "monitor.csv"))
 
-# del model
+del model
 
-# params["training"] = False
+env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=eval_params)])
+try: 
+	env0 = VecFrameStack(env0, int(params.get("framestack")))
+except:
+	pass
+eval_env = VecNormalize.load(vec_file, env0)
+eval_env.training = False
 
+final_model = ModelType.load(params.get("model_file"))
+best_model = ModelType.load(str(log_dir / "best_model.zip"))
 
-# env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
-# eval_env = VecNormalize.load((vec_file), env0)
-# eval_env.training = False
+final_model.set_env(eval_env)
+best_model.set_env(eval_env)
 
-# final_model = ModelType.load(params.get("model_file"))
+final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=500, return_episode_rewards=False, render=False)
+best_model_rewards = evaluate_policy(best_model, eval_env, n_eval_episodes=500, return_episode_rewards=False, render=False)
 
-# final_model.set_env(eval_env)
-
-# final_model_eval = evaluate_policy(final_model, eval_env, n_eval_episodes=1, return_episode_rewards=True, render='save', path = str(log_dir/ 'eval/final_model'))
-
-# final_model_eval = round(final_model_eval, 4)
-
-# wandb.log({'final_model_eval': final_model_eval})
-# wandb.save(str(log_dir/'eval/*'))
+wandb.log({'final_model_eval': final_rewards[0]})
+wandb.log({'best_model_eval': best_model_rewards[0]})

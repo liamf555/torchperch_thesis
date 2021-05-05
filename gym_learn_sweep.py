@@ -51,7 +51,7 @@ hyperparameter_defaults = dict(
 
 os.environ["WANDB_API_KEY"] = "ea17412f95c94dfcc41410f554ef62a1aff388ab"
 
-wandb.init(sync_tensorboard=True, config=hyperparameter_defaults)
+wandb.init(sync_tensorboard=True, config=hyperparameter_defaults, dir="/work/tu18537/")
 params=wandb.config
 
 def check_algorithm(algorithm_name):
@@ -84,8 +84,8 @@ else:
   nminibatches = int(n_steps / batch_size)
 
 unixepoch = int(time.time()) 
-# log_dir = "/work/tu18537/sweep/" + str(unixepoch) + "/"
-log_dir = "../output/sweep/" + str(unixepoch) + "/"
+log_dir = "/work/tu18537/sweep/" + str(unixepoch) + "/"
+# log_dir = "../output/sweep/" + str(unixepoch) + "/"
 log_dir = Path(log_dir)
 log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -97,7 +97,9 @@ learning_rate = params.get("learning_rate"),
 noptepochs = params.get("noptepochs"),
 cliprange = params.get("cliprange"),
 lam = params.get("lam"),
-policy_kwargs=policy_kwargs)
+policy_kwargs=policy_kwargs,
+nminibatches=nminibatches,
+n_steps=n_steps)
 
 # wandb.config.update(params)
 # wandb.config.update({"policy": model.policy.__name__})
@@ -133,7 +135,7 @@ for wind in wind_speeds:
 
     final_model.set_env(eval_env)
 
-    final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=20, return_episode_rewards=True, render='save')
+    final_rewards = evaluate_policy(final_model, eval_env, n_eval_episodes=50, return_episode_rewards=True, render='save')
     mean_rewards.append(final_rewards)
 
 eval_mean_reward = sum(mean_rewards) / len(mean_rewards)
