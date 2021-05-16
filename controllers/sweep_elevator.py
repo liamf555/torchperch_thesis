@@ -28,6 +28,7 @@ class Bixler_SweepElevator(common.BixlerController):
 
         self.next_elev_rate = self.elev_rates[elev_rate_idx]
         self.next_sweep_rate = self.sweep_rates[sweep_rate_idx]
+        
         self.time_since_action = 0.0
         if self.latency_on:
             self.latency = (18 + np.random.lognormal(0, 1))/1000

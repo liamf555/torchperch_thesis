@@ -4,15 +4,16 @@ EPOCHTIME=$(date +%s)
 
 python json_mod.py --log_file ../output/$EPOCHTIME/ \
     --algorithm PPO2 \
-    --wind_mode steady \
-    --wind_params -6 0 0  \
+    --wind_mode uniform \
+    --wind_params -6 0  \
     --scenario perching_throttle \
     --controller throttle_delay \
     --turbulence none \
     --timesteps 1000000 \
     --start_config -40 -5 \
     --net_arch small  \
-    --framestack none
+    --framestack none \
+    --variable_start
 
 python gym_learn.py ../output/$EPOCHTIME/sim_params.json
 
