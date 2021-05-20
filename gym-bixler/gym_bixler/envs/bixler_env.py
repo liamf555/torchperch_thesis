@@ -123,6 +123,7 @@ class BixlerEnv(Rendermixin, gym.Env):
                 state_list.insert(0, 0)
                 state_list.append(self.bixler.alpha)
                 state_list.append(self.bixler.airspeed)
+                state_list.append(self.bixler.throttle)
                 self.state_array = []
                 self.state_array.append(state_list)
                 self.render_flag_entry = False
@@ -162,7 +163,7 @@ class BixlerEnv(Rendermixin, gym.Env):
         state_list.insert(0, self.time)
         state_list.append(self.bixler.alpha)
         state_list.append(self.bixler.airspeed)
-        # state_list.append(self.bixler.throttle)
+        state_list.append(self.bixler.throttle)
         self.state_array.append(state_list)
         
         

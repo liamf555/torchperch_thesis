@@ -92,7 +92,7 @@ best_model_path = dir_path / 'best_model.zip'
 
 # print(params)
 
-wind_speeds = [-8.0, -6.0, -4.0, -2.0, 0.0]
+wind_speeds = [-6.0, -4.0, -2.0, 0.0]
 final_mean_rewards = []
 best_mean_rewards = []
 
@@ -112,7 +112,7 @@ for wind in wind_speeds:
     # print(wind)
 
     env0 = DummyVecEnv([lambda: gym.make(params.get("env"), parameters=params)])
-    env0 = VecFrameStack(env0, 4)
+    # env0 = VecFrameStack(env0, 4)
     eval_env = VecNormalize.load((dir_path / "vec_normalize.pkl"), env0)
     eval_env.training = False
 

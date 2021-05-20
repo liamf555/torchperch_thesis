@@ -16,7 +16,7 @@ class Rendermixin(object):
 
             pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-            self.df = pd.DataFrame(self.state_array,columns = ['t', 'x','y', 'z', 'phi', 'theta', 'psi', 'u', 'v', 'w', 'p', 'q', 'r', 'sweep', 'elev', 'vn', 've', 'vd', 'alpha', 'airspeed'])
+            self.df = pd.DataFrame(self.state_array,columns = ['t', 'x','y', 'z', 'phi', 'theta', 'psi', 'u', 'v', 'w', 'p', 'q', 'r', 'sweep', 'elev', 'vn', 've', 'vd', 'alpha', 'airspeed', 'throttle'])
 
             self.state_array = []
 
@@ -111,6 +111,8 @@ class Rendermixin(object):
             ax6.set_xlabel("Time(s)", fontsize=12)
             ax6.set_ylabel(r'Body Velocities (m/s)', fontsize=12)
             ax6.grid()
+
+            self.df.plot(x="t", y= "throttle")
             
             # plt.savefig(path+'.png')
             

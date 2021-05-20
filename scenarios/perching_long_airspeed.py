@@ -89,7 +89,7 @@ def wrap_class(BixlerClass, parameters):
 
                     obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
 
-                    obs = np.concatenate((obs, [[self.throttle]]), axis = 1)
+                    obs = np.concatenate((obs, [[self.airspeed]]), axis = 1)
 
                     # pb2 = np.pi*2
                     # mins = np.array([ -50,  h_min,  -pb2, -10, -10,  -pb2,  self.sweep_limits[0], self.elev_limits[0]])

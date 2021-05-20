@@ -127,12 +127,13 @@ class Bixler(object):
         self.sweep         = np.float64(state[0,12])
         self.elev          = np.float64(state[0,13])
         self.tip_port      = np.float64(state[0,14])
-        
+
+        self.update_dcms()
         # Ensure air data reflects new state
         self.update_air_data(np.zeros((3,1)))
         self.dryden.reset()
         
-        self.update_dcms()
+
 
     def step(self, steptime):
         # Update the cosine matricies
@@ -247,16 +248,21 @@ class Bixler(object):
 
     def update_derivatives(self):
         aeroforces_w, moments_w = self.get_forces_and_moments()
+
         
         # Forces
         # Rotate forces into body frame
         aeroforces_b = np.matmul(self.dcm_wind2body, aeroforces_w)
+
+
         # Rotate weight into the body frame
         weight_b = np.matmul(self.dcm_earth2body, self.weight)
         # Generate a thrust force (Assumes directly on x_body)
         thrust_b = np.array([[self.throttle],[0],[0]])
         # Get sum of forces on in body frame
         force_b = aeroforces_b + weight_b + thrust_b
+
+        # print(self.dcm_wind2body)
 
         # Get acceleration of body
         self.acceleration_b = force_b * (1/self.mass)
@@ -326,16 +332,19 @@ class Bixler(object):
 
         # print(self.alpha)
         
-        if self.airspeed == 0:
-            self.beta = 0
-        else:
-            cosBeta = (uSqd + wSqd) / (self.airspeed * np.sqrt( uSqd + wSqd ))
-            # numpy slowness...
-            #cosBeta = np.clip(cosBeta,-1.0,1.0)
-            if cosBeta < -1.0: cosBeta = -1.0
-            elif cosBeta > 1.0: cosBeta = 1.0
-            # Apply sign convention
-            self.beta = np.rad2deg(np.copysign(np.arccos(cosBeta), self.Vr[1][0]))
+        # if self.airspeed == 0:
+        #     self.beta = 0
+        # else:
+        #     # cosBeta = (uSqd + wSqd) / (self.airspeed * np.sqrt( uSqd + wSqd ))
+        #     # # numpy slowness...
+        #     # #cosBeta = np.clip(cosBeta,-1.0,1.0)
+        #     # if cosBeta < -1.0: cosBeta = -1.0
+        #     # elif cosBeta > 1.0: cosBeta = 1.0
+        #     # # Apply sign convention
+        #     # self.beta = np.rad2deg(np.copysign(np.arccos(cosBeta), self.Vr[1][0]))
+        self.beta = 0.0
+
+        # print(self.alpha)
     
     def wrap_orientation(self):
         self.orientation_e = (self.orientation_e + np.pi*2) % (np.pi*2)
@@ -363,6 +372,7 @@ class Bixler(object):
 
         # Drag
         C_D = C_D0 + C_Dalpha * self.alpha
+
 
         D = Q * self.S * C_D
         X = -D
