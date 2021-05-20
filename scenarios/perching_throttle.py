@@ -107,6 +107,8 @@ def wrap_class(BixlerClass, parameters):
                     self.throttle_on = True
                     self.throttle_change = 0
                     self.prev_throttle = True
+                    self.time_log = True
+                    self.change_time = 0
                     
                     initial_state = np.array([[self.start_config[0],0, self.start_config[1], 0,theta,0, u,0,0, 0,0,0, 0,0,0]], dtype="float64")
 

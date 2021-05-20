@@ -1,5 +1,6 @@
 import numpy as np
 import controllers.common as common
+import wandb
 
 # Bixler wrapper to set what control surfaces are utilised by the NN
 class Bixler_ThrottleDelay(common.BixlerController):
@@ -18,6 +19,8 @@ class Bixler_ThrottleDelay(common.BixlerController):
         self.throttle_on = True
         self.throttle_change = 0
         self.prev_throttle = True
+        self.change_time = 0
+        self.time_log = True
 
         #Latency params
         self.latency_on = parameters.get("latency") # (sec)
@@ -42,8 +45,13 @@ class Bixler_ThrottleDelay(common.BixlerController):
         elif action[2] == 1:
             self.throttle_on = True
 
+        self.change_time += 0.1
+
         if (self.prev_throttle == True and self.throttle_on == False) or (self.prev_throttle == False and self.throttle_on == True):
-            self.throttle_change += 1 
+            self.throttle_change += 1
+            if self.throttle_change == 1 and self.time_log == True:
+                wandb.log({"change_time": self.change_time})
+                self.time_log = False 
         
         self.prev_throttle = self.throttle_on
 
