@@ -36,19 +36,27 @@ for i, f in enumerate(files, 1):
     ax2.tick_params(labelsize=12)
     ax2.grid()
 
+
     ax3 = fig.add_subplot(3,2,3)
     #Sweep
-    df.plot(x = 't', y = 'sweep',  ax = ax3, label = os.path.splitext(f)[0],  legend=True, color=colours[i])
+    df.plot(x = 't', y = 'sweep',  ax = ax3, label = os.path.splitext(f)[0], linestyle='-',  legend=True, color=colours[i])
+    df.plot(x = 't', y = 'elev',  ax = ax3, label = os.path.splitext(f)[0], linestyle='--',  legend=True, color=colours[i])
     ax3.set_xlabel("Time (s)", fontsize=18)
-    ax3.set_ylabel(r'Sweep (deg)', fontsize=18)
+    ax3.set_ylabel(r'Deflection (deg)', fontsize=18)
     ax3.tick_params(labelsize=12)
     ax3.grid()
 
+    custom_lines = [Line2D([0], [0], color='k', linestyle = '-',  lw=2),
+                        Line2D([0], [0], color='k', linestyle = '--', lw=2)]
+
+    ax3.legend(custom_lines, ['Sweep', 'Elevator'])
+
+
     ax4 = fig.add_subplot(3,2,4)
     #elev
-    df.plot(x = 't', y = 'elev',  ax = ax4, label = os.path.splitext(f)[0],  legend=True, color=colours[i])
+    df.plot(x = 't', y = 'throttle',  ax = ax4, label = os.path.splitext(f)[0],  legend=True, color=colours[i])
     ax4.set_xlabel("Time (s)", fontsize=18)
-    ax4.set_ylabel(r'Elevator (deg)', fontsize=18)
+    ax4.set_ylabel(r'Thrust (N)', fontsize=18)
     ax4.tick_params(labelsize=12)
     ax4.grid()
     
@@ -86,12 +94,7 @@ for i, f in enumerate(files, 1):
     ax6.grid()
     # ax6.grid()
 
-
-
-
-
-
-axis = [ax1, ax2, ax3, ax4, ax5]
+axis = [ax1, ax2, ax4, ax5]
 
 for ax in axis:
 

@@ -223,7 +223,8 @@ for column in reward_df:
 
 pi_parser.make_fig()
 # pi_parser.plotter("wind_1_tail_1")
-pi_parser.plotter("pl_cont_2")
+pi_parser.plotter("baseline_2")
+pi_parser.plotter("baseline_3")
 # pi_parser.plotter("wind_2_head_1")
 
 # pi_parser.plotter("baseline_1_head_2")

@@ -41,20 +41,20 @@ class Bixler_ThrottleDelay(common.BixlerController):
 
         # print(action[2])
 
-        ##### thrust 1 #############
-        if action[2] == 0:
-            self.throttle_on = False
-        elif action[2] == 1:
-            self.throttle_on = True
-
-        # ####### thrust 2 ##########
-        # if action[1] == 0:
+        #### thrust 1 #############
+        # if action[2] == 0:
         #     self.throttle_on = False
-        # if action[2] == 1:
-        #     if self.throttle_change == 0:
-        #         self.throttle_on = True 
-        #     else:
-        #         self.throttle = False 
+        # elif action[2] == 1:
+        #     self.throttle_on = True
+
+        ####### thrust 2 ##########
+        if action[1] == 0:
+            self.throttle_on = False
+        if action[2] == 1:
+            if self.throttle_change == 0:
+                self.throttle_on = True 
+            else:
+                self.throttle = False 
             
 
         self.change_time += 0.1
@@ -62,7 +62,7 @@ class Bixler_ThrottleDelay(common.BixlerController):
         if (self.prev_throttle == True and self.throttle_on == False) or (self.prev_throttle == False and self.throttle_on == True):
             self.throttle_change += 1 
             if self.throttle_change == 1 and self.time_log == True:
-                wandb.log({"change_time": self.change_time})
+                # wandb.log({"change_time": self.change_time})
                 self.time_log = False
         
         self.prev_throttle = self.throttle_on

@@ -72,16 +72,19 @@ class Rendermixin(object):
 
             ax3 = fig.add_subplot(3,2,3)
             #Sweep
-            self.df.plot(x = 't', y = 'sweep', color = 'k',  ax = ax3, legend=False)
+            self.df.plot(x = 't', y = 'sweep', color = 'r',  ax = ax3, legend=True, label = "Sweep")
+            self.df.plot(x = 't', y = 'elev', color = 'b',  ax = ax3, legend=True, label = "Elevator")
             ax3.set_xlabel("Time(s)", fontsize=12)
-            ax3.set_ylabel(r'Sweep (deg)', fontsize=12)
+            ax3.set_ylabel(r'Deflection (deg)', fontsize=12)
             ax3.grid()
+        
+        
 
             ax4 = fig.add_subplot(3,2,4)
             #elev
-            self.df.plot(x = 't', y = 'elev', color = 'k',  ax = ax4, legend=False)
+            self.df.plot(x = 't', y = 'throttle', color = 'k',  ax = ax4, legend=False)
             ax4.set_xlabel("Time(s)", fontsize=12)
-            ax4.set_ylabel(r'Elevator (deg)', fontsize=12)
+            ax4.set_ylabel(r'Thrust (N)', fontsize=12)
             ax4.grid()
 
             
@@ -112,8 +115,6 @@ class Rendermixin(object):
             ax6.set_ylabel(r'Body Velocities (m/s)', fontsize=12)
             ax6.grid()
 
-            self.df.plot(x="t", y= "throttle")
-            
             # plt.savefig(path+'.png')
             
             # wandb.log({fig_title: plt})
