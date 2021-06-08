@@ -14,6 +14,7 @@ def wrap_class(BixlerClass, parameters):
                     super(PerchingBixler,self).__init__(parameters)
                     self.variable_start = parameters.get("variable_start")
                     self.start_config = tuple(parameters.get("start_config"))
+                    self.max_throttle = (self.mass*9.81)/2
 
                 def is_out_of_bounds(self):
                     def is_in_range(x,lower,upper):
@@ -45,26 +46,7 @@ def wrap_class(BixlerClass, parameters):
                     return 1/(np.sqrt(2*np.pi)*sig)*np.exp(-np.power((x - mu)/sig, 2)/2)
                 
 
-                # #####throttle 1
-                # def get_reward(self):
-                #     if self.is_terminal():
-                #         if self.is_out_of_bounds():
-                #             return failReward
-                #         if self.throttle_change == 0:
-                #             return failReward
-                #         obs = np.array([self.position_e[0,0], self.position_e[2,0], self.orientation_e[1,0], self.velocity_b[0,0], self.velocity_b[2,0]])
-                #         # print(obs)
-                #         target_state = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
-                #         bound = np.array([15, 5, np.deg2rad(20),10,10])
-                #         cost = (target_state - obs)/bound
-                #         cost = list(map(self.gaussian, cost))
-                #         reward = np.prod(cost) * ((1/np.exp(self.throttle_change) * np.exp(1)))
-                #         # print(self.throttle_change)
-                #         # wandb.log({"throttle_change": self.throttle_change})
-                #         return reward
-                #     return 0.0
-
-                ########throttle 2
+                #####throttle 1
                 def get_reward(self):
                     if self.is_terminal():
                         if self.is_out_of_bounds():
@@ -77,10 +59,29 @@ def wrap_class(BixlerClass, parameters):
                         bound = np.array([15, 5, np.deg2rad(20),10,10])
                         cost = (target_state - obs)/bound
                         cost = list(map(self.gaussian, cost))
-                        reward = np.prod(cost)
-                        # wandb.log({"throttle_change": self.throttle_change})
+                        reward = np.prod(cost) * ((1/np.exp(self.throttle_change) * np.exp(1)))
+                        # print(self.throttle_change)
+                        wandb.log({"throttle_change": self.throttle_change})
                         return reward
                     return 0.0
+
+                #########throttle 2
+                # def get_reward(self):
+                #     if self.is_terminal():
+                #         if self.is_out_of_bounds():
+                #             return failReward
+                #         if self.throttle_change == 0:
+                #             return failReward
+                #         obs = np.array([self.position_e[0,0], self.position_e[2,0], self.orientation_e[1,0], self.velocity_b[0,0], self.velocity_b[2,0]])
+                #         # print(obs)
+                #         target_state = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
+                #         bound = np.array([15, 5, np.deg2rad(20),10,10])
+                #         cost = (target_state - obs)/bound
+                #         cost = list(map(self.gaussian, cost))
+                #         reward = np.prod(cost)
+                #         wandb.log({"throttle_change": self.throttle_change})
+                #         return reward
+                #     return 0.0
 
                 def is_terminal(self):
                     # Terminal point is floor
@@ -97,13 +98,13 @@ def wrap_class(BixlerClass, parameters):
                         state=self.get_state()
 
 
-                    # ######## throttle 1
-                    # obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
-                    # obs = np.concatenate((obs, [[self.throttle_change]]), axis = 1)
-
-                    ######## throttle 2
+                    ######## throttle 1
                     obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
-                    obs = np.concatenate((obs, [[int(self.throttle_on)]]), axis = 1)
+                    obs = np.concatenate((obs, [[self.throttle_change]]), axis = 1)
+
+                    ######### throttle 2
+                    # obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
+                    # obs = np.concatenate((obs, [[float(self.throttle_on)]]), axis = 1)
 
                     # print(obs)
 
@@ -160,7 +161,7 @@ def wrap_class(BixlerClass, parameters):
 
                     drag = np.matmul(self.dcm_wind2body, np.array([[-D],[0],[-L]]))[0]
 
-                    self.throttle_val = -drag[0]
+                    self.throttle_val = np.clip(-drag[0], 0, self.max_throttle)
 
                     # print(self.dcm_wind2body)
                     # print("ep start")
