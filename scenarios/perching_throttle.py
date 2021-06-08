@@ -14,6 +14,7 @@ def wrap_class(BixlerClass, parameters):
                     super(PerchingBixler,self).__init__(parameters)
                     self.variable_start = parameters.get("variable_start")
                     self.start_config = tuple(parameters.get("start_config"))
+                    self.max_throttle = (self.mass*9.81)/2
 
                 def is_out_of_bounds(self):
                     def is_in_range(x,lower,upper):
@@ -78,7 +79,7 @@ def wrap_class(BixlerClass, parameters):
                 #         cost = (target_state - obs)/bound
                 #         cost = list(map(self.gaussian, cost))
                 #         reward = np.prod(cost)
-                #         # wandb.log({"throttle_change": self.throttle_change})
+                #         wandb.log({"throttle_change": self.throttle_change})
                 #         return reward
                 #     return 0.0
 
@@ -103,7 +104,7 @@ def wrap_class(BixlerClass, parameters):
 
                     ######### throttle 2
                     # obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
-                    # obs = np.concatenate((obs, [[int(self.throttle_on)]]), axis = 1)
+                    # obs = np.concatenate((obs, [[float(self.throttle_on)]]), axis = 1)
 
                     # print(obs)
 
@@ -160,7 +161,7 @@ def wrap_class(BixlerClass, parameters):
 
                     drag = np.matmul(self.dcm_wind2body, np.array([[-D],[0],[-L]]))[0]
 
-                    self.throttle_val = -drag[0]
+                    self.throttle_val = np.clip(-drag[0], 0, self.max_throttle)
 
                     # print(self.dcm_wind2body)
                     # print("ep start")

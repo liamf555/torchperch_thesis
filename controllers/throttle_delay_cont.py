@@ -3,13 +3,13 @@ import controllers.common as common
 import wandb
 
 # Bixler wrapper to set what control surfaces are utilised by the NN
-class Bixler_ThrottleDelay(common.BixlerController):
+class Bixler_ThrottleDelayCont(common.BixlerController):
     
     def __init__(self, parameters):
-        super(Bixler_ThrottleDelay, self).__init__(parameters)
+        super(Bixler_ThrottleDelayCont, self).__init__(parameters)
         
-        self.elev_rates = [-60, -10, -5, 0, 5, 10, 60]
-        self.sweep_rates = [ -60, -10, -5, 0, 5, 10, 60 ]
+        self.elev_rate_lim = 60
+        self.sweep_rate_lim = 60
         
         # Control surface rates
         self.sweep_rate = 0 # (deg/s)
@@ -30,8 +30,8 @@ class Bixler_ThrottleDelay(common.BixlerController):
         # print(action)
         # Action may be control surface rates / throttle
     
-        self.next_elev_rate = self.elev_rates[action[0]]
-        self.next_sweep_rate = self.sweep_rates[action[1]]
+        self.next_elev_rate = action[0] * self.elev_rate_lim
+        self.next_sweep_rate = action[1] * self.sweep_rate_lim
 
         self.time_since_action = 0.0
         if self.latency_on:
@@ -41,22 +41,21 @@ class Bixler_ThrottleDelay(common.BixlerController):
 
         # print(action[2])
 
-        #### thrust 1 #############
-        if action[2] == 0:
-            self.throttle_on = False
-        elif action[2] == 1:
-            self.throttle_on = True
+        ##### thrust 1 #############
+        # if action[2] == 0:
+        #     self.throttle_on = False
+        # elif action[2] == 1:
+        #     self.throttle_on = True
 
         ####### thrust 2 ##########
-        # if action[1] == 0:
-        #     self.throttle_on = False
-        # if action[2] == 1:
-        #     if self.throttle_change == 0:
-        #         self.throttle_on = True 
-        #     else:
-        #         self.throttle = False 
+        if action[1] < 0:
+            self.throttle_on = False
+        if action[2] > 0:
+            if self.throttle_change == 0:
+                self.throttle_on = True 
+            else:
+                self.throttle = False 
             
-
         self.change_time += 0.1
 
         if (self.prev_throttle == True and self.throttle_on == False) or (self.prev_throttle == False and self.throttle_on == True):
