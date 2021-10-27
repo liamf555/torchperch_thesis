@@ -3,7 +3,7 @@
 EPOCHTIME=$(date +%s)
 
 python json_mod.py --log_file ../output/$EPOCHTIME/ \
-    --algorithm PPO2 \
+    --algorithm PPO \
     --wind_mode uniform \
     --wind_params -6 0  \
     --scenario perching_throttle \

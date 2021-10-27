@@ -1,7 +1,8 @@
 import numpy as np
 from gym import spaces
 
-from stable_baselines.common.vec_env.base_vec_env import VecEnvWrapper
+from stable_baselines3.common.vec_env.base_vec_env import VecEnvWrapper
+
 
 class LiveFrameStack(VecEnvWrapper):
     """
@@ -18,13 +19,14 @@ class LiveFrameStack(VecEnvWrapper):
         low = np.repeat(wrapped_obs_space.low, self.n_stack, axis=-1)
         high = np.repeat(wrapped_obs_space.high, self.n_stack, axis=-1)
         self.stackedobs = np.zeros((venv.num_envs,) + low.shape, low.dtype)
-        observation_space = spaces.Box(low=low, high=high, dtype=venv.observation_space.dtype)
+        observation_space = spaces.Box(
+            low=low, high=high, dtype=venv.observation_space.dtype)
         VecEnvWrapper.__init__(self, venv, observation_space=observation_space)
-
 
     def stack_obs(self, transformed_obs):
         last_ax_size = transformed_obs.shape[-1]
-        self.stackedobs = np.roll(self.stackedobs, shift=-last_ax_size, axis=-1)
+        self.stackedobs = np.roll(
+            self.stackedobs, shift=-last_ax_size, axis=-1)
         self.stackedobs[..., -transformed_obs.shape[-1]:] = transformed_obs
         return self.stackedobs
 
