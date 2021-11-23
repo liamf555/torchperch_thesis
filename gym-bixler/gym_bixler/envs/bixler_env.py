@@ -64,12 +64,16 @@ class BixlerEnv(Rendermixin, gym.Env):
         else:
             self.action_space = gym.spaces.Discrete(self.scenario.actions)
 
-        self.observation_space = gym.spaces.Dict(
+
+        if self.parameters.get("scenario") == "perching_throttle":
+            self.observation_space = gym.spaces.Dict(
             spaces={
                 "vec": gym.spaces.Box(-np.inf, np.inf, (self.scenario.state_dims,), dtype=np.float32),
                 "throttle": gym.spaces.Discrete(2),
-            }
-        )
+            })
+        else: 
+            self.observation_space=gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1, self.scenario.state_dims), dtype=np.float32)
+
 
         # self.observation_space=gym.spaces.Box(
         #     low=-np.inf, high=np.inf, shape=(1, self.scenario.state_dims), dtype=np.float32)

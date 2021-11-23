@@ -59,7 +59,10 @@ try:
 except:
     pass
 
-env = VecNormalize(env, norm_reward=False, excluded_keys=["throttle"])
+if params.get("scenario") == "perching_throttle":
+    env = VecNormalize(env, norm_reward=False, norm_obs_keys=["vec"])
+else:
+    env = VecNormalize(env, norm_reward=False)
 
 # net_arch = {
 #     "small": [dict(pi=[64, 64], vf=[64, 64])],
@@ -76,7 +79,13 @@ ModelType = check_algorithm(params.get("algorithm"))
 # model = ModelType('MlpPolicy', env, verbose=0, tensorboard_log=log_dir,
 #                   policy_kwargs=policy_kwargs)  # n_steps=2048, nminibatches=32
 
-model = ModelType('MultiInputPolicy', env, verbose=0, tensorboard_log=log_dir)
+if params.get("scenario") == "perching_throttle":
+    model = ModelType('MultiInputPolicy', env, verbose=0, tensorboard_log=log_dir)
+else:
+    model = ModelType('MlpPolicy', env, verbose=0, tensorboard_log=log_dir)
+#                   policy_kwargs=policy_kwargs) 
+
+
 #                   policy_kwargs=policy_kwargs)
 
 # model = ModelType('MlpLstmPolicy', env, verbose=0, tensorboard_log=log_dir)
@@ -103,16 +112,17 @@ eval_params["variable_start"] = False
 eval_params["noise"] = 0.0
 
 
-eval_env = DummyVecEnv(
-    [lambda: gym.make(params.get("env"), parameters=eval_params)])
 
 try:
     eval_env = VecFrameStack(eval_env, int(params.get("framestack")))
 except:
     pass
 
-eval_env = VecNormalize(eval_env, norm_reward=False,
-                        training=False)
+if params.get("scenario") == "perching_throttle":
+    eval_env = VecNormalize(env, norm_reward=False, norm_obs_keys=["vec"])
+else:
+    eval_env = VecNormalize(env, norm_reward=False)
+
 
 eval_env.training = False
 

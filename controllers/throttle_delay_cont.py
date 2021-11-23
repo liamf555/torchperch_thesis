@@ -48,7 +48,7 @@ class Bixler_ThrottleDelayCont(common.BixlerController):
         #     self.throttle_on = True
 
         ####### thrust 2 ##########
-        if action[1] < 0:
+        if action[2] < 0:
             self.throttle_on = False
         if action[2] > 0:
             if self.throttle_change == 0:

@@ -6,7 +6,7 @@ import wandb
 state_dims = 8
 actions = 49
 failReward = 0.0
-h_min = -20
+h_min = -30
 
 
 def wrap_class(BixlerClass, parameters):
@@ -29,7 +29,7 @@ def wrap_class(BixlerClass, parameters):
             # Check not trying to turn throttle back on
             # if self.throttle_change and self.throttle_on:
             #     return True
-            if self.throttle_on and abs(self.alpha) > 15:
+            if self.throttle_on and abs(self.alpha) > 10:
                 return True
             # Check z remains sensible (i.e. not crashed)
             if not is_in_range(self.position_e[2, 0], h_min, 1):
