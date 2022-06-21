@@ -116,7 +116,7 @@ def wrap_class(BixlerClass, parameters):
             # return (obs-mins)/(maxs-mins)
 
             # using SB normalize wrapper
-            obs = {"vec": obs, "throttle": int(self.throttle_on)}
+            # obs = {"vec": obs, "throttle": int(self.throttle_on)}
 
             # print(f"perching_obs {obs}")
 

@@ -37,24 +37,20 @@ echo "Controller: $CONTROLLER"
 echo "Commit: $(git rev-parse HEAD)"
 echo "JobID: $SLURM_JOBID"
 
-#export OMP_NUM_THREADS=8
-#export KMP_AFFINITY=granularity=fine,compact,1,0
-
 JOB_NID=${SLURM_JOBID}-${SLURM_ARRAY_TASK_ID}
 
 python json_mod.py --log_file /user/work/tu18537/output/$JOB_NID/ \
     --algorithm PPO \
     --wind_mode uniform \
-    --wind_params -10 0 \
-    --scenario perching_throttle \
+    --wind_params -6 0 \
+    --scenario perching_throttle_3 \
     --controller throttle_delay \
-    --turbulence small \
-    --framestack 0 \
+    --turbulence light \
+    --framestack 4 \
     --timesteps 20000000 \
     --start_config -40 -5 \
-    --net_arch small \
-    --variable_start \
-    --noise 0.3
+    --net_arch small
+    # --variable_start
    
 echo "Beginning training"
 

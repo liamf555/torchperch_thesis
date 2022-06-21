@@ -3,7 +3,7 @@ import wandb
 
 # Perching scenario
 
-state_dims = 8
+state_dims = 9
 actions = 49
 failReward = 0.0
 h_min = -30
@@ -106,7 +106,7 @@ def wrap_class(BixlerClass, parameters):
 
             # throttle 2
             obs = np.float64(np.delete(state, [1, 3, 5, 7, 9, 11], axis=1))
-            # obs = np.concatenate((obs, [[float(self.throttle_on)]]), axis=1)
+            obs = np.concatenate((obs, [[float(self.throttle_on)]]), axis=1)
 
             # print(obs)
 
@@ -116,7 +116,7 @@ def wrap_class(BixlerClass, parameters):
             # return (obs-mins)/(maxs-mins)
 
             # using SB normalize wrapper
-            obs = {"vec": obs, "throttle": int(self.throttle_on)}
+            # obs = {"vec": obs, "throttle": int(self.throttle_on)}
 
             # print(f"perching_obs {obs}")
 

@@ -43,7 +43,7 @@ python json_mod.py --log_file /$WORK/output/$JOB_NID/ \
     --algorithm PPO2 \
     --wind_mode uniform \
     --wind_params -6 0 \
-    --scenario perching_throttle \
+    --scenario perching_throttle_2 \
     --controller throttle_delay \
     --turbulence light \
     --framestack none \

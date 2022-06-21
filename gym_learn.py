@@ -56,8 +56,9 @@ env = make_vec_env(lambda: gym.make(params.get(
 # env_2 = VecExtractDictObs(env, key="vec")
 try:
     env = VecFrameStack(env, int(params.get("framestack")))
-except:
-    pass
+    print("Framestacked")
+except Exception as e:
+    print(e)
 
 if params.get("scenario") == "perching_throttle":
     env = VecNormalize(env, norm_reward=False, norm_obs_keys=["vec"])
@@ -110,7 +111,6 @@ eval_params["turbulence"] = "none"
 eval_params["latency"] = False
 eval_params["variable_start"] = False
 eval_params["noise"] = 0.0
-
 
 
 try:
