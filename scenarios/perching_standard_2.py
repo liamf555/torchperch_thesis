@@ -1,3 +1,4 @@
+
 import numpy as np
 
 # Perching scenario
@@ -73,14 +74,14 @@ def wrap_class(BixlerClass, parameters):
                 #     return 0.0
 
                 def get_reward(self):
-                    if self.is_terminal():
-                        if self.is_out_of_bounds():
-                            return failReward
-                        obs = np.array([self.position_e[0,0], self.position_e[2,0], self.orientation_e[1,0], self.velocity_b[0,0], self.velocity_b[2,0]])
-                        cost_vector = np.array([1,1,100, 10,10])
-                        cost = np.dot(obs ** 2, cost_vector ) / 2500
-                        return  ((1.0 - cost) * 2.0) - 1.0
-                    return 0.0
+                    # if self.is_terminal():
+                    if self.is_out_of_bounds():
+                        return failReward
+                    obs = np.array([self.position_e[0,0], self.position_e[2,0], self.orientation_e[1,0], self.velocity_b[0,0], self.velocity_b[2,0]])
+                    cost_vector = np.array([1,1,100, 10,10])
+                    cost = np.dot(obs ** 2, cost_vector ) / 2500
+                    return  ((1.0 - cost) * 2.0) - 1.0
+                    # return 0.0
 
 
                 # def get_reward(self):
