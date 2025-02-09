@@ -1,6 +1,6 @@
 import numpy as np
 import controllers.common as common
-import wandb
+# import wandb
 
 # Bixler wrapper to set what control surfaces are utilised by the NN
 class Bixler_ThrottleDelayCont(common.BixlerController):

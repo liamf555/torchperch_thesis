@@ -14,6 +14,7 @@ def wrap_class(BixlerClass, parameters):
                     super(PerchingBixler,self).__init__(parameters)
                     self.variable_start = parameters.get("variable_start")
                     self.start_config = tuple(parameters.get("start_config"))
+                    self.final_obs = None
 
                 def is_out_of_bounds(self):
                     def is_in_range(x,lower,upper):
@@ -60,6 +61,8 @@ def wrap_class(BixlerClass, parameters):
                 
                 def get_reward(self):
                     if self.is_terminal():
+                        self.final_obs = [self.position_e[0, 0], self.position_e[2, 0],
+                              self.orientation_e[1, 0], self.velocity_b[0, 0], self.velocity_b[2, 0]]
                         if self.is_out_of_bounds():
                             return failReward
                         obs = np.array([self.position_e[0,0], self.position_e[2,0], self.orientation_e[1,0], self.velocity_b[0,0], self.velocity_b[2,0]])

@@ -5,8 +5,8 @@ performing a perched landing manoeuvre.
 import gym
 import json
 import numpy as np
-import controllers
-import scenarios
+import controllers as controllers
+import scenarios as scenarios
 try:
     import wandb
 except ImportError:
@@ -30,11 +30,20 @@ def check_scenario(scenario_name):
         msg = "Could not find scenario {}".format(scenario_name)
         raise ValueError(msg)
 
+parameters = {
+    "scenario": "perching_long",
+    "controller": "sweep_elevator_cont_rate",
+    "noise": 0.0,
+    "wind_mode": "None",
+    "wind_params": [0, 0, 0],
+    "start_config": [-40, -5],
+    "turbulence": "none"
+}
 
 class BixlerEnv(Rendermixin, gym.Env):
     metadata = {'render.modes': ['save', 'plot', 'none']}
 
-    def __init__(self, parameters):
+    def __init__(self, parameters=parameters):
 
         self.scenario = check_scenario(parameters.get("scenario"))
         self.controller = check_controller(parameters.get("controller"))
@@ -50,33 +59,39 @@ class BixlerEnv(Rendermixin, gym.Env):
         # self.seed(self.parameters.get("seed"))
         # self.seed()
 
+        # obs_high = np.array(
+        #     [
+        #         40,
+        #         20,
+        #         np.pi,
+        #         30,
+        #         np.pi,
+        #     ],
+        #     dtype=np.float32,
+        # )
+
+        # act_high = np.array(
+        #     [
+        #         1,
+        #         1
+        #     ],
+        #     dtype=np.float32
+        # )
+
+        # self.action_space = gym.spaces.Box(-act_high, act_high, dtype=np.float32)
+        # self.observation_space = gym.spaces.Box(-obs_high, obs_high, dtype=np.float32)
+
         if self.parameters.get("controller") == "sweep_elevator_cont_rate":
             self.action_space = gym.spaces.Box(low=np.array([-1, -1]),
                                                high=np.array([1, 1]), dtype=np.float32)
         elif self.parameters.get("controller") == "elevator_cont":
             self.action_space = gym.spaces.Box(low=np.array([-1]),
                                                high=np.array([1]), dtype=np.float32)
-        elif self.parameters.get("controller") == "throttle_delay":
-            self.action_space = gym.spaces.MultiDiscrete([7, 7, 2])
-        elif self.parameters.get("controller") == "throttle_delay_cont":
-            self.action_space = gym.spaces.Box(low=np.array([-1, -1, -1]),
-                                               high=np.array([1, 1, 1]), dtype=np.float32)
         else:
             self.action_space = gym.spaces.Discrete(self.scenario.actions)
 
-
-        if self.parameters.get("scenario") == "perching_throttle":
-            self.observation_space = gym.spaces.Dict(
-            spaces={
-                "vec": gym.spaces.Box(-np.inf, np.inf, (self.scenario.state_dims,), dtype=np.float32),
-                "throttle": gym.spaces.Discrete(2),
-            })
-        else: 
-            self.observation_space=gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1, self.scenario.state_dims), dtype=np.float32)
-
-
-        # self.observation_space=gym.spaces.Box(
-        #     low=-np.inf, high=np.inf, shape=(1, self.scenario.state_dims), dtype=np.float32)
+        self.observation_space = gym.spaces.Box(
+            low=-np.inf, high=np.inf, shape=(1, self.scenario.state_dims,), dtype=np.float32)
 
         self.bixler.reset_scenario()
 
@@ -141,7 +156,6 @@ class BixlerEnv(Rendermixin, gym.Env):
                 state_list.insert(0, 0)
                 state_list.append(self.bixler.alpha)
                 state_list.append(self.bixler.airspeed)
-                state_list.append(self.bixler.throttle)
                 self.state_array = []
                 self.state_array.append(state_list)
                 self.render_flag_entry = False
@@ -180,7 +194,7 @@ class BixlerEnv(Rendermixin, gym.Env):
         state_list.insert(0, self.time)
         state_list.append(self.bixler.alpha)
         state_list.append(self.bixler.airspeed)
-        state_list.append(self.bixler.throttle)
+        # state_list.append(self.bixler.throttle)
         self.state_array.append(state_list)
 
     # def close(self, path, reward):
@@ -190,3 +204,8 @@ class BixlerEnv(Rendermixin, gym.Env):
     def save_plots(self, path, reward):
         if self.save_flag:
             Rendermixin.save_data(self, path, reward)
+
+    def get_final_obs(self):
+
+        # print(self.bixler.final_obs)
+        return self.bixler.final_obs

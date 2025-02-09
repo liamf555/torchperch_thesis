@@ -16,7 +16,7 @@ class Rendermixin(object):
 
             pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-            self.df = pd.DataFrame(self.state_array,columns = ['t', 'x','y', 'z', 'phi', 'theta', 'psi', 'u', 'v', 'w', 'p', 'q', 'r', 'sweep', 'elev', 'vn', 've', 'vd', 'alpha', 'airspeed', 'throttle'])
+            self.df = pd.DataFrame(self.state_array,columns = ['t', 'x','y', 'z', 'phi', 'theta', 'psi', 'u', 'v', 'w', 'p', 'q', 'r', 'sweep', 'elev', 'vn', 've', 'vd', 'alpha', 'airspeed'])
 
             self.state_array = []
 
@@ -80,12 +80,12 @@ class Rendermixin(object):
         
         
 
-            ax4 = fig.add_subplot(3,2,4)
-            #elev
-            self.df.plot(x = 't', y = 'throttle', color = 'k',  ax = ax4, legend=False)
-            ax4.set_xlabel("Time(s)", fontsize=12)
-            ax4.set_ylabel(r'Thrust (N)', fontsize=12)
-            ax4.grid()
+            # ax4 = fig.add_subplot(3,2,4)
+            # #elev
+            # self.df.plot(x = 't', y = 'throttle', color = 'k',  ax = ax4, legend=False)
+            # ax4.set_xlabel("Time(s)", fontsize=12)
+            # ax4.set_ylabel(r'Thrust (N)', fontsize=12)
+            # ax4.grid()
 
             
             ax5 = fig.add_subplot(3,2,5)

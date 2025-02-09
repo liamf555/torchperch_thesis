@@ -1,8 +1,8 @@
 
 # from stable_baselines.bench import Monitor
-from stable_baselines.common.vec_env import DummyVecEnv, VecEnv, sync_envs_normalization
+from stable_baselines3.common.vec_env import DummyVecEnv, VecEnv, sync_envs_normalization
 # from stable_baselines.results_plotter import load_results, ts2xy
-from stable_baselines.common.callbacks import BaseCallback, EventCallback
+from stable_baselines3.common.callbacks import BaseCallback, EventCallback
 # from stable_baselines.common.evaluation import evaluate_policy
 
 import os
@@ -13,7 +13,7 @@ from typing import Union, List, Dict, Any, Optional
 
 import numpy as np
 import matplotlib.pyplot as plt
-import wandb
+# import wandb
 from shutil import copyfile
 
 import gym
@@ -26,11 +26,9 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
     # wind_speeds = []
 
     # for env in envs:
-
     """
     Runs policy for `n_eval_episodes` episodes and returns average reward.
     This is made to work only with one env.
-
     :param model: (BaseRLModel) The RL agent you want to evaluate.
     :param env: (gym.Env or VecEnv) The gym environment. In the case of a `VecEnv`
         this must contain only one environment.
@@ -49,7 +47,7 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
     if isinstance(env, VecEnv):
         assert env.num_envs == 1, "You must pass only one environment when using this function"
 
-    episode_rewards, episode_lengths = [], []
+    episode_rewards, episode_lengths, final_obs = [], [], []
     for _ in range(n_eval_episodes):
         obs = env.reset()
         # print(env.bixler.airspeed)
@@ -57,7 +55,8 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
         episode_reward = 0.0
         episode_length = 0
         while not done:
-            action, state = model.predict(obs, state=state, deterministic=deterministic)
+            action, state = model.predict(
+                obs, state=state, deterministic=deterministic)
             obs, reward, done, _info = env.step(action)
             episode_reward += reward
             if callback is not None:
@@ -65,8 +64,9 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
             episode_length += 1
             if render:
                 env.render(render)
-        if render is not None: 
-            env.env_method('save_plots', path = path, reward = episode_reward[0])
+        final_obs.append(env.env_method("get_final_obs")[0])
+        if render is not None:
+            env.env_method('save_plots', path=path, reward=episode_reward[0])
         env.close()
         episode_rewards.append(episode_reward)
         episode_lengths.append(episode_length)
@@ -74,6 +74,9 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
     # print(episode_lengths)
     mean_reward = np.mean(episode_rewards)
     std_reward = np.std(episode_rewards)
+    mean_final_obs = [np.mean(i) for i in zip(*final_obs)]
+    std_final_obs = [np.std(i) for i in zip(*final_obs)]
+    # print(std_final_obs)
 
     # if reward_threshold is not None:
     #     assert mean_reward > reward_threshold, 'Mean reward below threshold: '\
@@ -87,8 +90,8 @@ def evaluate_policy(model, env, n_eval_episodes=10, deterministic=True,
 
     rewards = mean_reward
     # wind_speeds = env.bixler.wind[0]
-    
-    return rewards
+
+    return rewards, mean_final_obs, std_final_obs
       
 class EvalCallback(EventCallback):
 

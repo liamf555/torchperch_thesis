@@ -60,6 +60,8 @@ def wrap_class(BixlerClass, parameters):
                 
                 def get_reward(self):
                     # if self.is_terminal():
+                    self.final_obs = [self.position_e[0, 0], self.position_e[2, 0],
+                              self.orientation_e[1, 0], self.velocity_b[0, 0], self.velocity_b[2, 0]]
                     if self.is_out_of_bounds():
                         return failReward
                     obs = np.array([self.position_e[0,0], self.position_e[2,0], self.orientation_e[1,0], self.velocity_b[0,0], self.velocity_b[2,0]])
